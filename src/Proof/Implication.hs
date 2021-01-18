@@ -11,15 +11,18 @@ module Proof.Implication
   ( -- * Type definitions
     Formula (Var, Imp),
     Context,
-    Proof (Ax, ImpElim, ImpIntr),
+    Proof (Ax, ImpIntr, ImpElim),
 
     -- * Proof search
     prove,
 
     -- * Debugging
-    checkProof,
+    debug,
+    valid,
   )
 where
+
+import Data.Maybe (isNothing)
 
 -- | Formulas in the implicational fragment of propositional logic
 data Formula a
@@ -48,22 +51,25 @@ data Proof a
     ImpIntr (Context a) (Formula a) (Proof a)
   deriving (Eq, Show)
 
--- | Check whether a proof is valid.
-checkProof :: Eq a => Proof a -> Bool
-checkProof p = case p of
-  Ax c a -> a `elem` c
+-- | Return an invalid inference node, if there is one.
+debug :: Eq a => Proof a -> Maybe (Proof a)
+debug proof = case proof of
+  Ax c a -> if a `elem` c then Nothing else Just proof
   ImpElim c b p q ->
-    conclusion p == Imp (conclusion q) b
+    if conclusion p == Imp (conclusion q) b
       && c `equals` context p
       && c `equals` context q
-      && checkProof p
-      && checkProof q
-  ImpIntr c i p -> case i of
-    Imp a b ->
-      conclusion p == b
-        && (a : c) `equals` context p
-        && checkProof p
-    _ -> False
+      then case debug p of
+        Nothing -> debug q
+        p' -> p'
+      else Just proof
+  ImpIntr c i p ->
+    case i of
+      Imp a b ->
+        if conclusion p == b && (a : c) `equals` context p
+          then debug p
+          else Just proof
+      _ -> Just proof
   where
     -- Extract the conclusion (without the context) of a proof
     conclusion :: Proof a -> Formula a
@@ -84,6 +90,10 @@ checkProof p = case p of
     -- Set equality
     equals :: Eq a => Context a -> Context a -> Bool
     equals a b = a `subset` b && b `subset` a
+
+-- | Check whether a proof is valid.
+valid :: Eq a => Proof a -> Bool
+valid p = isNothing (debug p)
 
 -- | Find an intuitionistic proof of an implication proposition from a context,
 -- if such a proof exists.
