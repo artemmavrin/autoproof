@@ -1,0 +1,27 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: fddaf9882113a3b2a32a2ed1dfe6a3133aec0b69e91632d8d11b0c2d3e567dd2
+
+name:           proof
+version:        0.0.0.0
+author:         Artem Mavrin
+maintainer:     artemvmavrin@gmail.com
+copyright:      2021 Artem Mavrin
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+
+library
+  exposed-modules:
+      Proof.Implication
+  other-modules:
+      Paths_proof
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
