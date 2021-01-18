@@ -13,6 +13,9 @@ module Proof.Implication
     Context,
     Proof (Ax, ImpIntr, ImpElim),
 
+    -- * Constructors
+    (-->),
+
     -- * Proof search
     prove,
 
@@ -32,6 +35,12 @@ data Formula a
     -- formulas @a@ and @b@.
     Imp (Formula a) (Formula a)
   deriving (Eq, Ord, Show)
+
+-- | Right-associative infix alternative for 'Imp'.
+(-->) :: Formula a -> Formula a -> Formula a
+(-->) = Imp
+
+infixr 1 -->
 
 -- | A sequence of propositional formulas.
 type Context a = [Formula a]

@@ -10,3 +10,24 @@ dependencies:
 
 library:
   source-dirs: src
+
+tests:
+  imp-test:
+    main:                ImpSpec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Werror
+    - -Wall
+    - -Wcompat
+    - -Wincomplete-record-updates
+    - -Wincomplete-uni-patterns
+    - -Wredundant-constraints
+    dependencies:
+    - proof
+    - hspec >= 0.8.2
+    when:
+    - condition: false
+      other-modules: Paths_proof
