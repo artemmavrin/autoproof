@@ -26,6 +26,8 @@ module Proof.Implication
 where
 
 import Data.Maybe (isNothing)
+import Data.Set (Set)
+import qualified Data.Set as Set
 
 -- | Formulas in the implicational fragment of propositional logic
 data Formula a
@@ -42,8 +44,8 @@ data Formula a
 
 infixr 1 -->
 
--- | A sequence of propositional formulas.
-type Context a = [Formula a]
+-- | A set of propositional formulas.
+type Context a = Set (Formula a)
 
 -- | An intuitionistic natural deduction proof tree for the implicational
 -- fragment of propositional logic.
@@ -61,13 +63,13 @@ data Proof a
   deriving (Eq, Show)
 
 -- | Return an invalid inference node, if there is one.
-debug :: Eq a => Proof a -> Maybe (Proof a)
+debug :: Ord a => Proof a -> Maybe (Proof a)
 debug proof = case proof of
-  Ax c a -> if a `elem` c then Nothing else Just proof
+  Ax c a -> if Set.member a c then Nothing else Just proof
   ImpElim c b p q ->
     if conclusion p == Imp (conclusion q) b
-      && c `equals` context p
-      && c `equals` context q
+      && c == context p
+      && c == context q
       then case debug p of
         Nothing -> debug q
         p' -> p'
@@ -75,7 +77,7 @@ debug proof = case proof of
   ImpIntr c i p ->
     case i of
       Imp a b ->
-        if conclusion p == b && (a : c) `equals` context p
+        if conclusion p == b && (Set.insert a c == context p)
           then debug p
           else Just proof
       _ -> Just proof
@@ -92,39 +94,34 @@ debug proof = case proof of
     context (ImpElim c _ _ _) = c
     context (ImpIntr c _ _) = c
 
-    -- Set containment
-    subset :: Eq a => Context a -> Context a -> Bool
-    subset a b = all (`elem` b) a
-
-    -- Set equality
-    equals :: Eq a => Context a -> Context a -> Bool
-    equals a b = a `subset` b && b `subset` a
-
 -- | Check whether a proof is valid.
-valid :: Eq a => Proof a -> Bool
+valid :: Ord a => Proof a -> Bool
 valid p = isNothing (debug p)
 
--- | Find an intuitionistic proof of an implication proposition from a context,
--- if such a proof exists.
-prove :: Eq a => Context a -> Formula a -> Maybe (Proof a)
-prove context i@(Imp a b) = ImpIntr context i <$> prove (a : context) b
-prove context v@(Var x) = search context
+-- | @(prove c a)@ finds an intuitionistic proof of a sequent @c ⊢ a@, if such a
+-- proof exists.
+prove :: (Ord a, Foldable t) => t (Formula a) -> Formula a -> Maybe (Proof a)
+prove context = prove' (foldr Set.insert Set.empty context)
   where
-    -- Scan the context for a formula of the form a1->(a2->(...an->x)...), where
-    -- each ai is provable from the context
-    search [] = Nothing
-    search (f : fs) = case split f of
-      Nothing -> search fs
-      Just l -> construct (reverse l) v
+    prove' :: Ord a => Context a -> Formula a -> Maybe (Proof a)
+    prove' c i@(Imp a b) = ImpIntr c i <$> prove' (Set.insert a c) b
+    prove' c v@(Var x) = foldl search Nothing c
       where
-        construct [] v' = Just $ Ax context v'
-        construct (a : as) v' = case prove context a of
-          Nothing -> search fs
-          Just p -> case construct as (Imp a v') of
-            Nothing -> search fs
-            Just p' -> Just $ ImpElim context v' p' p
+        -- Scan the context for a formula of the form a1->(a2->(...an->x)...),
+        -- where each ai is provable from the context
+        search (Just p) _ = Just p
+        search _ f = case split f of
+          Nothing -> Nothing
+          Just l -> construct (reverse l) v
+          where
+            construct [] v' = Just $ Ax c v'
+            construct (a : as) v' = case prove' c a of
+              Nothing -> Nothing
+              Just p -> case construct as (Imp a v') of
+                Nothing -> Nothing
+                Just p' -> Just $ ImpElim c v' p' p
 
-    -- Given a formula of the form a1->(a2->(...an->x)...), extract the list
-    -- [a1, a2, ..., an]. For formulas of all other forms, return nothing.
-    split (Var y) = if x == y then Just [] else Nothing
-    split (Imp a b) = (a :) <$> split b
+            -- Given a formula of the form a1->(a2->(...an->x)...), extract the list
+            -- [a1, a2, ..., an]. For formulas of all other forms, return nothing.
+            split (Var y) = if x == y then Just [] else Nothing
+            split (Imp a b) = (a :) <$> split b

@@ -1,6 +1,5 @@
 import Proof.Implication
-  ( Context,
-    Formula (Var),
+  ( Formula (Var),
     debug,
     prove,
     (-->),
@@ -8,23 +7,33 @@ import Proof.Implication
 import Test.Hspec (describe, hspec, it, shouldBe)
 
 -- Known provable sequents
-provable :: [(Context Int, Formula Int)]
+provable :: [([Formula Int], Formula Int)]
 provable =
   [ ([Var 0], Var 0),
     ([], Var 0 --> Var 0),
+    ([], Var 0 --> Var 1 --> Var 0),
+    ([], (Var 2 --> Var 0) --> (Var 2 --> Var 0 --> Var 1) --> Var 2 --> Var 1),
     ([Var 0, Var 1], Var 0),
     ([Var 0 --> Var 1, Var 0], Var 1),
     ([Var 1 --> Var 2 --> Var 3, Var 0 --> Var 1, Var 0], Var 2 --> Var 3),
-    ([Var 0 --> Var 1, (Var 0 --> Var 1) --> Var 2], Var 2)
+    ([Var 0 --> Var 1, (Var 0 --> Var 1) --> Var 2], Var 2),
+    ( [ (Var 0 --> Var 1) --> (Var 2 --> Var 3) --> Var 4,
+        Var 4 --> Var 1,
+        Var 0 --> Var 1,
+        Var 2 --> Var 3
+      ],
+      Var 1
+    )
   ]
 
-unprovable :: [(Context Int, Formula Int)]
+-- Known unprovable sequents
+unprovable :: [([Formula Int], Formula Int)]
 unprovable =
   [ ([], Var 0),
     ([Var 0], Var 1),
-    ([], Var 0 --> Var 1)
+    ([], Var 0 --> Var 1),
+    ([], ((Var 0 --> Var 1) --> Var 0) --> Var 0)
   ]
-
 
 main :: IO ()
 main = hspec $ do

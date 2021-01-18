@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9f663993492849e70c291489ad768c3787794f90d1902119a5c821b24a3553e1
+-- hash: 9d9ac5b04e530584fdbe567eefd9c8734d82844da38c1bb3a824c949b5615ea7
 
 name:           proof
 version:        0.0.0.0
@@ -24,6 +24,7 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , containers >=0.6.4.1
   default-language: Haskell2010
 
 test-suite imp-test
@@ -34,6 +35,7 @@ test-suite imp-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , containers >=0.6.4.1
     , hspec >=0.8.2
     , proof
   if false
