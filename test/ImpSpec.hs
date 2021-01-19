@@ -23,6 +23,14 @@ provable =
         Var 2 --> Var 3
       ],
       Var 1
+    ),
+    ( [ Var 2,
+        Var 2 --> Var 0 --> Var 1,
+        Var 1 --> Var 3,
+        Var 1 --> Var 2 --> Var 1,
+        Var 2 --> (Var 0 --> Var 1) --> Var 3
+      ],
+      (Var 0 --> Var 1) --> Var 3
     )
   ]
 
@@ -32,7 +40,8 @@ unprovable =
   [ ([], Var 0),
     ([Var 0], Var 1),
     ([], Var 0 --> Var 1),
-    ([], ((Var 0 --> Var 1) --> Var 0) --> Var 0)
+    ([], ((Var 0 --> Var 1) --> Var 0) --> Var 0),
+    ([Var 0 --> Var 1, Var 1 --> Var 0], Var 0)
   ]
 
 main :: IO ()

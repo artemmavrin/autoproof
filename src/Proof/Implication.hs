@@ -47,6 +47,9 @@ infixr 1 -->
 -- | A set of propositional formulas.
 type Context a = Set (Formula a)
 
+-- Internal, used for search
+type Sequent a = (Formula a, Context a)
+
 -- | An intuitionistic natural deduction proof tree for the implicational
 -- fragment of propositional logic.
 data Proof a
@@ -98,30 +101,94 @@ debug proof = case proof of
 valid :: Ord a => Proof a -> Bool
 valid p = isNothing (debug p)
 
--- | @(prove c a)@ finds an intuitionistic proof of a sequent @c ⊢ a@, if such a
--- proof exists.
+-- | @(prove c a)@ finds an intuitionistic proof of a sequent @c ⊢ a@ in the
+-- implicational fragment of propositional logic, if such a proof exists.
+--
+-- The algorithm is due to Statman; see the following references:
+--
+-- *  Richard Statman (1979)
+--    "Intuitionistic propositional logic is polynomial-space complete."
+--    Theoretical Computer Science, Volume 9, Issue 1, pp. 67–72.
+--    <https://doi.org/10.1016/0304-3975(79)90006-9 DOI>.
+-- *  M.H. Sørensen, P. Urzyczyn (2006)
+--    /Lectures on the Curry-Howard isomorphism/.
+--    Elsevier. See section 4.2.
+-- *  Samuel Mimram (2020)
+--    /PROGRAM = PROOF/.
+--    See section 2.4.
 prove :: (Ord a, Foldable t) => t (Formula a) -> Formula a -> Maybe (Proof a)
-prove context = prove' (foldr Set.insert Set.empty context)
+prove context = prove' Set.empty (foldr Set.insert Set.empty context)
   where
-    prove' :: Ord a => Context a -> Formula a -> Maybe (Proof a)
-    prove' c i@(Imp a b) = ImpIntr c i <$> prove' (Set.insert a c) b
-    prove' c v@(Var x) = foldl search Nothing c
+    -- We search for a proof while maintaining a set @s@ of previously seen
+    -- sequents to avoid cycles
+    --
+    -- Easy case: if there is a proof of c ⊢ a → b, then there must be a proof
+    -- of c ⊢ a → b that ends with an inference of the form
+    --
+    --  c,a ⊢ b
+    -- --------- (→I)
+    -- c ⊢ a → b
+    --
+    -- so it suffices to look for a proof of c,a ⊢ b
+    prove' s c i@(Imp a b) = ImpIntr c i <$> prove' s' c' b
       where
-        -- Scan the context for a formula of the form a1->(a2->(...an->x)...),
-        -- where each ai is provable from the context
-        search (Just p) _ = Just p
-        search _ f = case split f of
-          Nothing -> Nothing
-          Just l -> construct (reverse l) v
-          where
-            construct [] v' = Just $ Ax c v'
-            construct (a : as) v' = case prove' c a of
-              Nothing -> Nothing
-              Just p -> case construct as (Imp a v') of
-                Nothing -> Nothing
-                Just p' -> Just $ ImpElim c v' p' p
+        s' = Set.insert (i, c) s
+        c' = Set.insert a c
 
-            -- Given a formula of the form a1->(a2->(...an->x)...), extract the list
-            -- [a1, a2, ..., an]. For formulas of all other forms, return nothing.
-            split (Var y) = if x == y then Just [] else Nothing
-            split (Imp a b) = (a :) <$> split b
+    -- Trickier case: if there is a proof of c ⊢ x, where x is a variable, then
+    -- either
+    --
+    -- (1) x belongs to c, so c ⊢ x is proved via
+    --
+    -- ----- (Ax)
+    -- c ⊢ x
+    --
+    -- or
+    --
+    -- (2) there is a sequence a1,...,an of propositional formulas such that
+    -- a1 → (a2 → (... an → x)...) belongs to c, and c ⊢ ai for all i=1,...,n.
+    -- In this case, one proof of c ⊢ x is
+    --
+    --                                          ?
+    -- ------------------------------- (Ax)  ------
+    -- c ⊢ a1 → (a2 → (... an → x)...)       c ⊢ a1          ?
+    -- -------------------------------------------- (→E)  ------
+    --        c ⊢ a2 → (... an → x)                       c ⊢ a2
+    --                                 ...                            ?
+    --                                                             ------
+    --                             c ⊢ an → x                      c ⊢ an
+    -- ------------------------------------------------------------------ (→E)
+    --                               c ⊢ x
+    --
+    -- Actually, case (1) can be thought as the n=0 case of case (2).
+    --
+    -- The implementation:
+    prove' s c v@(Var x) =
+      if Set.member (v, c) s
+        then Nothing -- Already visited current sequent; needed to avoid cycles
+        else Set.foldr findImp Nothing c
+      where
+        -- Save the current sequent so we don't revisit it recursively
+        s' = Set.insert (v, c) s
+
+        -- findImp is folded over the context looking for implications ending in
+        -- the variable x. When encountering a formula of the form
+        -- a1 → (a2 → (... an → x)...), ensure each ai is provable, and, if so,
+        -- construct a proof.
+        findImp _ p@(Just _) = p -- Already found a proof!
+        findImp a Nothing = do
+          as <- split a
+          construct (reverse as) v
+
+        -- Given a formula of the form a1 → (a2 → (... an → x)...), extract the
+        -- list [a1, a2, ..., an]. For formulas of all other forms, return
+        -- nothing.
+        split (Var y) = if x == y then Just [] else Nothing
+        split (Imp a b) = (a :) <$> split b
+
+        -- Given a list of formulas [a1, a2, ..., an] from an implication of the
+        -- form a1 → (a2 → (... an → x)...), try to prove the ai's, and use the
+        -- resulting proofs to construct a proof of x
+        construct [] b = Just $ Ax c b
+        construct (a : as) b =
+          ImpElim c b <$> construct as (Imp a b) <*> prove' s' c a
