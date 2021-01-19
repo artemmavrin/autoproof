@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 30f7dcd8d7b75be51c2f2538ae316e4cfa7328f3e3cebdf3331f7e685b83f012
+-- hash: dad11d2ccd93b251c9179707a5f1591b1da71f83919df0ff0b63ef4bd918d6d2
 
 name:           proof
 version:        0.0.0.0
@@ -27,6 +27,7 @@ library
       Paths_proof
   hs-source-dirs:
       src
+  ghc-options: -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
     , containers >=0.6.4.1

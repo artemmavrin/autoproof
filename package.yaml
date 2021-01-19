@@ -17,6 +17,13 @@ dependencies:
 
 library:
   source-dirs: src
+  ghc-options:
+  - -Werror
+  - -Wall
+  - -Wcompat
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wredundant-constraints
 
 tests:
   imp-test:
