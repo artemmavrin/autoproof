@@ -4,16 +4,21 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9d9ac5b04e530584fdbe567eefd9c8734d82844da38c1bb3a824c949b5615ea7
+-- hash: 30f7dcd8d7b75be51c2f2538ae316e4cfa7328f3e3cebdf3331f7e685b83f012
 
 name:           proof
 version:        0.0.0.0
+synopsis:       Intuitionistic natural deduction prover
+description:    Please see the README on GitHub at <https://github.com/artemmavrin/proof#readme>
+category:       Logic
 author:         Artem Mavrin
 maintainer:     artemvmavrin@gmail.com
 copyright:      2021 Artem Mavrin
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
+extra-source-files:
+    README.md
 
 library
   exposed-modules:

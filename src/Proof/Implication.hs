@@ -47,9 +47,6 @@ infixr 1 -->
 -- | A set of propositional formulas.
 type Context a = Set (Formula a)
 
--- Internal, used for search
-type Sequent a = (Formula a, Context a)
-
 -- | An intuitionistic natural deduction proof tree for the implicational
 -- fragment of propositional logic.
 data Proof a
@@ -186,7 +183,7 @@ prove context = prove' Set.empty (foldr Set.insert Set.empty context)
         split (Var y) = if x == y then Just [] else Nothing
         split (Imp a b) = (a :) <$> split b
 
-        -- Given a list of formulas [a1, a2, ..., an] from an implication of the
+        -- Given a list of formulas [an, ..., a2, a1] from an implication of the
         -- form a1 → (a2 → (... an → x)...), try to prove the ai's, and use the
         -- resulting proofs to construct a proof of x
         construct [] b = Just $ Ax c b
