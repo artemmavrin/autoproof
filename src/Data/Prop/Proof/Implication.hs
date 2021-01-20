@@ -1,5 +1,5 @@
 -- |
--- Module      : Proof.Implication
+-- Module      : Data.Prop.Proof.Implication
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -8,7 +8,7 @@
 --
 -- Intuitionistic natural deduction proofs in the implicational fragment of
 -- propositional logic.
-module Proof.Implication
+module Data.Prop.Proof.Implication
   ( -- * Type definitions
     Proof (Ax, ImpIntr, ImpElim),
     Context,
