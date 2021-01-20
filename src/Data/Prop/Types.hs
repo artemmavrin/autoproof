@@ -22,6 +22,7 @@ module Data.Prop.Types
 where
 
 import Prelude hiding (and, not, or)
+import Data.Prop.Internal.Utils
 
 -- | Formulas of propositional logic, built inductively from atomic propositions
 -- (truth \(\top\), falsity \(\bot\), and propositional variables
@@ -47,6 +48,32 @@ data Formula a
   | -- | Disjunction. @('Or' p q)@ represents the formula \(p \lor q\).
     Or (Formula a) (Formula a)
   deriving (Eq, Ord, Show)
+
+-- | @('pretty' p)@ is a human-readable representation of a formula \(p\).
+--
+-- ==== __Examples__
+--
+-- >>> pretty $ And (Or (Var "x") (Var "y")) (not $ Var "z")
+-- "(x | y) & (z -> false)"
+--
+-- >>> pretty $ not $ And (Lit True --> Var 'x') (Var 'z')
+-- "((true -> x) & z) -> false"
+instance PrettyPrintable a => PrettyPrintable (Formula a) where
+  pretty = f False
+    where
+      -- Apply @g@ and optionally wrap the result in parentheses. Variables
+      -- never get parentheses.
+      f _ v@(Lit _) = g v
+      f _ v@(Var _) = g v
+      f parentheses t = if parentheses then "(" ++ g t ++ ")" else g t
+
+      -- Recursive pretty-printer
+      g (Lit True) = "true"
+      g (Lit False) = "false"
+      g (Var x) = pretty x
+      g (Imp p q) = f True p ++ " -> " ++ f True q
+      g (And p q) = f True p ++ " & " ++ f True q
+      g (Or p q) = f True p ++ " | " ++ f True q
 
 -- | 'true' is the propositional constant \(\top\) (i.e., truth, tautology, or
 -- top).

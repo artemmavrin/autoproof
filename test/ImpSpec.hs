@@ -1,53 +1,64 @@
-import Proof.Implication
-  ( debug,
-    prove,
-  )
+import Data.List (intercalate)
+import Data.Prop.Internal.Utils (PrettyPrintable (pretty))
 import Data.Prop.Types (Formula (Var), (-->))
+import Proof.Implication (debug, prove)
 import Test.Hspec (describe, hspec, it, shouldBe)
 
 -- Known provable sequents
-provable :: [([Formula Int], Formula Int)]
+provable :: [([Formula Char], Formula Char)]
 provable =
-  [ ([Var 0], Var 0),
-    ([], Var 0 --> Var 0),
-    ([], Var 0 --> Var 1 --> Var 0),
-    ([], (Var 2 --> Var 0) --> (Var 2 --> Var 0 --> Var 1) --> Var 2 --> Var 1),
-    ([Var 0, Var 1], Var 0),
-    ([Var 0 --> Var 1, Var 0], Var 1),
-    ([Var 1 --> Var 2 --> Var 3, Var 0 --> Var 1, Var 0], Var 2 --> Var 3),
-    ([Var 0 --> Var 1, (Var 0 --> Var 1) --> Var 2], Var 2),
-    ( [ (Var 0 --> Var 1) --> (Var 2 --> Var 3) --> Var 4,
-        Var 4 --> Var 1,
-        Var 0 --> Var 1,
-        Var 2 --> Var 3
+  [ ([Var 'a'], Var 'a'),
+    ([], Var 'a' --> Var 'a'),
+    ([], Var 'a' --> Var 'b' --> Var 'a'),
+    ([], (Var 'c' --> Var 'a') --> (Var 'c' --> Var 'a' --> Var 'b') --> Var 'c' --> Var 'b'),
+    ([Var 'a', Var 'b'], Var 'a'),
+    ([Var 'a' --> Var 'b', Var 'a'], Var 'b'),
+    ([Var 'b' --> Var 'c' --> Var 'd', Var 'a' --> Var 'b', Var 'a'], Var 'c' --> Var 'd'),
+    ([Var 'a' --> Var 'b', (Var 'a' --> Var 'b') --> Var 'c'], Var 'c'),
+    ( [ (Var 'a' --> Var 'b') --> (Var 'c' --> Var 'd') --> Var 'e',
+        Var 'e' --> Var 'b',
+        Var 'a' --> Var 'b',
+        Var 'c' --> Var 'd'
       ],
-      Var 1
+      Var 'b'
     ),
-    ( [ Var 2,
-        Var 2 --> Var 0 --> Var 1,
-        Var 1 --> Var 3,
-        Var 1 --> Var 2 --> Var 1,
-        Var 2 --> (Var 0 --> Var 1) --> Var 3
+    ( [ Var 'c',
+        Var 'c' --> Var 'a' --> Var 'b',
+        Var 'b' --> Var 'd',
+        Var 'b' --> Var 'c' --> Var 'b',
+        Var 'c' --> (Var 'a' --> Var 'b') --> Var 'd'
       ],
-      (Var 0 --> Var 1) --> Var 3
+      (Var 'a' --> Var 'b') --> Var 'd'
     )
   ]
 
 -- Known unprovable sequents
-unprovable :: [([Formula Int], Formula Int)]
+unprovable :: [([Formula Char], Formula Char)]
 unprovable =
-  [ ([], Var 0),
-    ([Var 0], Var 1),
-    ([], Var 0 --> Var 1),
-    ([], ((Var 0 --> Var 1) --> Var 0) --> Var 0),
-    ([Var 0 --> Var 1, Var 1 --> Var 0], Var 0)
+  [ ([], Var 'a'),
+    ([Var 'a'], Var 'b'),
+    ([], Var 'a' --> Var 'b'),
+    ([], ((Var 'a' --> Var 'b') --> Var 'a') --> Var 'a'),
+    ([Var 'a' --> Var 'b', Var 'b' --> Var 'a'], Var 'a')
   ]
 
 main :: IO ()
 main = hspec $ do
   describe "prove" $ do
-    it "checking known provable sequents" $ do
-      mapM_ (\(c, a) -> debug <$> prove c a `shouldBe` Just Nothing) provable
+    mapM_
+      ( \(c, a) -> do
+          it ("provable: " ++ prettySequent c a) $ do
+            debug <$> prove c a `shouldBe` Just Nothing
+      )
+      provable
 
-    it "checking known unprovable sequents" $ do
-      mapM_ (\(c, a) -> prove c a `shouldBe` Nothing) unprovable
+    mapM_
+      ( \(c, a) -> do
+          it ("unprovable: " ++ prettySequent c a) $ do
+            prove c a `shouldBe` Nothing
+      )
+      unprovable
+
+prettySequent :: PrettyPrintable a => [Formula a] -> Formula a -> String
+prettySequent [] a = "|- " ++ pretty a
+prettySequent c a = intercalate ", " (map pretty c) ++ " |- " ++ pretty a
