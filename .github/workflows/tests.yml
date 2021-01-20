@@ -9,7 +9,7 @@ jobs:
         cabal: ['latest']
         stack: ['latest']
         os: [ubuntu-latest, macOS-latest, windows-latest]
-    name: Haskell GHC ${{ matrix.ghc }} Cabal ${{ matrix.cabal }} Stack $ {{ matrix.stack }} tests
+    name: OS ${{ matrix.os }}, GHC ${{ matrix.ghc }}, Cabal ${{ matrix.cabal }}, Stack ${{ matrix.stack }}
     steps:
       - uses: actions/checkout@v2
       - name: Setup Haskell
