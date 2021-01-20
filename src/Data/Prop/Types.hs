@@ -93,7 +93,7 @@ false = Lit False
 not :: Formula a -> Formula a
 not p = p --> false
 
--- | Right-associative infix alternative for 'imp'. @(p '-->' q)@ represents the
+-- | Right-associative infix alternative for 'Imp'. @(p '-->' q)@ represents the
 -- implication \(p \rightarrow q\).
 --
 -- >>> Var 'a' --> Var 'b' --> Var 'c'
@@ -103,7 +103,7 @@ not p = p --> false
 
 infixr 5 -->
 
--- | Left-associative infix alternative for 'and'. @(p '/\' q)@ represents the
+-- | Left-associative infix alternative for 'And'. @(p '/\' q)@ represents the
 -- conjunction \(p \land q\).
 --
 -- >>> Var 'a' /\ Var 'b' /\ Var 'c'
@@ -113,7 +113,7 @@ infixr 5 -->
 
 infixl 6 /\
 
--- | Left-associative infix alternative for 'or'. @(p '\/' q)@ represents the
+-- | Left-associative infix alternative for 'Or'. @(p '\/' q)@ represents the
 -- disjunction \(p \lor q\).
 --
 -- >>> Var 'a' \/ Var 'b' \/ Var 'c'
