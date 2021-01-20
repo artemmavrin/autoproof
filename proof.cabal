@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dad11d2ccd93b251c9179707a5f1591b1da71f83919df0ff0b63ef4bd918d6d2
+-- hash: dae5c078ab4a1869914eabc896abb884f0fe7ec07536c00a9070d8f66266799f
 
 name:           proof
 version:        0.0.0.0
@@ -22,6 +22,7 @@ extra-source-files:
 
 library
   exposed-modules:
+      Data.Prop.Types
       Proof.Implication
   other-modules:
       Paths_proof

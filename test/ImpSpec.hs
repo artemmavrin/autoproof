@@ -1,9 +1,8 @@
 import Proof.Implication
-  ( Formula (Var),
-    debug,
+  ( debug,
     prove,
-    (-->),
   )
+import Data.Prop.Types (Formula (Var), (-->))
 import Test.Hspec (describe, hspec, it, shouldBe)
 
 -- Known provable sequents

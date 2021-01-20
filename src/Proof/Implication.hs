@@ -6,15 +6,12 @@
 -- Stability   : experimental
 -- Portability : POSIX
 --
--- Intuitionistic proofs in the implicational fragment of propositional logic.
+-- Intuitionistic natural deduction proofs in the implicational fragment of
+-- propositional logic.
 module Proof.Implication
   ( -- * Type definitions
-    Formula (Var, Imp),
-    Context,
     Proof (Ax, ImpIntr, ImpElim),
-
-    -- * Constructors
-    (-->),
+    Context,
 
     -- * Proof search
     prove,
@@ -26,25 +23,11 @@ module Proof.Implication
 where
 
 import Data.Maybe (isNothing)
+import Data.Prop.Types (Formula (Imp, Var))
 import Data.Set (Set)
 import qualified Data.Set as Set
 
--- | Formulas in the implicational fragment of propositional logic
-data Formula a
-  = -- | @(Var x)@ represents a propositional variable @x@.
-    Var a
-  | -- | @(Imp a b)@ represents the implication @a → b@ between propositional
-    -- formulas @a@ and @b@.
-    Imp (Formula a) (Formula a)
-  deriving (Eq, Ord, Show)
-
--- | Right-associative infix alternative for 'Imp'.
-(-->) :: Formula a -> Formula a -> Formula a
-(-->) = Imp
-
-infixr 1 -->
-
--- | A set of propositional formulas.
+-- | A set of propositional formulas, used as antecedents of a sequent.
 type Context a = Set (Formula a)
 
 -- | An intuitionistic natural deduction proof tree for the implicational
@@ -182,6 +165,7 @@ prove context = prove' Set.empty (foldr Set.insert Set.empty context)
         -- nothing.
         split (Var y) = if x == y then Just [] else Nothing
         split (Imp a b) = (a :) <$> split b
+        split _ = undefined -- Non-implicational
 
         -- Given a list of formulas [an, ..., a2, a1] from an implication of the
         -- form a1 → (a2 → (... an → x)...), try to prove the ai's, and use the
@@ -189,3 +173,6 @@ prove context = prove' Set.empty (foldr Set.insert Set.empty context)
         construct [] b = Just $ Ax c b
         construct (a : as) b =
           ImpElim c b <$> construct as (Imp a b) <*> prove' s' c a
+
+    -- Non-implicational case
+    prove' _ _ _ = undefined
