@@ -9,17 +9,18 @@
 -- Definition of types for representing propositional logic formulas.
 module Data.Prop.Types
   ( -- * Propositional formula type
-    Formula (Lit, Var, Imp, Or, And),
+    Formula (Lit, Var, Not, Imp, Or, And),
 
     -- * Constructors
     true,
     false,
     lit,
+    var,
+    not,
     imp,
     implies,
     or,
     and,
-    not,
     iff,
     (-->),
     (\/),
@@ -31,16 +32,22 @@ where
 import Prelude hiding (and, not, or)
 import Data.Prop.Internal.Utils
 
--- | Formulas of propositional logic, built inductively from atomic propositions
--- (truth \(\top\), falsity \(\bot\), and propositional variables
--- \(a, b, c, \ldots\)) using the connectives
+-- | Formulas of propositional logic are built inductively from atomic
+-- propositions
+--
+-- * truth \(\top\),
+-- * falsity \(\bot\), and
+-- * propositional variables \(a, b, c, \ldots\)
+--
+-- using the unary connective
+--
+-- * negation \(\lnot\)
+--
+-- and the binary connectives
 --
 -- * implication \(\rightarrow\),
 -- * disjunction \(\lor\), and
 -- * conjunction \(\land\).
---
--- /Note:/ A negation \(\lnot p\) is an abbreviation for \(p \rightarrow \bot\);
--- see 'not'.
 data Formula a
   = -- | Top or bottom proposition literal. @('Lit' 'True')@ is \(\top\) (i.e.,
     -- truth, tautology, or top) and @('Lit' 'False')@ is \(\bot\) (i.e.,
@@ -48,6 +55,8 @@ data Formula a
     Lit Bool
   | -- | Propositional variable. @('Var' x)@ represents a variable named \(x\).
     Var a
+  | -- | Negation. @('Not' p)@ represents the formula \(\lnot p\).
+    Not (Formula a)
   | -- | Implication. @('Imp' p q)@ represents the formula \(p \rightarrow q\).
     Imp (Formula a) (Formula a)
   | -- | Disjunction. @('Or' p q)@ represents the formula \(p \lor q\).
@@ -78,6 +87,7 @@ instance PrettyPrintable a => PrettyPrintable (Formula a) where
       g (Lit True) = "true"
       g (Lit False) = "false"
       g (Var x) = pretty x
+      g (Not p) = '-' : f True p
       g (Imp p q) = f True p ++ " -> " ++ f True q
       g (And p q) = f True p ++ " & " ++ f True q
       g (Or p q) = f True p ++ " | " ++ f True q
@@ -97,6 +107,14 @@ lit :: Bool -> Formula a
 lit True = true
 lit False = false
 
+-- | @('var' x)@ represents a propositional variable \(x\).
+var :: a -> Formula a
+var = Var
+
+-- | @('not' p)@ represents the negation \(\lnot p\).
+not :: Formula a -> Formula a
+not = Not
+
 -- | @('imp' p q)@ represents the implication \(p \rightarrow q\).
 imp :: Formula a -> Formula a -> Formula a
 imp = Imp
@@ -113,14 +131,6 @@ or = Or
 -- | @('and' p q)@ represents the conjunction \(p \rightarrow q\).
 and :: Formula a -> Formula a -> Formula a
 and = And
-
--- | @('not' p)@ represents the negation \(\lnot p\), which abbreviates
--- \(p \rightarrow \bot\).
---
--- >>> not (Var 'x' --> Var 'y')
--- Imp (Imp (Var 'x') (Var 'y')) (Lit False)
-not :: Formula a -> Formula a
-not p = p --> false
 
 -- | @('iff' p q)@ represents the equivalence \(p \leftrightarrow q\), which
 -- abbreviates \((p \rightarrow q) \wedge (q \rightarrow p)\).
