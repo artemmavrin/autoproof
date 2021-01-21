@@ -29,8 +29,8 @@ module Data.Prop.Types
   )
 where
 
+import Data.Prop.Utils (PrettyPrintable (pretty))
 import Prelude hiding (and, not, or)
-import Data.Prop.Internal.Utils
 
 -- | Formulas of propositional logic are built inductively from atomic
 -- propositions

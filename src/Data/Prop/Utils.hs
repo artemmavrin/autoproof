@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 -- |
--- Module      : Data.Prop.Internal.Utils
+-- Module      : Data.Prop.Utils
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -9,20 +9,20 @@
 -- Portability : POSIX
 --
 -- Miscellaneuous utility functions.
-module Data.Prop.Internal.Utils where
+module Data.Prop.Utils where
 
 -- | Class for types that can be "pretty-printed" in a human-readable format.
 class PrettyPrintable a where
-    pretty :: a -> String
+  pretty :: a -> String
 
 instance PrettyPrintable Char where
-    pretty c = [c]
+  pretty = return
 
 instance PrettyPrintable String where
-    pretty = id
+  pretty = id
 
 instance PrettyPrintable Int where
-    pretty = show
+  pretty = show
 
 instance PrettyPrintable Integer where
-    pretty = show
+  pretty = show

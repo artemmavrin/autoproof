@@ -49,6 +49,7 @@ module Data.Prop
   )
 where
 
+import Data.Prop.Proof.Debug
 import Data.Prop.Proof.Types
 import Data.Prop.Types
 import Prelude hiding (and, not, or)

@@ -1,8 +1,7 @@
 import Data.List (intercalate)
-import Data.Prop.Internal.Utils (PrettyPrintable (pretty))
+import Data.Prop (Formula (Var), debug, (-->))
 import Data.Prop.Proof.Implication (prove)
-import Data.Prop.Proof.Types (debug)
-import Data.Prop.Types (Formula (Var), (-->))
+import Data.Prop.Utils (PrettyPrintable (pretty))
 import Test.Hspec (describe, hspec, it, shouldBe)
 
 -- Known provable sequents
