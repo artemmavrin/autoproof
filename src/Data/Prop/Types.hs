@@ -14,10 +14,17 @@ module Data.Prop.Types
     -- * Constructors
     true,
     false,
+    lit,
+    imp,
+    implies,
+    or,
+    and,
     not,
+    iff,
     (-->),
-    (/\),
     (\/),
+    (/\),
+    (<->),
   )
 where
 
@@ -29,10 +36,10 @@ import Data.Prop.Internal.Utils
 -- \(a, b, c, \ldots\)) using the connectives
 --
 -- * implication \(\rightarrow\),
--- * conjunction \(\land\), and
--- * disjunction \(\lor\).
+-- * disjunction \(\lor\), and
+-- * conjunction \(\land\).
 --
--- /Note:/ A negation \(\lnot p\) can be implemented as \(p \rightarrow \bot\);
+-- /Note:/ A negation \(\lnot p\) is an abbreviation for \(p \rightarrow \bot\);
 -- see 'not'.
 data Formula a
   = -- | Top or bottom proposition literal. @('Lit' 'True')@ is \(\top\) (i.e.,
@@ -43,10 +50,10 @@ data Formula a
     Var a
   | -- | Implication. @('Imp' p q)@ represents the formula \(p \rightarrow q\).
     Imp (Formula a) (Formula a)
-  | -- | Conjunction. @('And' p q)@ represents the formula \(p \land q\).
-    And (Formula a) (Formula a)
   | -- | Disjunction. @('Or' p q)@ represents the formula \(p \lor q\).
     Or (Formula a) (Formula a)
+  | -- | Conjunction. @('And' p q)@ represents the formula \(p \land q\).
+    And (Formula a) (Formula a)
   deriving (Eq, Ord, Show)
 
 -- | @('pretty' p)@ is a human-readable representation of a formula \(p\).
@@ -85,13 +92,40 @@ true = Lit True
 false :: Formula a
 false = Lit False
 
--- | @('not' p)@ represents the negation \(\lnot p\), which is taken to mean
+-- | @('lit' 'True')@ is \(\top\), and @('lit' 'False')@ is \(\bot\).
+lit :: Bool -> Formula a
+lit True = true
+lit False = false
+
+-- | @('imp' p q)@ represents the implication \(p \rightarrow q\).
+imp :: Formula a -> Formula a -> Formula a
+imp = Imp
+
+-- | @('implies' p q)@ represents the implication \(p \rightarrow q\). This is
+-- an alias for 'imp'.
+implies :: Formula a -> Formula a -> Formula a
+implies = imp
+
+-- | @('or' p q)@ represents the disjunction \(p \lor q\).
+or :: Formula a -> Formula a -> Formula a
+or = Or
+
+-- | @('and' p q)@ represents the conjunction \(p \rightarrow q\).
+and :: Formula a -> Formula a -> Formula a
+and = And
+
+-- | @('not' p)@ represents the negation \(\lnot p\), which abbreviates
 -- \(p \rightarrow \bot\).
 --
 -- >>> not (Var 'x' --> Var 'y')
 -- Imp (Imp (Var 'x') (Var 'y')) (Lit False)
 not :: Formula a -> Formula a
 not p = p --> false
+
+-- | @('iff' p q)@ represents the equivalence \(p \leftrightarrow q\), which
+-- abbreviates \((p \rightarrow q) \wedge (q \rightarrow p)\).
+iff :: Formula a -> Formula a -> Formula a
+iff p q = (p --> q) /\ (q --> p)
 
 -- | Right-associative infix alternative for 'Imp'. @(p '-->' q)@ represents the
 -- implication \(p \rightarrow q\).
@@ -103,6 +137,16 @@ not p = p --> false
 
 infixr 5 -->
 
+-- | Left-associative infix alternative for 'Or'. @(p '\/' q)@ represents the
+-- disjunction \(p \lor q\).
+--
+-- >>> Var 'a' \/ Var 'b' \/ Var 'c'
+-- Or (Or (Var 'a') (Var 'b')) (Var 'c')
+(\/) :: Formula a -> Formula a -> Formula a
+(\/) = Or
+
+infixl 6 \/
+
 -- | Left-associative infix alternative for 'And'. @(p '/\' q)@ represents the
 -- conjunction \(p \land q\).
 --
@@ -113,12 +157,9 @@ infixr 5 -->
 
 infixl 6 /\
 
--- | Left-associative infix alternative for 'Or'. @(p '\/' q)@ represents the
--- disjunction \(p \lor q\).
---
--- >>> Var 'a' \/ Var 'b' \/ Var 'c'
--- Or (Or (Var 'a') (Var 'b')) (Var 'c')
-(\/) :: Formula a -> Formula a -> Formula a
-(\/) = Or
+-- | Left-associative infix alternative for 'iff'. @(p '<->' q)@ represents the
+-- equivalence \(p \leftrightarrow q\).
+(<->) :: Formula a -> Formula a -> Formula a
+(<->) = iff
 
-infixl 6 \/
+infixr 5 <->
