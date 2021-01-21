@@ -1,6 +1,7 @@
 import Data.List (intercalate)
 import Data.Prop.Internal.Utils (PrettyPrintable (pretty))
-import Data.Prop.Proof.Implication (debug, prove)
+import Data.Prop.Proof.Implication (prove)
+import Data.Prop.Proof.Types (debug)
 import Data.Prop.Types (Formula (Var), (-->))
 import Test.Hspec (describe, hspec, it, shouldBe)
 
@@ -48,7 +49,7 @@ main = hspec $ do
     mapM_
       ( \(c, a) -> do
           it ("provable: " ++ prettySequent c a) $ do
-            debug <$> prove c a `shouldBe` Just Nothing
+            debug <$> prove c a `shouldBe` Just (Right ())
       )
       provable
 
