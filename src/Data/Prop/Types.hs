@@ -26,10 +26,16 @@ module Data.Prop.Types
     (\/),
     (/\),
     (<->),
+
+    -- * Operations on formulas
+    subformulas,
+    substitute,
   )
 where
 
 import Data.Prop.Utils (PrettyPrintable (pretty))
+import Data.Set (Set)
+import qualified Data.Set as Set
 import Prelude hiding (and, not, or)
 
 -- | Formulas of propositional logic are built inductively from atomic
@@ -173,3 +179,34 @@ infixl 6 /\
 (<->) = iff
 
 infixr 5 <->
+
+-- | Return the set of subformulas of a propositional formula.
+--
+-- ==== __Examples__
+--
+-- >>> subformulas $ imp (var 'x') (var 'y')
+-- fromList [Var 'x',Var 'y',Imp (Var 'x') (Var 'y')]
+subformulas :: Ord a => Formula a -> Set (Formula a)
+subformulas = go Set.empty
+  where
+    go s p@(Lit _) = Set.insert p s
+    go s p@(Var _) = Set.insert p s
+    go s p@(Not a) = Set.insert p $ go s a
+    go s p@(Imp a b) = Set.insert p $ Set.union (go s a) (go s b)
+    go s p@(Or a b) = Set.insert p $ Set.union (go s a) (go s b)
+    go s p@(And a b) = Set.insert p $ Set.union (go s a) (go s b)
+
+-- | @('substitute' a x p)@ represents \(a[x := p]\), the substitution of each
+-- occurence of the variable \(x\) in the formula \(a\) by the formula \(p\).
+--
+-- ==== __Examples__
+--
+-- >>> substitute (var 'e' --> var 'e') 'e' (var 'a' /\ var 'a')
+-- Imp (And (Var 'a') (Var 'a')) (And (Var 'a') (Var 'a'))
+substitute :: Eq a => Formula a -> a -> Formula a -> Formula a
+substitute a@(Lit _) _ _ = a
+substitute v@(Var y) x p = if x == y then p else v
+substitute (Not a) x p = not $ substitute a x p
+substitute (Imp a b) x p = imp (substitute a x p) (substitute b x p)
+substitute (Or a b) x p = or (substitute a x p) (substitute b x p)
+substitute (And a b) x p = and (substitute a x p) (substitute b x p)
