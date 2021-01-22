@@ -174,7 +174,7 @@ debug x = Left x
 valid :: Ord a => Proof a -> Bool
 valid p = isRight (debug p)
 
--- Extract the conclusion (without the context) of a proof
+-- | Extract the conclusion (without the context) of a proof
 conclusion :: Proof a -> Formula a
 conclusion (Ax _ a) = a
 conclusion (TopIntr _ a) = a
@@ -190,7 +190,7 @@ conclusion (AndElimL _ a _) = a
 conclusion (AndElimR _ a _) = a
 conclusion (AndIntr _ a _ _) = a
 
--- Extract the final context of a proof
+-- | Extract the final context of a proof
 context :: Proof a -> Context a
 context (Ax c _) = c
 context (TopIntr c _) = c

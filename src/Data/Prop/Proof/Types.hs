@@ -45,7 +45,7 @@ data Proof a
     TopIntr (Context a) (Formula a)
   | -- | Falsity elimination (principle of explosion). @('BotElim' g a p)@
     -- represents the inference \(g \vdash a\) from a proof \(p\) of
-    -- \(p \vdash \bot\).
+    -- \(g \vdash \bot\).
     BotElim (Context a) (Formula a) (Proof a)
   | -- | Negation elimination. @('NotElim' g ('Lit' 'False') p q)@ represents
     -- the inference of the sequent \(g \vdash \bot\) given a proof \(p\) of
