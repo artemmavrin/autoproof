@@ -191,10 +191,10 @@ subformulas = go Set.empty
   where
     go s p@(Lit _) = Set.insert p s
     go s p@(Var _) = Set.insert p s
-    go s p@(Not a) = Set.insert p $ go s a
-    go s p@(Imp a b) = Set.insert p $ Set.union (go s a) (go s b)
-    go s p@(Or a b) = Set.insert p $ Set.union (go s a) (go s b)
-    go s p@(And a b) = Set.insert p $ Set.union (go s a) (go s b)
+    go s p@(Not a) = go (Set.insert p s) a
+    go s p@(Imp a b) = go (go (Set.insert p s) a) b
+    go s p@(Or a b) = go (go (Set.insert p s) a) b
+    go s p@(And a b) = go (go (Set.insert p s) a) b
 
 -- | @('substitute' a x p)@ represents \(a[x := p]\), the substitution of each
 -- occurence of the variable \(x\) in the formula \(a\) by the formula \(p\).
