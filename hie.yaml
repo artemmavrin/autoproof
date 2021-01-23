@@ -3,5 +3,7 @@ cradle:
     components:
     - path: "./src"
       component: "proof:lib"
-    - path: "./test/ImpSpec.hs"
+    - path: "./test/imp/Spec.hs"
       component: "proof:test:imp-test"
+    - path: "./test/parser/Spec.hs"
+      component: "proof:test:parser-test"
