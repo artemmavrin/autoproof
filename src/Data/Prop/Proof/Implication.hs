@@ -10,7 +10,7 @@
 -- propositional logic.
 module Data.Prop.Proof.Implication
   ( -- * Proof search
-    prove,
+    proveImp,
   )
 where
 
@@ -18,7 +18,7 @@ import Data.Prop.Proof.Types (Proof (Ax, ImpElim, ImpIntr))
 import Data.Prop.Types (Formula (Imp, Var))
 import qualified Data.Set as Set
 
--- | @(prove c a)@ finds an intuitionistic proof of a sequent @c ⊢ a@ in the
+-- | @(proveImp c a)@ finds an intuitionistic proof of a sequent @c ⊢ a@ in the
 -- implicational fragment of propositional logic, if such a proof exists.
 --
 -- The algorithm is due to Statman; see the following references:
@@ -33,8 +33,8 @@ import qualified Data.Set as Set
 -- *  Samuel Mimram (2020)
 --    /PROGRAM = PROOF/.
 --    See section 2.4.
-prove :: (Ord a, Foldable t) => t (Formula a) -> Formula a -> Maybe (Proof a)
-prove context = prove' Set.empty (foldr Set.insert Set.empty context)
+proveImp :: (Ord a, Foldable t) => t (Formula a) -> Formula a -> Maybe (Proof a)
+proveImp context = prove Set.empty (foldr Set.insert Set.empty context)
   where
     -- We search for a proof while maintaining a set @s@ of previously seen
     -- sequents to avoid cycles
@@ -47,7 +47,7 @@ prove context = prove' Set.empty (foldr Set.insert Set.empty context)
     -- c ⊢ a → b
     --
     -- so it suffices to look for a proof of c,a ⊢ b
-    prove' s c i@(Imp a b) = ImpIntr c i <$> prove' s' c' b
+    prove s c i@(Imp a b) = ImpIntr c i <$> prove s' c' b
       where
         s' = Set.insert (i, c) s
         c' = Set.insert a c
@@ -80,7 +80,7 @@ prove context = prove' Set.empty (foldr Set.insert Set.empty context)
     -- Actually, case (1) can be thought as the n=0 case of case (2).
     --
     -- The implementation:
-    prove' s c v@(Var x) =
+    prove s c v@(Var x) =
       if Set.member (v, c) s
         then Nothing -- Already visited current sequent; needed to avoid cycles
         else Set.foldr findImp Nothing c
@@ -94,22 +94,24 @@ prove context = prove' Set.empty (foldr Set.insert Set.empty context)
         -- construct a proof.
         findImp _ p@(Just _) = p -- Already found a proof!
         findImp a Nothing = do
-          as <- split a
-          construct (reverse as) v
+          as <- splitImp a
+          construct as v
 
         -- Given a formula of the form a1 → (a2 → (... an → x)...), extract the
-        -- list [a1, a2, ..., an]. For formulas of all other forms, return
+        -- list [an, ..., a2, a1]. For formulas of all other forms, return
         -- nothing.
-        split (Var y) = if x == y then Just [] else Nothing
-        split (Imp a b) = (a :) <$> split b
-        split _ = undefined -- Non-implicational
+        splitImp = go []
+          where
+            go l (Var y) = if x == y then Just l else Nothing
+            go l (Imp a b) = go (a : l) b
+            go _ _ = undefined -- Non-implicational case
 
         -- Given a list of formulas [an, ..., a2, a1] from an implication of the
         -- form a1 → (a2 → (... an → x)...), try to prove the ai's, and use the
         -- resulting proofs to construct a proof of x
         construct [] b = Just $ Ax c b
         construct (a : as) b =
-          ImpElim c b <$> construct as (Imp a b) <*> prove' s' c a
+          ImpElim c b <$> construct as (Imp a b) <*> prove s' c a
 
     -- Non-implicational case
-    prove' _ _ _ = undefined
+    prove _ _ _ = undefined

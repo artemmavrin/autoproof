@@ -1,6 +1,6 @@
 import Data.List (intercalate)
 import Data.Prop (Formula (Var), debug, (-->))
-import Data.Prop.Proof.Implication (prove)
+import Data.Prop.Proof.Implication (proveImp)
 import Data.Prop.Utils (PrettyPrintable (pretty))
 import Test.Hspec (describe, hspec, it, shouldBe)
 
@@ -29,6 +29,20 @@ provable =
         Var 'c' --> (Var 'a' --> Var 'b') --> Var 'd'
       ],
       (Var 'a' --> Var 'b') --> Var 'd'
+    ),
+    ( [ Var 'a',
+        Var 'a' --> Var 'b',
+        Var 'b' --> Var 'c',
+        Var 'c' --> Var 'd'
+      ],
+      Var 'a' --> Var 'd'
+    ),
+    ( [ Var 'a',
+        Var 'b',
+        Var 'a' --> (Var 'b' --> Var 'c'),
+        Var 'c' --> Var 'd'
+      ],
+      Var 'a' --> Var 'd'
     )
   ]
 
@@ -44,18 +58,18 @@ unprovable =
 
 main :: IO ()
 main = hspec $ do
-  describe "prove" $ do
+  describe "proveImp" $ do
     mapM_
       ( \(c, a) -> do
           it ("provable: " ++ prettySequent c a) $ do
-            debug <$> prove c a `shouldBe` Just (Right ())
+            debug <$> proveImp c a `shouldBe` Just (Right ())
       )
       provable
 
     mapM_
       ( \(c, a) -> do
           it ("unprovable: " ++ prettySequent c a) $ do
-            prove c a `shouldBe` Nothing
+            proveImp c a `shouldBe` Nothing
       )
       unprovable
 
