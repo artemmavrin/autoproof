@@ -1,32 +1,24 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-import Data.Prop (Formula (Var, Imp), parseFormula)
+import Data.Prop (Formula (Imp, Var), parseFormula)
 import Data.Prop.Utils (PrettyPrintable (pretty))
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
 
 main :: IO ()
 main = H.hspec $
-  H.describe "parseFormula" $
-    H.it "Parsing a pretty-printed formula results in the original term" $
-      QC.property $ \t -> (parseFormula . pretty) t == Right t
+  H.describe "parseFormula" $ do
+    assertParsesPrettyRandom
 
--- Wrapper type for variable names
-newtype Name = Name {unName :: String} deriving (Eq, Show)
-
--- Candidate variable names for randomly generated variables
-names :: [Name]
-names = map Name strings
+-- Candidate variable names for random formulas
+names :: [String]
+names = oneChar ++ twoChar ++ primed
   where
-    strings, oneChar, twoChar, primed :: [String]
-    strings = oneChar ++ twoChar ++ primed
+    oneChar, twoChar, primed :: [String]
     oneChar = map return ['a' .. 'z']
     twoChar = zipWith (++) oneChar (reverse oneChar)
     primed = map (++ "'") (oneChar ++ twoChar)
-
-instance QC.Arbitrary Name where
-  arbitrary = QC.elements names
 
 -- Generate a random random formula with a given "complexity"
 formula :: Int -> QC.Gen (Formula String)
@@ -34,9 +26,15 @@ formula n
   | n == 0 = variable
   | otherwise = QC.oneof [variable, implication]
   where
-    variable = Var . unName <$> QC.arbitrary
+    variable = Var <$> QC.elements names
     implication = Imp <$> subformula <*> subformula
     subformula = formula $ n `div` 2
 
+-- Enable random formula generation for testing
 instance QC.Arbitrary (Formula String) where
   arbitrary = QC.sized formula
+
+assertParsesPrettyRandom :: H.SpecWith ()
+assertParsesPrettyRandom =
+  H.it "Parsing a pretty-printed formula results in the original term" $
+    QC.property $ \t -> (parseFormula . pretty) t == Right t
