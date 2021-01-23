@@ -3,3 +3,6 @@ a |- b
 |- a -> b
 |- ((a -> b) -> a) -> a
 a -> b, b -> a |- a
+a -> b, b -> c, c -> a |- a
+b -> a, c -> a, (b -> c) -> a |- a
+(x -> y -> z) -> y, x |- x -> z
