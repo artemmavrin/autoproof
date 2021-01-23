@@ -1,15 +1,19 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-import Data.Prop (Formula (Imp, Var), parseFormula)
+import Data.Either (isRight)
+import Data.Prop (Formula (And, Imp, Or, Var), parseFormula)
 import Data.Prop.Utils (PrettyPrintable (pretty))
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
 
 main :: IO ()
-main = H.hspec $
-  H.describe "parseFormula" $ do
-    assertParsesPrettyRandom
+main = do
+  goodFormulas <- lines <$> readFile "test/parser/examples/propositions"
+  H.hspec $
+    H.describe "parseFormula" $ do
+      mapM_ assertSuccessfulParse goodFormulas
+      assertParsesPrettyRandom
 
 -- Candidate variable names for random formulas
 names :: [String]
@@ -24,10 +28,12 @@ names = oneChar ++ twoChar ++ primed
 formula :: Int -> QC.Gen (Formula String)
 formula n
   | n == 0 = variable
-  | otherwise = QC.oneof [variable, implication]
+  | otherwise = QC.oneof [variable, implication, disjunction, conjunction]
   where
     variable = Var <$> QC.elements names
     implication = Imp <$> subformula <*> subformula
+    disjunction = Or <$> subformula <*> subformula
+    conjunction = And <$> subformula <*> subformula
     subformula = formula $ n `div` 2
 
 -- Enable random formula generation for testing
@@ -38,3 +44,8 @@ assertParsesPrettyRandom :: H.SpecWith ()
 assertParsesPrettyRandom =
   H.it "Parsing a pretty-printed formula results in the original term" $
     QC.property $ \t -> (parseFormula . pretty) t == Right t
+
+assertSuccessfulParse :: String -> H.SpecWith ()
+assertSuccessfulParse s =
+  H.it ("should parse: " ++ show s) $
+    isRight (parseFormula s)

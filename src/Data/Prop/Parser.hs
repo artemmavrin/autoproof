@@ -20,13 +20,14 @@ module Data.Prop.Parser
   )
 where
 
-import qualified Data.Set as Set (fromList)
 import Data.Functor.Identity (Identity)
-import Data.Prop.Types (Formula (Imp, Var), Sequent, Context)
+import Data.Prop.Types (Context, Formula (And, Imp, Or, Var), Sequent)
+import qualified Data.Set as Set (fromList)
 import Text.Parsec.Char (char, oneOf, spaces, string)
-import Text.Parsec.Combinator (between, eof, sepBy, sepBy1)
+import Text.Parsec.Combinator (between, chainl1, eof, notFollowedBy, sepBy, sepBy1)
 import Text.Parsec.Error (ParseError)
 import Text.Parsec.Prim (ParsecT, Stream, many, parse, try, (<|>))
+import Prelude hiding (and, or)
 
 -- | @(parseTerm s)@ parses a string-like value @s@ as a propositional formula,
 -- returning a @'Right' a@ on success, where @a@ is the parsed term. Otherwise,
@@ -89,19 +90,24 @@ formula :: Stream s m Char => ParsecT s u m (Formula String)
 formula = padded implication
 
 context :: Stream s m Char => ParsecT s u m (Context String)
-context = Set.fromList <$> try formula `sepBy` char ','
+context = Set.fromList <$> formula `sepBy` char ','
 
-judgement :: Stream s m Char => ParsecT s u m (Formula String)
-judgement = turnstile *> formula
+conclusion :: Stream s m Char => ParsecT s u m (Formula String)
+conclusion = turnstile *> formula
 
 sequent :: Stream s m Char => ParsecT s u m (Sequent String)
-sequent = (,) <$> context <*> judgement
+sequent = (,) <$> context <*> conclusion
 
 implication :: Stream s m Char => ParsecT s u m (Formula String)
-implication = foldr1 Imp <$> terms
+implication = foldr1 Imp <$> junction `sepBy1` try rightArrow
+
+-- Conjunctions and disjunctions, read left-to-right
+junction :: Stream s m Char => ParsecT s u m (Formula String)
+junction = chainl1 term $ try $ padded $ and <|> or
   where
     term = enclosed formula <|> variable
-    terms = term `sepBy1` try rightArrow
+    and = And <$ wedge
+    or = Or <$ vee
 
 variable :: Stream s m Char => ParsecT s u m (Formula String)
 variable = Var <$> name
@@ -119,14 +125,30 @@ enclosed :: Stream s m Char => ParsecT s u m a -> ParsecT s u m a
 enclosed = between (char '(') (char ')')
 
 -- Parse an implication arrow.
-rightArrow :: Stream s m Char => ParsecT s u m String
+rightArrow :: Stream s m Char => ParsecT s u m ()
 rightArrow =
   padded $
-    try (string "->")
-      <|> string "→"
-      <|> try (string "=>")
-      <|> string "⇒"
-      <|> string "⊃"
+    () <$ try (string "->")
+      <|> () <$ string "→"
+      <|> () <$ try (string "=>")
+      <|> () <$ string "⇒"
+      <|> () <$ string "⊃"
+
+-- Parse a conjunction (and) symbol.
+wedge :: Stream s m Char => ParsecT s u m ()
+wedge =
+  padded $
+    () <$ string "&"
+      <|> () <$ string "∧"
+      <|> () <$ try (string "/\\")
+
+-- Parse a disjunction (or) symbol.
+vee :: Stream s m Char => ParsecT s u m ()
+vee =
+  padded $
+    try (string "|" >> notFollowedBy (char '-')) -- needed to handle "|-"
+      <|> () <$ string "∨"
+      <|> () <$ try (string "\\/")
 
 -- Parse a sequent/judgement turnstile.
 turnstile :: Stream s m Char => ParsecT s u m String
