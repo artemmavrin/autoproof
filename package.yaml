@@ -14,6 +14,7 @@ description:         Please see the README on GitHub at <https://github.com/arte
 dependencies:
 - base >= 4.7 && < 5
 - containers >= 0.6.4.1
+- parsec >= 3.1.14.0
 
 library:
   source-dirs: src
@@ -27,8 +28,8 @@ library:
 
 tests:
   imp-test:
-    main:                ImpSpec.hs
-    source-dirs:         test
+    main:                Spec.hs
+    source-dirs:         test/imp
     ghc-options:
     - -threaded
     - -rtsopts

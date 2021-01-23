@@ -18,8 +18,7 @@ where
 
 import Data.Either (isRight)
 import Data.Prop.Proof.Types
-  ( Context,
-    Proof
+  ( Proof
       ( AndElimL,
         AndElimR,
         AndIntr,
@@ -35,7 +34,7 @@ import Data.Prop.Proof.Types
         TopIntr
       ),
   )
-import Data.Prop.Types (Formula (And, Imp, Lit, Not, Or))
+import Data.Prop.Types (Context, Formula (And, Imp, Lit, Not, Or))
 import qualified Data.Set as Set
 
 -- | Return an invalid inference node (on the 'Left'), if there is one.

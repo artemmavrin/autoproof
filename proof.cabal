@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 81b34b7c6bbc52061b632a3441a4697737db96f266276b9fe34c2c18148ca133
+-- hash: 1a2ef0411fe269e7e0ee7a03bfb904465249fca7512cf7f235fa504bf4945e7a
 
 name:           proof
 version:        0.0.0.0
@@ -23,6 +23,7 @@ extra-source-files:
 library
   exposed-modules:
       Data.Prop
+      Data.Prop.Parser
       Data.Prop.Proof.Debug
       Data.Prop.Proof.Implication
       Data.Prop.Proof.Types
@@ -36,18 +37,20 @@ library
   build-depends:
       base >=4.7 && <5
     , containers >=0.6.4.1
+    , parsec >=3.1.14.0
   default-language: Haskell2010
 
 test-suite imp-test
   type: exitcode-stdio-1.0
-  main-is: ImpSpec.hs
+  main-is: Spec.hs
   hs-source-dirs:
-      test
+      test/imp
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
     , containers >=0.6.4.1
     , hspec >=0.8.2
+    , parsec >=3.1.14.0
     , proof
   if false
     other-modules:

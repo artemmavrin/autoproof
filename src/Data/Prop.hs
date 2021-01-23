@@ -8,9 +8,10 @@
 --
 -- Intuitionistic propositional logic.
 module Data.Prop
-  ( -- * Types for propositional formulas and proofs
+  ( -- * Types
     Formula (Lit, Var, Not, Imp, Or, And),
     Context,
+    Sequent,
     Proof
       ( Ax,
         TopIntr,
@@ -27,7 +28,7 @@ module Data.Prop
         AndIntr
       ),
 
-    -- * Propositional formula constructors
+    -- * Constructors
     true,
     false,
     lit,
@@ -43,12 +44,17 @@ module Data.Prop
     (/\),
     (<->),
 
+    -- * Parsing
+    parseFormula,
+    parseSequent,
+
     -- * Proof debugging
     debug,
     valid,
   )
 where
 
+import Data.Prop.Parser
 import Data.Prop.Proof.Debug
 import Data.Prop.Proof.Types
 import Data.Prop.Types

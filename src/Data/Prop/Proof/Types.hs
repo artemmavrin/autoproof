@@ -8,8 +8,7 @@
 --
 -- Natural deduction proof trees for intuitionistic propositional logic.
 module Data.Prop.Proof.Types
-  ( -- * Types
-    Proof
+  ( Proof
       ( Ax,
         TopIntr,
         BotElim,
@@ -24,15 +23,10 @@ module Data.Prop.Proof.Types
         AndElimR,
         AndIntr
       ),
-    Context,
   )
 where
 
-import Data.Prop.Types (Formula (..))
-import Data.Set (Set)
-
--- | A set of propositional formulas, used as antecedents of a sequent.
-type Context a = Set (Formula a)
+import Data.Prop.Types (Formula (..), Context)
 
 -- | A natural deduction proof tree for intuitionistic propositional logic.
 data Proof a

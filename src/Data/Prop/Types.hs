@@ -8,8 +8,10 @@
 --
 -- Definition of types for representing propositional logic formulas.
 module Data.Prop.Types
-  ( -- * Propositional formula type
+  ( -- * Types
     Formula (Lit, Var, Not, Imp, Or, And),
+    Context,
+    Sequent,
 
     -- * Constructors
     true,
@@ -97,6 +99,12 @@ instance PrettyPrintable a => PrettyPrintable (Formula a) where
       g (Imp p q) = f True p ++ " -> " ++ f True q
       g (And p q) = f True p ++ " & " ++ f True q
       g (Or p q) = f True p ++ " | " ++ f True q
+
+-- | A set of propositional formulas, used as antecedents of a sequent.
+type Context a = Set (Formula a)
+
+-- | A pair @(c, p)@ represents the sequent or judgement \(c \vdash p\).
+type Sequent a = (Context a, Formula a)
 
 -- | 'true' is the propositional constant \(\top\) (i.e., truth, tautology, or
 -- top).
