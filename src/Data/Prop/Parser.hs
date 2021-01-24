@@ -21,7 +21,7 @@ module Data.Prop.Parser
 where
 
 import Data.Functor.Identity (Identity)
-import Data.Prop.Types (Context, Formula (And, Imp, Not, Or, Var), Sequent)
+import Data.Prop.Types (Context, Formula (And, Lit, Imp, Not, Or, Var), Sequent)
 import qualified Data.Set as Set (fromList)
 import Text.Parsec.Char (char, oneOf, spaces, string)
 import Text.Parsec.Combinator
@@ -58,7 +58,9 @@ import Prelude hiding (and, or, not)
 --   proposition that follows).
 -- * Valid variable names begin with a letter (uppercase or lowercase) or an
 --   underscore, and may be followed by a letter, underscore, digit, or single
---   quote (a "prime" symbol).
+--   quote (a "prime" symbol). The exceptions are the strings @"false"@ and
+--   @"true"@, which are parsed as the literals \(\bot\) and \(\top\),
+--   respectively.
 --
 -- ==== __Examples__
 --
@@ -156,7 +158,13 @@ not :: Stream s m Char => ParsecT s u m (Formula String)
 not = spaces *> (foldl (.) id <$> try (many (Not <$ negation)) <*> atom)
 
 atom :: Stream s m Char => ParsecT s u m (Formula String)
-atom = enclosed formula <|> variable
+atom = enclosed formula <|> try false <|> try true <|> variable
+
+false :: Stream s m Char => ParsecT s u m (Formula String)
+false = Lit False <$ (string "⊥" <|> string "false")
+
+true :: Stream s m Char => ParsecT s u m (Formula String)
+true = Lit True <$ (string "⊤" <|> string "true")
 
 variable :: Stream s m Char => ParsecT s u m (Formula String)
 variable = Var <$> name
