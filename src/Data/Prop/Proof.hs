@@ -1,17 +1,14 @@
 -- |
--- Module      : Data.Prop
+-- Module      : Data.Prop.Proof
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
 --
--- Intuitionistic propositional logic.
-module Data.Prop
-  ( -- * Types
-    Formula (Lit, Var, Not, Imp, Or, And),
-    Context,
-    Sequent,
+-- Intuitionistic natural deduction proofs.
+module Data.Prop.Proof
+  ( -- * The @Proof@ type
     Proof
       ( Ax,
         TopIntr,
@@ -28,29 +25,8 @@ module Data.Prop
         AndIntr
       ),
 
-    -- * Constructors
-    true,
-    false,
-    lit,
-    var,
-    not,
-    imp,
-    implies,
-    or,
-    and,
-    iff,
-    (-->),
-    (\/),
-    (/\),
-    (<->),
-
-    -- * Operations on formulas
-    subformulas,
-    substitute,
-
-    -- * Parsing
-    parseFormula,
-    parseSequent,
+    -- * Proofs in the implicational fragment
+    proveImp,
 
     -- * Proof debugging
     debug,
@@ -58,8 +34,6 @@ module Data.Prop
   )
 where
 
-import Data.Prop.Parser
 import Data.Prop.Proof.Debug
+import Data.Prop.Proof.Implication
 import Data.Prop.Proof.Types
-import Data.Prop.Types
-import Prelude ()

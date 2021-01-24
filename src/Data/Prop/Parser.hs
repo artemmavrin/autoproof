@@ -21,7 +21,7 @@ module Data.Prop.Parser
 where
 
 import Data.Functor.Identity (Identity)
-import Data.Prop.Types (Context, Formula (And, Lit, Imp, Not, Or, Var), Sequent)
+import Data.Prop.Types (Context, Formula (And, Imp, Lit, Not, Or, Var), Sequent)
 import qualified Data.Set as Set (fromList)
 import Text.Parsec.Char (char, oneOf, spaces, string)
 import Text.Parsec.Combinator
@@ -34,7 +34,7 @@ import Text.Parsec.Combinator
   )
 import Text.Parsec.Error (ParseError)
 import Text.Parsec.Prim (ParsecT, Stream, many, parse, parserZero, try, (<|>))
-import Prelude hiding (and, or, not)
+import Prelude hiding (and, not, or)
 
 -- | @(parseFormula s)@ parses a string-like value @s@ as a propositional
 -- formula, returning a @'Right' a@ on success, where @a@ is the parsed term.
