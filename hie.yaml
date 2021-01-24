@@ -7,3 +7,5 @@ cradle:
       component: "proof:test:imp-test"
     - path: "./test/parser/Spec.hs"
       component: "proof:test:parser-test"
+    - path: "./app/parse-repl"
+      component: "proof:exe:parse-repl"
