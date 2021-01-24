@@ -21,26 +21,44 @@ module Data.Prop.Parser
 where
 
 import Data.Functor.Identity (Identity)
-import Data.Prop.Types (Context, Formula (And, Imp, Or, Var), Sequent)
+import Data.Prop.Types (Context, Formula (And, Imp, Not, Or, Var), Sequent)
 import qualified Data.Set as Set (fromList)
 import Text.Parsec.Char (char, oneOf, spaces, string)
-import Text.Parsec.Combinator (between, chainl1, eof, notFollowedBy, sepBy, sepBy1)
+import Text.Parsec.Combinator
+  ( between,
+    chainl1,
+    eof,
+    notFollowedBy,
+    sepBy,
+    sepBy1,
+  )
 import Text.Parsec.Error (ParseError)
 import Text.Parsec.Prim (ParsecT, Stream, many, parse, try, (<|>))
 import Prelude hiding (and, or)
 
--- | @(parseTerm s)@ parses a string-like value @s@ as a propositional formula,
--- returning a @'Right' a@ on success, where @a@ is the parsed term. Otherwise,
--- @'Left' e@ is returned, where @e@ is a 'ParseError'.
+-- | @(parseFormula s)@ parses a string-like value @s@ as a propositional
+-- formula, returning a @'Right' a@ on success, where @a@ is the parsed term.
+-- Otherwise, @'Left' e@ is returned, where @e@ is a 'ParseError'.
 --
 -- __Note:__ Parsing is currently only implemented for the implicational
 -- fragment.
 --
 -- __Conventions__
 --
--- * Implication is right-associative.
--- * Symbols for implication must be one of @"->"@, @"→"@, @"=>"@, @"⇒"@, or
---   @"⊃"@.
+-- * Supported connective symbols:
+--
+--     * Negation: @"~"@, @"¬"@.
+--     * Implication: @"->"@, @"→"@, @"=>"@, @"⇒"@ @"⊃"@.
+--     * Disjunction: @"|"@, @"\\/"@, @"∨"@
+--     * Conjunction: @"&"@, @"/\\"@, @"∧"@
+--
+-- * Implication is right-associative and has lower precedence than the other
+--   connectives.
+-- * Conjunction and disjunction have the same precedence, and expressions
+--   involving both are evaluated left-to-right.
+-- * Negation binds most tightly, and must immediately precede its argument
+--   (i.e., there should not be a space between a negation symbol and the
+--   proposition that follows).
 -- * Valid variable names begin with a letter (uppercase or lowercase) or an
 --   underscore, and may be followed by a letter, underscore, digit, or single
 --   quote (a "prime" symbol).
@@ -49,6 +67,12 @@ import Prelude hiding (and, or)
 --
 -- >>> parseFormula "a -> b -> c"
 -- Right (Imp (Var "a") (Imp (Var "b") (Var "c")))
+--
+-- >>> parseFormula "~a | b -> c"
+-- Right (Imp (Or (Not (Var "a")) (Var "b")) (Var "c"))
+--
+-- >>> parseFormula "(a -> b) & ~c"
+-- Right (And (Imp (Var "a") (Var "b")) (Not (Var "c")))
 parseFormula :: Stream s Identity Char => s -> Either ParseError (Formula String)
 parseFormula = parse (formula <* eof) ""
 
@@ -61,6 +85,9 @@ parseFormula = parse (formula <* eof) ""
 --
 -- >>> parseSequent "a, a -> b |- b"
 -- Right (fromList [Var "a",Imp (Var "a") (Var "b")],Var "b")
+--
+-- >>> parseSequent "a |- a | b"
+-- Right (fromList [Var "a"],Or (Var "a") (Var "b"))
 parseSequent :: Stream s Identity Char => s -> Either ParseError (Sequent String)
 parseSequent = parse (sequent <* eof) ""
 
@@ -83,6 +110,9 @@ unsafeParseFormula = either (error . show) id . parseFormula
 --
 -- >>> unsafeParseSequent "a, b |- a -> b"
 -- (fromList [Var "a",Var "b"],Imp (Var "a") (Var "b"))
+--
+-- >>> unsafeParseSequent "a & b |- a"
+-- (fromList [And (Var "a") (Var "b")],Var "a")
 unsafeParseSequent :: Stream s Identity Char => s -> Sequent String
 unsafeParseSequent = either (error . show) id . parseSequent
 
@@ -103,11 +133,15 @@ implication = foldr1 Imp <$> junction `sepBy1` try rightArrow
 
 -- Conjunctions and disjunctions, read left-to-right
 junction :: Stream s m Char => ParsecT s u m (Formula String)
-junction = chainl1 term $ try $ padded $ and <|> or
+junction = chainl1 negation $ try $ padded $ and <|> or
   where
-    term = enclosed formula <|> variable
     and = And <$ wedge
     or = Or <$ vee
+
+negation :: Stream s m Char => ParsecT s u m (Formula String)
+negation = try (neg *> (Not <$> term)) <|> term
+  where
+    term = enclosed formula <|> variable
 
 variable :: Stream s m Char => ParsecT s u m (Formula String)
 variable = Var <$> name
@@ -125,30 +159,33 @@ enclosed :: Stream s m Char => ParsecT s u m a -> ParsecT s u m a
 enclosed = between (char '(') (char ')')
 
 -- Parse an implication arrow.
-rightArrow :: Stream s m Char => ParsecT s u m ()
+rightArrow :: Stream s m Char => ParsecT s u m String
 rightArrow =
   padded $
-    () <$ try (string "->")
-      <|> () <$ string "→"
-      <|> () <$ try (string "=>")
-      <|> () <$ string "⇒"
-      <|> () <$ string "⊃"
+    try (string "->")
+      <|> string "→"
+      <|> try (string "=>")
+      <|> string "⇒"
+      <|> string "⊃"
 
 -- Parse a conjunction (and) symbol.
-wedge :: Stream s m Char => ParsecT s u m ()
+wedge :: Stream s m Char => ParsecT s u m String
 wedge =
   padded $
-    () <$ string "&"
-      <|> () <$ string "∧"
-      <|> () <$ try (string "/\\")
+    string "&"
+      <|> string "∧"
+      <|> try (string "/\\")
 
 -- Parse a disjunction (or) symbol.
-vee :: Stream s m Char => ParsecT s u m ()
+vee :: Stream s m Char => ParsecT s u m String
 vee =
   padded $
-    try (string "|" >> notFollowedBy (char '-')) -- needed to handle "|-"
-      <|> () <$ string "∨"
-      <|> () <$ try (string "\\/")
+    try (string "|" <* notFollowedBy (char '-')) -- needed to handle "|-"
+      <|> string "∨"
+      <|> try (string "\\/")
+
+neg :: Stream s m Char => ParsecT s u m String
+neg = spaces *> (string "~" <|> string "¬")
 
 -- Parse a sequent/judgement turnstile.
 turnstile :: Stream s m Char => ParsecT s u m String
