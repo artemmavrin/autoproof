@@ -42,7 +42,6 @@ executables:
     - -Wredundant-constraints
     dependencies:
     - proof
-    - pretty-simple
     when:
     - condition: false
       other-modules: Paths_lambda

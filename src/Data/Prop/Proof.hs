@@ -31,6 +31,9 @@ module Data.Prop.Proof
     -- * Proof debugging
     debug,
     valid,
+
+    -- * Pretty-printing
+    prettyProof
   )
 where
 

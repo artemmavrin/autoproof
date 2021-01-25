@@ -60,6 +60,7 @@ module Data.Prop
     prettyFormula,
     prettyContext,
     prettySequent,
+    prettyProof,
   )
 where
 

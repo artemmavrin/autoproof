@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e19fcaa639e9ef0adbbd735914923a6d6481d426016216c881432196f9ff4e72
+-- hash: 3abaaec88b35294817ea33b5b1194e0b9db2c57b1834da6633116cff27a08d05
 
 name:           proof
 version:        0.0.0.0
@@ -52,7 +52,6 @@ executable imp-repl
       base >=4.7 && <5
     , containers >=0.6.4.1
     , parsec >=3.1.14.0
-    , pretty-simple
     , proof
   if false
     other-modules:

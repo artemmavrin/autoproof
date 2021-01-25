@@ -23,10 +23,13 @@ module Data.Prop.Proof.Types
         AndElimR,
         AndIntr
       ),
+    prettyProof,
   )
 where
 
-import Data.Prop.Types (Formula (..), Context)
+import Data.List (intercalate)
+import Data.Prop.Types (Context, Formula (..))
+import Data.Prop.Utils (PrettyPrintable (pretty))
 
 -- | A natural deduction proof tree for intuitionistic propositional logic.
 data Proof a
@@ -84,3 +87,22 @@ data Proof a
     -- of \(g \vdash a\) and a proof \(q\) of \(g \vdash b\).
     AndIntr (Context a) (Formula a) (Proof a) (Proof a)
   deriving (Eq, Show)
+
+-- | TODO
+prettyProof :: PrettyPrintable a => Proof a -> String
+prettyProof = pp 0
+  where
+    pp n (Ax c a) = concatIndent n [pretty (c, a), "    (Ax)"]
+    pp n (ImpIntr c a p) = concatIndent n [pretty (c, a), "    (->I)", pp (n + 4) p]
+    pp n (ImpElim c a p q) = concatIndent n [pretty (c, a), "    (->E)", pp (n + 4) p, pp (n + 4) q]
+    pp _ _ = undefined
+
+    concatIndent :: Int -> [String] -> String
+    concatIndent n l = intercalate "\n" $ (indent n ++) <$> l
+
+    indent :: Int -> String
+    indent 0 = ""
+    indent n = ' ' : indent (n - 1)
+
+instance PrettyPrintable a => PrettyPrintable (Proof a) where
+  pretty = prettyProof
