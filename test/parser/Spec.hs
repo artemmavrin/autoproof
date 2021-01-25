@@ -5,6 +5,7 @@ import Data.Either (isRight)
 import Data.Prop (Formula (And, Imp, Or, Var), parseFormula)
 import Data.Prop.Utils (PrettyPrintable (pretty))
 import qualified Test.Hspec as H
+import Test.Hspec.QuickCheck (modifyMaxSuccess)
 import qualified Test.QuickCheck as QC
 
 main :: IO ()
@@ -13,7 +14,7 @@ main = do
   H.hspec $
     H.describe "parseFormula" $ do
       mapM_ assertSuccessfulParse goodFormulas
-      assertParsesPrettyRandom
+      assertParsesPretty
 
 -- Candidate variable names for random formulas
 names :: [String]
@@ -40,9 +41,9 @@ formula n
 instance QC.Arbitrary (Formula String) where
   arbitrary = QC.sized formula
 
-assertParsesPrettyRandom :: H.SpecWith ()
-assertParsesPrettyRandom =
-  H.it "Parsing a pretty-printed formula results in the original term" $
+assertParsesPretty :: H.SpecWith ()
+assertParsesPretty = modifyMaxSuccess (const 1000) $
+  H.it "Parsing a random pretty-printed formula results in the original term" $
     QC.property $ \t -> (parseFormula . pretty) t == Right t
 
 assertSuccessfulParse :: String -> H.SpecWith ()
