@@ -55,6 +55,11 @@ module Data.Prop
     -- * Proof debugging
     debug,
     valid,
+
+    -- * Pretty-printing
+    prettyFormula,
+    prettyContext,
+    prettySequent,
   )
 where
 

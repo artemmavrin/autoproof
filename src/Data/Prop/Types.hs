@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 -- |
 -- Module      : Data.Prop.Types
 -- Copyright   : (c) Artem Mavrin, 2021
@@ -32,9 +34,16 @@ module Data.Prop.Types
     -- * Operations on formulas
     subformulas,
     substitute,
+
+    -- * Pretty-printing
+    prettyFormula,
+    prettyContext,
+    prettySequent,
   )
 where
 
+import Data.Foldable (toList)
+import Data.List (intercalate)
 import Data.Prop.Utils (PrettyPrintable (pretty))
 import Data.Set (Set)
 import qualified Data.Set as Set
@@ -73,38 +82,74 @@ data Formula a
     And (Formula a) (Formula a)
   deriving (Eq, Ord, Show)
 
--- | @('pretty' p)@ is a human-readable representation of a formula \(p\).
---
--- ==== __Examples__
---
--- >>> pretty $ And (Or (Var "x") (Var "y")) (not $ Var "z")
--- "(x | y) & (z -> false)"
---
--- >>> pretty $ not $ And (Lit True --> Var 'x') (Var 'z')
--- "((true -> x) & z) -> false"
-instance PrettyPrintable a => PrettyPrintable (Formula a) where
-  pretty = f False
-    where
-      -- Apply @g@ and optionally wrap the result in parentheses. Variables
-      -- never get parentheses.
-      f _ v@(Lit _) = g v
-      f _ v@(Var _) = g v
-      f parentheses t = if parentheses then "(" ++ g t ++ ")" else g t
-
-      -- Recursive pretty-printer
-      g (Lit True) = "true"
-      g (Lit False) = "false"
-      g (Var x) = pretty x
-      g (Not p) = '~' : f True p
-      g (Imp p q) = f True p ++ " -> " ++ f True q
-      g (And p q) = f True p ++ " & " ++ f True q
-      g (Or p q) = f True p ++ " | " ++ f True q
-
 -- | A set of propositional formulas, used as antecedents of a sequent.
 type Context a = Set (Formula a)
 
 -- | A pair @(c, p)@ represents the sequent or judgement \(c \vdash p\).
 type Sequent a = (Context a, Formula a)
+
+-- Pretty-printing
+
+-- | @('prettyFormula' a)@ is a human-readable representation of the
+-- propositional formula \(a\).
+--
+-- ==== __Examples__
+--
+-- >>> prettyFormula $ And (Or (Var "x") (Var "y")) (not $ Var "z")
+-- "(x | y) & (~z)"
+
+-- >>> prettyFormula $ not $ And (Lit True --> Var 'x') (Var 'z')
+-- "~((true -> x) & z)"
+prettyFormula :: PrettyPrintable a => Formula a -> String
+prettyFormula = f False
+  where
+    -- Apply @g@ and optionally wrap the result in parentheses. Variables
+    -- never get parentheses.
+    f _ v@(Lit _) = g v
+    f _ v@(Var _) = g v
+    f parentheses t = if parentheses then "(" ++ g t ++ ")" else g t
+
+    -- Recursive pretty-printer
+    g (Lit True) = "true"
+    g (Lit False) = "false"
+    g (Var x) = pretty x
+    g (Not p) = '~' : f True p
+    g (Imp p q) = f True p ++ " -> " ++ f True q
+    g (And p q) = f True p ++ " & " ++ f True q
+    g (Or p q) = f True p ++ " | " ++ f True q
+
+-- | @('prettyContext' c)@ is a human-readable representation of a context
+-- \(c\).
+--
+-- ==== __Examples__
+--
+-- >>> prettyContext [Var "x", Var "y", Imp (Var "x") (Var "y")]
+-- "x, y, x -> y"
+prettyContext :: (PrettyPrintable a, Foldable f) => f (Formula a) -> String
+prettyContext c = intercalate ", " (pretty <$> toList c)
+
+-- | @('prettySequent' c a)@ is a human-readable representation of a sequent
+-- \(c \vdash a\).
+--
+-- ==== __Examples__
+--
+-- >>> prettySequent [Var "x", Imp (Var "x") (Var "y")] (Var "y")
+-- "x, x -> y |- y"
+prettySequent :: (PrettyPrintable a, Foldable f) => f (Formula a) -> Formula a -> String
+prettySequent c a = case prettyContext c of
+  "" -> "|- " ++ pretty a
+  c' -> c' ++ " |- " ++ pretty a
+
+instance PrettyPrintable a => PrettyPrintable (Formula a) where
+  pretty = prettyFormula
+
+instance PrettyPrintable a => PrettyPrintable (Context a) where
+  pretty = prettyContext
+
+instance PrettyPrintable a => PrettyPrintable (Sequent a) where
+  pretty = uncurry prettySequent
+
+-- Additional constructors
 
 -- | 'true' is the propositional constant \(\top\) (i.e., truth, tautology, or
 -- top).
@@ -187,6 +232,9 @@ infixl 6 /\
 (<->) = iff
 
 infixr 5 <->
+
+-- Miscellaneuous
+-- TODO: put functions below somewhere else.
 
 -- | Return the set of subformulas of a propositional formula.
 --

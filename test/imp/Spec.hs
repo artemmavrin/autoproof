@@ -1,9 +1,7 @@
-import Data.List (intercalate)
-import Data.Prop (Context, Formula, Sequent, debug)
+import Data.Prop (Sequent, debug, prettySequent)
 import Data.Prop.Parser (unsafeParseSequent)
 import Data.Prop.Proof.Implication (proveImp)
-import Data.Prop.Utils (PrettyPrintable (pretty))
-import qualified Data.Set as Set (toList)
+import Data.Prop.Utils (PrettyPrintable)
 import qualified Test.Hspec as H (SpecWith, describe, hspec, it, shouldBe)
 
 main :: IO ()
@@ -22,11 +20,6 @@ loadSequents :: String -> IO [Sequent String]
 loadSequents filename = do
   contents <- readFile filename
   return (unsafeParseSequent <$> lines contents)
-
-prettySequent :: PrettyPrintable a => Context a -> Formula a -> String
-prettySequent c a = case Set.toList c of
-  [] -> "|- " ++ pretty a
-  c' -> intercalate ", " (map pretty c') ++ " |- " ++ pretty a
 
 assertProvable :: (Ord a, PrettyPrintable a, Show a) => Sequent a -> H.SpecWith ()
 assertProvable (c, a) =

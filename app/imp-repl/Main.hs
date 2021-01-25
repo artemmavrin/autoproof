@@ -3,12 +3,9 @@
 
 module Main where
 
-import Data.List (intercalate)
-import Data.Prop
+import Data.Prop (parseSequent, prettySequent)
 import Data.Prop.Proof (proveImp)
-import Data.Prop.Utils (PrettyPrintable (pretty))
-import qualified Data.Set as Set
-import System.IO
+import System.IO (BufferMode (NoBuffering), hSetBuffering, stdout)
 import Text.Pretty.Simple (pPrint)
 
 main :: IO ()
@@ -30,8 +27,3 @@ main = do
                 Nothing -> putStrLn "No proof found"
                 Just p -> pPrint p
           loop
-
-prettySequent :: PrettyPrintable a => Context a -> Formula a -> String
-prettySequent c a = case Set.toList c of
-  [] -> "|- " ++ pretty a
-  c' -> intercalate ", " (map pretty c') ++ " |- " ++ pretty a
