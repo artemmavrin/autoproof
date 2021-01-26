@@ -33,8 +33,10 @@ import Data.Prop.Proof.Types
         OrIntrR,
         TopIntr
       ),
+    conclusion,
+    context,
   )
-import Data.Prop.Types (Context, Formula (And, Imp, Lit, Not, Or))
+import Data.Prop.Types (Formula (And, Imp, Lit, Not, Or))
 import qualified Data.Set as Set
 
 -- | Return an invalid inference node (on the 'Left'), if there is one.
@@ -172,35 +174,3 @@ debug x = Left x
 -- | Check whether a proof is valid.
 valid :: Ord a => Proof a -> Bool
 valid p = isRight (debug p)
-
--- | Extract the conclusion (without the context) of a proof
-conclusion :: Proof a -> Formula a
-conclusion (Ax _ a) = a
-conclusion (TopIntr _ a) = a
-conclusion (BotElim _ a _) = a
-conclusion (NotElim _ a _ _) = a
-conclusion (NotIntr _ a _) = a
-conclusion (ImpElim _ a _ _) = a
-conclusion (ImpIntr _ a _) = a
-conclusion (OrElim _ a _ _ _) = a
-conclusion (OrIntrL _ a _) = a
-conclusion (OrIntrR _ a _) = a
-conclusion (AndElimL _ a _) = a
-conclusion (AndElimR _ a _) = a
-conclusion (AndIntr _ a _ _) = a
-
--- | Extract the final context of a proof
-context :: Proof a -> Context a
-context (Ax c _) = c
-context (TopIntr c _) = c
-context (BotElim c _ _) = c
-context (NotElim c _ _ _) = c
-context (NotIntr c _ _) = c
-context (ImpElim c _ _ _) = c
-context (ImpIntr c _ _) = c
-context (OrElim c _ _ _ _) = c
-context (OrIntrL c _ _) = c
-context (OrIntrR c _ _) = c
-context (AndElimL c _ _) = c
-context (AndElimR c _ _) = c
-context (AndIntr c _ _ _) = c

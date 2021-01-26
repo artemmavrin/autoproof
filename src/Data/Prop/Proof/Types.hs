@@ -24,11 +24,15 @@ module Data.Prop.Proof.Types
         AndIntr
       ),
     prettyProof,
+    context,
+    conclusion,
+    name,
+    subproofs,
   )
 where
 
 import Data.List (intercalate)
-import Data.Prop.Types (Context, Formula (..))
+import Data.Prop.Types (Context, Formula (..), prettySequent)
 import Data.Prop.Utils (PrettyPrintable (pretty))
 
 -- | A natural deduction proof tree for intuitionistic propositional logic.
@@ -88,21 +92,84 @@ data Proof a
     AndIntr (Context a) (Formula a) (Proof a) (Proof a)
   deriving (Eq, Show)
 
--- | TODO
+-- | Extract the conclusion (without the context) of a proof
+conclusion :: Proof a -> Formula a
+conclusion (Ax _ a) = a
+conclusion (TopIntr _ a) = a
+conclusion (BotElim _ a _) = a
+conclusion (NotElim _ a _ _) = a
+conclusion (NotIntr _ a _) = a
+conclusion (ImpElim _ a _ _) = a
+conclusion (ImpIntr _ a _) = a
+conclusion (OrElim _ a _ _ _) = a
+conclusion (OrIntrL _ a _) = a
+conclusion (OrIntrR _ a _) = a
+conclusion (AndElimL _ a _) = a
+conclusion (AndElimR _ a _) = a
+conclusion (AndIntr _ a _ _) = a
+
+-- | Extract the final context of a proof
+context :: Proof a -> Context a
+context (Ax c _) = c
+context (TopIntr c _) = c
+context (BotElim c _ _) = c
+context (NotElim c _ _ _) = c
+context (NotIntr c _ _) = c
+context (ImpElim c _ _ _) = c
+context (ImpIntr c _ _) = c
+context (OrElim c _ _ _ _) = c
+context (OrIntrL c _ _) = c
+context (OrIntrR c _ _) = c
+context (AndElimL c _ _) = c
+context (AndElimR c _ _) = c
+context (AndIntr c _ _ _) = c
+
+-- | Name of the final inference rule of a proof.
+name :: Proof a -> String
+name Ax {} = "(Ax)"
+name TopIntr {} = "(TI)"
+name BotElim {} = "(FE)"
+name NotElim {} = "(~E)"
+name NotIntr {} = "(~I)"
+name ImpElim {} = "(->E)"
+name ImpIntr {} = "(->I)"
+name OrElim {} = "(|E)"
+name OrIntrL {} = "(|IL)"
+name OrIntrR {} = "(|IR)"
+name AndElimL {} = "(&EL)"
+name AndElimR {} = "(&ER)"
+name AndIntr {} = "(&I)"
+
+-- | List of immediate subproofs of a given proof.
+subproofs :: Proof a -> [Proof a]
+subproofs (Ax _ _) = []
+subproofs (TopIntr _ _) = []
+subproofs (BotElim _ _ p) = [p]
+subproofs (NotElim _ _ p q) = [p, q]
+subproofs (NotIntr _ _ p) = [p]
+subproofs (ImpElim _ _ p q) = [p, q]
+subproofs (ImpIntr _ _ p) = [p]
+subproofs (OrElim _ _ p q r) = [p, q, r]
+subproofs (OrIntrL _ _ p) = [p]
+subproofs (OrIntrR _ _ p) = [p]
+subproofs (AndElimL _ _ p) = [p]
+subproofs (AndElimR _ _ p) = [p]
+subproofs (AndIntr _ _ p q) = [p, q]
+
+-- | @('prettyProof' p)@ is a human-readable representation of a proof \(p\).
 prettyProof :: PrettyPrintable a => Proof a -> String
-prettyProof = pp 0
+prettyProof = concatIndent . proofLines (0 :: Int)
   where
-    pp n (Ax c a) = concatIndent n [pretty (c, a), "    (Ax)"]
-    pp n (ImpIntr c a p) = concatIndent n [pretty (c, a), "    (->I)", pp (n + 4) p]
-    pp n (ImpElim c a p q) = concatIndent n [pretty (c, a), "    (->E)", pp (n + 4) p, pp (n + 4) q]
-    pp _ _ = undefined
+    proofLines level p =
+      [ (prettySequent (context p) (conclusion p), level),
+        (name p, level + 1)
+      ]
+        ++ (subproofs p >>= proofLines (level + 1))
 
-    concatIndent :: Int -> [String] -> String
-    concatIndent n l = intercalate "\n" $ (indent n ++) <$> l
+    concatIndent l = intercalate "\n" $ indent <$> l
 
-    indent :: Int -> String
-    indent 0 = ""
-    indent n = ' ' : indent (n - 1)
+    indent (s, 0) = s
+    indent (s, n) = "    " ++ indent (s, n - 1)
 
 instance PrettyPrintable a => PrettyPrintable (Proof a) where
   pretty = prettyProof
