@@ -92,53 +92,35 @@ type Sequent a = (Context a, Formula a)
 
 -- | @('prettyFormula' a)@ is a human-readable representation of the
 -- propositional formula \(a\).
---
--- ==== __Examples__
---
--- >>> prettyFormula $ And (Or (Var "x") (Var "y")) (not $ Var "z")
--- "(x | y) & (~z)"
-
--- >>> prettyFormula $ not $ And (Lit True --> Var 'x') (Var 'z')
--- "~((true -> x) & z)"
 prettyFormula :: PrettyPrintable a => Formula a -> String
 prettyFormula = f False
   where
-    -- Apply @g@ and optionally wrap the result in parentheses. Variables
-    -- never get parentheses.
+    -- Apply @g@ and optionally wrap the result in parentheses. Atomic
+    -- propositions never get parentheses.
     f _ v@(Lit _) = g v
     f _ v@(Var _) = g v
     f parentheses t = if parentheses then "(" ++ g t ++ ")" else g t
 
     -- Recursive pretty-printer
-    g (Lit True) = "true"
-    g (Lit False) = "false"
+    g (Lit True) = "⊤"
+    g (Lit False) = "⊥"
     g (Var x) = pretty x
-    g (Not p) = '~' : f True p
-    g (Imp p q) = f True p ++ " -> " ++ f True q
-    g (And p q) = f True p ++ " & " ++ f True q
-    g (Or p q) = f True p ++ " | " ++ f True q
+    g (Not p) = '¬' : f True p
+    g (Imp p q) = f True p ++ " → " ++ f True q
+    g (And p q) = f True p ++ " ∧ " ++ f True q
+    g (Or p q) = f True p ++ " ∨ " ++ f True q
 
 -- | @('prettyContext' c)@ is a human-readable representation of a context
 -- \(c\).
---
--- ==== __Examples__
---
--- >>> prettyContext [Var "x", Var "y", Imp (Var "x") (Var "y")]
--- "x, y, x -> y"
 prettyContext :: (PrettyPrintable a, Foldable f) => f (Formula a) -> String
 prettyContext c = intercalate ", " (pretty <$> toList c)
 
 -- | @('prettySequent' c a)@ is a human-readable representation of a sequent
 -- \(c \vdash a\).
---
--- ==== __Examples__
---
--- >>> prettySequent [Var "x", Imp (Var "x") (Var "y")] (Var "y")
--- "x, x -> y |- y"
 prettySequent :: (PrettyPrintable a, Foldable f) => f (Formula a) -> Formula a -> String
 prettySequent c a = case prettyContext c of
-  "" -> "|- " ++ pretty a
-  c' -> c' ++ " |- " ++ pretty a
+  "" -> "⊢ " ++ pretty a
+  c' -> c' ++ " ⊢ " ++ pretty a
 
 instance PrettyPrintable a => PrettyPrintable (Formula a) where
   pretty = prettyFormula

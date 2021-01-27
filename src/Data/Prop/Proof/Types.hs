@@ -127,18 +127,18 @@ context (AndIntr c _ _ _) = c
 -- | Name of the final inference rule of a proof.
 name :: Proof a -> String
 name Ax {} = "(Ax)"
-name TopIntr {} = "(TI)"
-name BotElim {} = "(FE)"
+name TopIntr {} = "(⊤I)"
+name BotElim {} = "(⊥E)"
 name NotElim {} = "(~E)"
-name NotIntr {} = "(~I)"
-name ImpElim {} = "(->E)"
-name ImpIntr {} = "(->I)"
-name OrElim {} = "(|E)"
-name OrIntrL {} = "(|IL)"
-name OrIntrR {} = "(|IR)"
-name AndElimL {} = "(&EL)"
-name AndElimR {} = "(&ER)"
-name AndIntr {} = "(&I)"
+name NotIntr {} = "(¬I)"
+name ImpElim {} = "(→E)"
+name ImpIntr {} = "(→I)"
+name OrElim {} = "(∨E)"
+name OrIntrL {} = "(∨IL)"
+name OrIntrR {} = "(∨IR)"
+name AndElimL {} = "(∧EL)"
+name AndElimR {} = "(∧ER)"
+name AndIntr {} = "(∧I)"
 
 -- | List of immediate subproofs of a given proof.
 subproofs :: Proof a -> [Proof a]
