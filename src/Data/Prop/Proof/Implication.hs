@@ -47,7 +47,10 @@ proveImp context = prove Set.empty (foldr Set.insert Set.empty context)
     -- c ⊢ a → b
     --
     -- so it suffices to look for a proof of c,a ⊢ b
-    prove s c i@(Imp a b) = ImpIntr c i <$> prove s' c' b
+    prove s c i@(Imp a b) =
+      if Set.member i c
+        then Just $ Ax c i
+        else ImpIntr c i <$> prove s' c' b
       where
         s' = Set.insert (i, c) s
         c' = Set.insert a c
