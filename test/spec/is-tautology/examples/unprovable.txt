@@ -1,0 +1,8 @@
+false
+~true
+a
+a | ~a
+~~a -> a
+((a -> b) -> a) -> a
+(~b -> ~a) -> (a -> b)
+~(a & b) -> ~a | ~b

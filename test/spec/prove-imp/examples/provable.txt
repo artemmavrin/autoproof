@@ -1,0 +1,15 @@
+a |- a
+|- a -> a
+|- a -> b -> a
+|- a -> (b -> a)
+|- (c -> a) -> ((c -> (a -> b)) -> (c -> b))
+a |- b -> a
+a, b |- a
+a -> b, a |- b
+b -> (c -> d), a -> b, a |- c -> d
+a -> b, (a -> b) -> c |- c
+(a -> b) -> ((c -> d) -> e), e -> b, a -> b, c -> d |- b
+c, c -> (a -> b), b -> d, b -> (c -> b), c -> ((a -> b) -> d) |- (a -> b) -> d
+a, a -> b, b -> c, c -> d |- a -> d
+a, b, a -> (b -> c), c -> d |- a -> d
+a -> b, b -> c, c -> a |- a -> c
