@@ -5,6 +5,7 @@ import AutoProof
     prettyFormula,
     prettyProof,
     proveImp,
+    correct,
     strengthenProof,
   )
 import AutoProof.Proof.Provability (toImp)
@@ -24,11 +25,16 @@ main = do
         else do
           case parseFormula line of
             Left e -> print e
-            Right f -> do
-              putStrLn $ "Trying to prove " ++ prettyFormula f
-              case proveImp (toImp f) of
+            Right a -> do
+              putStrLn $ "Trying to prove " ++ prettyFormula a
+              let j = toImp a
+              case proveImp (toImp a) of
                 Nothing -> putStrLn "No proof found"
                 Just p -> do
                   putStrLn "Found proof:"
-                  putStrLn $ prettyProof (strengthenProof p)
+                  let p' = strengthenProof p
+                  putStrLn $ prettyProof p'
+                  if correct j p'
+                    then putStrLn "The proof is correct"
+                    else putStrLn "The proof is incorrect"
           loop

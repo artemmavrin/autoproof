@@ -19,7 +19,7 @@ module AutoProof.Proof
     -- * Proof metadata
     height,
     judgement,
-    subproofs,
+    premises,
 
     -- * Operations on proofs
     weakenProof,
@@ -50,6 +50,6 @@ import AutoProof.Proof.Types
     impElim,
     impIntr,
     judgement,
+    premises,
     prettyProof,
-    subproofs,
   )

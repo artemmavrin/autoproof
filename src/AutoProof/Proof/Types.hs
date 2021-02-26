@@ -13,10 +13,10 @@ module AutoProof.Proof.Types
     axiom,
     impElim,
     impIntr,
-    prettyProof,
-    judgement,
-    subproofs,
     height,
+    judgement,
+    premises,
+    prettyProof,
   )
 where
 
@@ -26,6 +26,12 @@ import AutoProof.Utils.Symbols (impS)
 import Data.List (intercalate)
 
 -- | A natural deduction proof tree for intuitionistic propositional logic.
+--
+-- Proofs can be created using the proof constructors
+--
+-- * 'axiom'
+-- * 'impElim' (implication elimination, or /modus ponens/)
+-- * 'impIntr' (implication introduction)
 data Proof a
   = -- | Axiom.
     Ax !(Judgement a)
@@ -53,15 +59,22 @@ judgement (Ax j) = j
 judgement (ImpElim _ j _ _) = j
 judgement (ImpIntr _ j _) = j
 
--- | List of immediate subproofs of a given proof.
-subproofs :: Proof a -> [Proof a]
-subproofs (Ax _) = []
-subproofs (ImpElim _ _ p q) = [p, q]
-subproofs (ImpIntr _ _ p) = [p]
+-- | List of premises (as proofs) of a given proof.
+premises :: Proof a -> [Proof a]
+premises (Ax _) = []
+premises (ImpElim _ _ p q) = [p, q]
+premises (ImpIntr _ _ p) = [p]
 
 -- | An axiom @('axiom' (g 'AutoProof.Judgement.|-' a))@ represents the
 -- inference of the judgement \(g \vdash a\), where the propositional formula
--- \(a\) belongs to the context \(g\).
+-- \(a\) belongs to the context \(g\):
+--
+-- \[
+--   \frac{}{
+--     g \vdash a
+--   }
+--   \, (\text{Ax})
+-- \]
 axiom :: Judgement a -> Proof a
 axiom = Ax
 
@@ -120,7 +133,7 @@ instance PrettyPrintable a => PrettyPrintable (Proof a) where
         [ (pretty $ judgement p, level),
           (name p, level + 1)
         ]
-          ++ (subproofs p >>= proofLines (level + 1))
+          ++ (premises p >>= proofLines (level + 1))
 
       concatIndent l = intercalate "\n" $ indent <$> l
 

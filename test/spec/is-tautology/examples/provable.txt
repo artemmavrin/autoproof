@@ -8,6 +8,7 @@ a -> true
 false -> a
 a <-> a
 a -> (b -> a)
+a -> b -> c -> a | d
 a | b -> b | a
 a & b -> a
 a & b -> b
@@ -15,8 +16,10 @@ a & b -> a | b
 a & b -> b & a
 a -> (b -> a & b)
 (a & b -> c) <-> (a -> (b -> c))
+(a <-> b) <-> (b <-> a)
 a -> ~~a
 ~(a & ~a)
+(a | b) -> ~a -> b
 (~a | b) -> (a -> b)
 ~(a | b) -> (~a & ~b)
 (~a | ~b) -> ~(a & b)

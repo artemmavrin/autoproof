@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8e63df648b2208387aa836cf1d9f4bf3cca6f675868ff0bc2fd3ac405fd15431
+-- hash: c437cc9b32086f4e33b0968f5762eb6cc64ec8bca08bf06af396b342c19f6614
 
 name:           autoproof
 version:        0.0.0.0
@@ -38,6 +38,7 @@ library
       AutoProof.Proof.Provability
       AutoProof.Proof.Transform
       AutoProof.Proof.Types
+      AutoProof.Utils.DList
       AutoProof.Utils.PrettyPrintable
       AutoProof.Utils.Set
       AutoProof.Utils.Symbols
