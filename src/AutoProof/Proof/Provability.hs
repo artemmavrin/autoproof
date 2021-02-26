@@ -124,20 +124,20 @@ toImp a = Judgement g (new a)
           imp true (new true)
         ]
 
-    -- Final context
+    -- Final context, created by recursing over subformulas of a
     g = Set.fromList $ fromDList $ f g0 a
 
-    -- Add common formulas into the growing context
-    f c b = h (c . common b) b
+    -- Add common formulas into the growing context g'
+    f g' b = h (g' . common b) b
 
-    -- Add unique formulas into the growing context
-    h c r@(Lit _) = c . unique r
-    h c r@(Var _) = c . unique r
-    h c r@(Not _ _ p) = f (c . unique r) p
-    h c r@(Imp _ _ p q) = f (f (c . unique r) p) q
-    h c r@(Or _ _ p q) = f (f (c . unique r) p) q
-    h c r@(And _ _ p q) = f (f (c . unique r) p) q
-    h c r@(Iff _ _ p q) = f (f (c . unique r) p) q
+    -- Add unique formulas into the growing context g'
+    h g' b@(Lit _) = g' . unique b
+    h g' b@(Var _) = g' . unique b
+    h g' b@(Not _ _ c) = f (g' . unique b) c
+    h g' b@(Imp _ _ c d) = f (f (g' . unique b) c) d
+    h g' b@(Or _ _ c d) = f (f (g' . unique b) c) d
+    h g' b@(And _ _ c d) = f (f (g' . unique b) c) d
+    h g' b@(Iff _ _ c d) = f (f (g' . unique b) c) d
 
     -- Formulas that get created for every subformula b of a
     common b = toDList [imp (new false) (new b), imp (new b) (new true)]
