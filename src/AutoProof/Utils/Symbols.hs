@@ -4,44 +4,59 @@
 module AutoProof.Utils.Symbols where
 
 -- Propositional literals, connectives, and judgement turnstile
-trueS, falseS, notS, impS, iffS, orS, andS, turnstileS :: String
 
-#ifdef mingw32_HOST_OS
-falseS = "false"
-trueS = "true"
-notS = "~"
-impS = "->"
-orS = "|"
-andS = "&"
-iffS = "<->"
-turnstileS = "|-"
-#else
-falseS = "⊥"
-trueS = "⊤"
-notS = "¬"
-impS = "→"
-orS = "∨"
-andS = "∧"
-iffS = "↔"
-turnstileS = "⊢"
-#endif
+falseS :: String
+falseS = ifWindows "false" "⊥"
+
+trueS :: String
+trueS = ifWindows "true" "⊤"
+
+notS :: String
+notS = ifWindows "~" "¬"
+
+impS :: String
+impS = ifWindows "->" "→"
+
+orS :: String
+orS = ifWindows "|" "∨"
+
+andS :: String
+andS = ifWindows "&" "∧"
+
+iffS :: String
+iffS = ifWindows "<->" "↔"
+
+turnstileS :: String
+turnstileS = ifWindows "|-" "⊢"
 
 -- Inference rule symbols
-axiomS, impElimS, impIntrS :: String
 
+axiomS :: String
 axiomS = "(Ax)"
+
+impElimS :: String
 impElimS = "(" ++ impS ++ "E)"
+
+impIntrS :: String
 impIntrS = "(" ++ impS ++ "I)"
 
--- Pretty-printed proof lines
-vertS, cornerS, branchS :: String
+-- Pretty-printed proof components
 
+vertS :: String
+vertS = ifWindows "|" "│"
+
+cornerS :: String
+cornerS = ifWindows "+-- " "┌── "
+
+branchS :: String
+branchS = ifWindows "+-- " "├── "
+
+-- Use first choice if Windows, use second choice if other OS
+-- TODO: figure out if Windows is actually the problem with printing certain
+-- characters
+ifWindows :: a -> a -> a
 #ifdef mingw32_HOST_OS
-vertS = "|"
-cornerS = "+-- "
-branchS = "+-- "
+ifWindows a _ = a
 #else
-vertS = "│"
-cornerS = "┌── "
-branchS = "├── "
+ifWindows _ a = a
 #endif
