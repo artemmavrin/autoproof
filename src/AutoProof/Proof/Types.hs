@@ -39,7 +39,6 @@ data Proof a
     ImpElim !Height !(Judgement a) !(Proof a) !(Proof a)
   | -- | Implication introduction
     ImpIntr !Height !(Judgement a) !(Proof a)
-  deriving (Eq, Ord, Show)
 
 -- | Height of a proof
 type Height = Int
@@ -66,8 +65,7 @@ premises (ImpElim _ _ p q) = [p, q]
 premises (ImpIntr _ _ p) = [p]
 
 -- | An axiom @('axiom' (g 'AutoProof.Judgement.|-' a))@ represents the
--- inference of the judgement \(g \vdash a\), where the propositional formula
--- \(a\) belongs to the context \(g\):
+-- inference of the judgement \(g \vdash a\), where \(a \in g\):
 --
 -- \[
 --   \frac{}{
@@ -124,6 +122,64 @@ impElim j p q = ImpElim (1 + max (height p) (height q)) j p q
 -- \]
 impIntr :: Judgement a -> Proof a -> Proof a
 impIntr j p = ImpIntr (1 + height p) j p
+
+-- Instance declarations
+
+instance Eq a => Eq (Proof a) where
+  (Ax j) == (Ax j') = j == j'
+  (ImpElim _ j p q) == (ImpElim _ j' p' q') = j == j' && p == p' && q == q'
+  (ImpIntr _ j p) == (ImpIntr _ j' p') = j == j' && p == p'
+  _ == _ = False
+
+instance Ord a => Ord (Proof a) where
+  compare p p' = case compare (height p) (height p') of
+    EQ -> case p of
+      Ax j -> case p' of
+        Ax j' -> compare j j'
+        _ -> LT
+      ImpElim _ j q r -> case p' of
+        Ax _ -> GT
+        ImpElim _ j' q' r' -> binary j q r j' q' r'
+        _ -> LT
+      ImpIntr _ j q -> case p' of
+        Ax _ -> GT
+        ImpElim {} -> GT
+        ImpIntr _ j' q' -> unary j q j' q'
+    x -> x
+    where
+      unary j q j' q' = case compare j j' of
+        EQ -> compare q q'
+        x -> x
+      binary j q r j' q' r' = case compare j j' of
+        EQ -> case compare q q' of
+          EQ -> compare r r'
+          y -> y
+        x -> x
+
+instance Show a => Show (Proof a) where
+  showsPrec d = f (d > appPrec)
+    where
+      appPrec = 10
+
+      f b a = showParen b $ g a
+
+      g (Ax j) = nullary "axiom " j
+      g (ImpElim _ j p q) = binary "impElim " j p q
+      g (ImpIntr _ j p) = unary "impIntr " j p
+
+      nullary c j = showString c . showsPrec (appPrec + 1) j
+
+      unary c j p =
+        showString c . showsPrec (appPrec + 1) j
+          . showString " "
+          . f True p
+
+      binary c j p q =
+        showString c . showsPrec (appPrec + 1) j
+          . showString " "
+          . f True p
+          . showString " "
+          . f True q
 
 -- TODO: clean this instance up
 instance PrettyPrintable a => PrettyPrintable (Proof a) where

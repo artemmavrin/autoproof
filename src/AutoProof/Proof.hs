@@ -27,6 +27,7 @@ module AutoProof.Proof
 
     -- * Proof search and provability checking
     proveImp,
+    toImp,
     isTautology,
 
     -- * Pretty-printing
@@ -41,7 +42,7 @@ where
 
 import AutoProof.Proof.Correctness (correct, debug, valid)
 import AutoProof.Proof.Implication (proveImp)
-import AutoProof.Proof.Provability (isTautology)
+import AutoProof.Proof.Provability (isTautology, toImp)
 import AutoProof.Proof.Transform (strengthenProof, weakenProof)
 import AutoProof.Proof.Types
   ( Proof (Ax, ImpElim, ImpIntr),

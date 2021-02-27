@@ -54,6 +54,7 @@ module AutoProof
     -- ** Provability testing and proof search
     isTautology,
     proveImp,
+    toImp,
 
     -- ** Operations on proofs
     strengthenProof,
@@ -116,6 +117,7 @@ import AutoProof.Proof
     prettyProof,
     proveImp,
     strengthenProof,
+    toImp,
     valid,
     weakenProof,
   )

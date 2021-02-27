@@ -76,6 +76,8 @@ instance PrettyPrintable a => PrettyPrintable (Judgement a) where
 
 -- | Get a pretty-printed representation of a judgement.
 --
+-- ==== __Examples__
+--
 -- >>> prettyJudgement $ [var 'a', var 'a' --> var 'b'] |- var 'b'
 -- "a, a → b ⊢ b"
 prettyJudgement :: PrettyPrintable a => Judgement a -> String

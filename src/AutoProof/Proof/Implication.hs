@@ -26,6 +26,14 @@ import qualified Data.Set as Set
 --
 -- *  Samuel Mimram (2020)
 --    /PROGRAM = PROOF/.
+--
+-- ==== __Examples__
+--
+-- >>> proveImp $ [var 'a', imp (var 'a') (var 'b')] |- var 'b'
+-- Just (impElim ([var 'a',imp (var 'a') (var 'b')] |- var 'b') (axiom ([var 'a',imp (var 'a') (var 'b')] |- imp (var 'a') (var 'b'))) (axiom ([var 'a',imp (var 'a') (var 'b')] |- var 'a')))
+--
+-- >>> proveImp $ [imp (var 'a') (var 'b'), imp (var 'b') (var 'a')] |- var 'a'
+-- Nothing
 proveImp :: Ord a => Judgement a -> Maybe (Proof a)
 proveImp (Judgement g f) = prove Set.empty g f
   where

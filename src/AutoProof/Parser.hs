@@ -55,7 +55,7 @@ import Prelude hiding (and, not, or)
 -- For a version of 'parseFormula' that does not return a wrapped formula but
 -- also throws an error when it cannot parse, see 'unsafeParseFormula'.
 --
--- __Conventions__
+-- ==== __Conventions__
 --
 -- * Supported connective symbols:
 --
@@ -82,6 +82,8 @@ import Prelude hiding (and, not, or)
 --   @"true"@, which are parsed as the propositional literals \(\bot\) and
 --   \(\top\), respectively.
 --
+-- ==== __Examples__
+--
 -- >>> parseFormula "a -> b -> c"
 -- Right (imp (var "a") (imp (var "b") (var "c")))
 --
@@ -103,6 +105,8 @@ parseFormula = parse (formula <* eof) ""
 --
 -- See 'parseFormula' for the specification of valid formulas.
 --
+-- ==== __Examples__
+--
 -- >>> parseJudgement "a, a -> b |- b"
 -- Right ([var "a",imp (var "a") (var "b")] |- var "b")
 --
@@ -117,6 +121,8 @@ parseJudgement = parse (judgement <* eof) ""
 --
 -- See 'parseFormula' for grammar spcecifications.
 --
+-- ==== __Examples__
+--
 -- >>> unsafeParseFormula "(a => b) => c"
 -- imp (imp (var "a") (var "b")) (var "c")
 unsafeParseFormula :: Stream s Identity Char => s -> Formula String
@@ -127,6 +133,8 @@ unsafeParseFormula = either (error . show) id . parseFormula
 -- throwing an error on failure.
 --
 -- See 'parseJudgement' for the specification of valid judgements.
+--
+-- ==== __Examples__
 --
 -- >>> unsafeParseJudgement "a, b |- a -> b"
 -- [var "a",var "b"] |- imp (var "a") (var "b")

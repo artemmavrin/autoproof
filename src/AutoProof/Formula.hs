@@ -318,6 +318,8 @@ instance PrettyPrintable a => PrettyPrintable (Formula a) where
 
 -- | Get a pretty-printed representation of a propositional formula.
 --
+-- ==== __Examples__
+--
 -- >>> prettyFormula $ var 'a' --> var 'b' \/ false
 -- "a → (b ∨ ⊥)"
 prettyFormula :: PrettyPrintable a => Formula a -> String
@@ -326,6 +328,8 @@ prettyFormula = pretty
 -- Miscellaneuous formula operations
 
 -- | Get the set of subformulas of a propositional formula.
+--
+-- ==== __Examples__
 --
 -- >>> subformulas $ or (var 'x') (and (var 'y') (var 'z'))
 -- fromList [var 'x',var 'y',var 'z',and (var 'y') (var 'z'),or (var 'x') (and (var 'y') (var 'z'))]
@@ -342,6 +346,8 @@ subformulas = go Set.empty
 
 -- | @('substitute' a x p)@ represents \(a[x := p]\), the substitution of each
 -- occurence of the variable \(x\) in the formula \(a\) by the formula \(p\).
+--
+-- ==== __Examples__
 --
 -- >>> substitute (var 'e' --> var 'e') 'e' (var 'a' /\ var 'a')
 -- imp (and (var 'a') (var 'a')) (and (var 'a') (var 'a'))

@@ -184,6 +184,8 @@ toImp a = Judgement g (new a)
 --    Theoretical Computer Science, Volume 9, Issue 1, pp. 67–72.
 --    <https://doi.org/10.1016/0304-3975(79)90006-9 DOI>.
 --
+-- ==== __Examples__
+--
 -- >>> isTautology $ imp (and (var 'a') (var 'b')) (var 'a')
 -- True
 --
