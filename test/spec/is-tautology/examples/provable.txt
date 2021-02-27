@@ -1,32 +1,70 @@
+# Propositional literals
 true
 ~false
-a -> a
-a -> a | b
-a -> b | a
-a -> a & a
+~~true
 a -> true
 false -> a
+false -> true
+
+# Single variable
+a -> a
 a <-> a
-a -> (b -> a)
-a -> b -> c -> a | d
-a | b -> b | a
-a & b -> a
-a & b -> b
-a & b -> a | b
-a & b -> b & a
-a -> (b -> a & b)
-(a & b -> c) <-> (a -> (b -> c))
-(a <-> b) <-> (b <-> a)
 a -> ~~a
 ~(a & ~a)
+~~~a <-> ~a
+
+# Negation
+~a <-> (a -> false)
+
+# Implication
+a -> (b -> a)
+(a -> b) -> a -> b
+
+# Disjunction
+a -> a | b
+a -> b | a
+a | b -> (a -> c) -> (b -> c) -> c
+
+# Conjunction
+a -> (b -> a & b)
+a & b -> a
+a & b -> b
+
+# Equivalence
+(a -> b) -> ((b -> a) -> (a <-> b))
+(a <-> b) -> (a -> b)
+(a <-> b) -> (b -> a)
+
+# "Commutativity"
+a | b -> b | a
+a | b <-> b | a
+a & b -> b & a
+a & b <-> b & a
+(a <-> b) -> (b <-> a)
+(a <-> b) <-> (b <-> a)
+
+# Currying/exponentiation
+(a & b -> c) <-> (a -> (b -> c))
+
+# Halves of classical a -> b = ~a | b ideas
 (a | b) -> ~a -> b
 (~a | b) -> (a -> b)
+
+# deMorgan's laws
+(~a & ~b) -> ~(a | b)
 ~(a | b) -> (~a & ~b)
+(~a & ~b) <-> ~(a | b)
 (~a | ~b) -> ~(a & b)
+
+# Contraposition
 (a -> b) -> (~b -> ~a)
 (a -> ~b) -> (b -> ~a)
-a | b -> (a -> c) -> (b -> c) -> c
-~~~a <-> ~a
-~~true
+
+# Glivenko translations
 ~~(a | ~a)
 ~~(((a -> b) -> a) -> a)
+
+# Miscellaneous
+a -> a & a
+a & b -> a | b
+a -> b -> c -> a | d

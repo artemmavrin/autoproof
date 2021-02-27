@@ -13,6 +13,7 @@ import AutoProof
     (|-),
   )
 import AutoProof.Parser (unsafeParseFormula)
+import Data.Char (isSpace)
 import Data.Maybe (isJust)
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
@@ -33,7 +34,13 @@ main = do
 loadFormulas :: String -> IO [Formula String]
 loadFormulas filename = do
   contents <- readFile filename
-  return (unsafeParseFormula <$> lines contents)
+  let strings = lines contents
+  let formulaStrings = clean strings
+  return (unsafeParseFormula <$> formulaStrings)
+  where
+    stripSpace = reverse . dropWhile isSpace . reverse . dropWhile isSpace
+    dropComments = takeWhile (/= '#')
+    clean = filter (not . null) . map (stripSpace . dropComments)
 
 timeoutMicroseconds :: Int
 timeoutMicroseconds = 60000000 -- One minute

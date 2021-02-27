@@ -1,10 +1,42 @@
+# Propositional literals
 false
 ~true
-a
+
+# Law of excluded middle
 a | ~a
-~~a -> a
+
+# Pierce's law
 ((a -> b) -> a) -> a
-(~b -> ~a) -> (a -> b)
+
+# Single variables
+a
+~a
+
+# Equivalence
+~a <-> a
+~~a <-> a
+~~~a <-> a
+
+# Implication
+~a -> a
+~~a -> a
+
+# DeMorgan's laws
 ~(a & b) -> ~a | ~b
+
+# Contraposition
+(~b -> ~a) -> (a -> b)
+
+# Halves of classical a -> b = ~a | b ideas
+(a -> b) -> (~a | b)
+
+# Miscellaneous
 (a -> b) -> (b -> a) -> a
 ((a | b) -> a) -> a
+(~a -> ~b) & (~~a | ~b)
+~a <-> a
+~~a <-> a
+~~~a <-> a
+a | b | ~a
+~((a -> a) & ~a)
+~~(~a | (~a & ~a))
