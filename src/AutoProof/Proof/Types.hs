@@ -22,8 +22,14 @@ where
 
 import AutoProof.Judgement (Judgement)
 import AutoProof.Utils.PrettyPrintable (PrettyPrintable (pretty))
-import AutoProof.Utils.Symbols (impS)
-import Data.List (intercalate)
+import AutoProof.Utils.Symbols
+  ( axiomS,
+    branchS,
+    cornerS,
+    impElimS,
+    impIntrS,
+    vertS,
+  )
 
 -- | A natural deduction proof tree for intuitionistic propositional logic.
 --
@@ -181,24 +187,25 @@ instance Show a => Show (Proof a) where
           . showString " "
           . f True q
 
--- TODO: clean this instance up
 instance PrettyPrintable a => PrettyPrintable (Proof a) where
-  pretty = concatIndent . proofLines (0 :: Int)
+  -- Adapted from drawTree in Data.Tree from the containers package
+  pretty = unlines . reverse . draw
     where
-      proofLines level p =
-        [ (pretty $ judgement p, level),
-          (name p, level + 1)
-        ]
-          ++ (premises p >>= proofLines (level + 1))
+      draw p = line p : drawPremises (reverse (premises p))
 
-      concatIndent l = intercalate "\n" $ indent <$> l
+      line p = rule p ++ " " ++ pretty (judgement p)
 
-      indent (s, 0) = s
-      indent (s, n) = "    " ++ indent (s, n - 1)
+      drawPremises [] = []
+      drawPremises [q] =
+        vertS : shift cornerS "    " (draw q)
+      drawPremises (q : qs) =
+        vertS : shift branchS (vertS ++ "   ") (draw q) ++ drawPremises qs
 
-      name Ax {} = "(Ax)"
-      name ImpElim {} = "(" ++ impS ++ "E)"
-      name ImpIntr {} = "(" ++ impS ++ "I)"
+      shift first other = zipWith (++) (first : repeat other)
+
+      rule Ax {} = axiomS
+      rule ImpElim {} = impElimS
+      rule ImpIntr {} = impIntrS
 
 -- | Get a pretty-printed representation of a proof.
 prettyProof :: PrettyPrintable a => Proof a -> String
