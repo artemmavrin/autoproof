@@ -60,6 +60,10 @@ module AutoProof
     strengthenProof,
     weakenProof,
 
+    -- ** Cuts
+    findCut,
+    hasCut,
+
     -- ** Proof correctness
     correct,
     valid,
@@ -111,6 +115,8 @@ import AutoProof.Proof
     axiom,
     correct,
     debug,
+    findCut,
+    hasCut,
     impElim,
     impIntr,
     isTautology,

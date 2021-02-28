@@ -7,6 +7,7 @@ import AutoProof
   ( Formula,
     Judgement,
     correct,
+    hasCut,
     imp,
     prettyJudgement,
     proveImp,
@@ -61,7 +62,7 @@ wait = QC.within timeoutMicroseconds
 assertProvable :: Judgement String -> H.SpecWith ()
 assertProvable j =
   H.it ("provable: " ++ prettyJudgement j) $
-    wait $ correct j <$> proveImp j `H.shouldBe` Just True
+    wait $ (\p -> correct j p && not (hasCut p)) <$> proveImp j `H.shouldBe` Just True
 
 assertUnprovable :: Judgement String -> H.SpecWith ()
 assertUnprovable j =
@@ -74,7 +75,10 @@ assertValidProofOfTautology t = assertValidProofOfJudgement ([] |- t)
 assertValidProofOfJudgement :: Judgement Char -> QC.Property
 assertValidProofOfJudgement j =
   let mp = proveImp j
-   in wait $ isJust mp QC.==> correct j (fromJust mp)
+   in wait $
+        isJust mp
+          QC.==> let p = fromJust mp
+                  in correct j p && not (hasCut p)
 
 validateRandomValidProofOfTautology :: H.SpecWith ()
 validateRandomValidProofOfTautology =

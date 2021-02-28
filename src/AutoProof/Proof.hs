@@ -30,6 +30,10 @@ module AutoProof.Proof
     toImp,
     isTautology,
 
+    -- * Cuts
+    findCut,
+    hasCut,
+
     -- * Pretty-printing
     prettyProof,
 
@@ -41,6 +45,7 @@ module AutoProof.Proof
 where
 
 import AutoProof.Proof.Correctness (correct, debug, valid)
+import AutoProof.Proof.Cut (findCut, hasCut)
 import AutoProof.Proof.Implication (proveImp)
 import AutoProof.Proof.Provability (isTautology, toImp)
 import AutoProof.Proof.Transform (strengthenProof, weakenProof)
