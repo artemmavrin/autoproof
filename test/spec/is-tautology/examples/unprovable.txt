@@ -8,6 +8,27 @@ a | ~a
 # Pierce's law
 ((a -> b) -> a) -> a
 
+# Double negation elimination
+~~a -> a
+
+# Material implication
+(a -> b) -> (~a | b)
+
+# Contraposition
+(~b -> ~a) -> (a -> b)
+
+# Counterexample
+~(a -> b) -> (a & ~b)
+
+# Consequentia mirabilis
+(~a -> a) -> a
+
+# Tarski's formula
+a | (a -> b)
+
+# Distributivity of implication and disjunction
+(a -> (b | c)) -> ((a -> b) | c)
+
 # Single variables
 a
 ~a
@@ -19,16 +40,9 @@ a
 
 # Implication
 ~a -> a
-~~a -> a
 
 # DeMorgan's laws
 ~(a & b) -> ~a | ~b
-
-# Contraposition
-(~b -> ~a) -> (a -> b)
-
-# Halves of classical a -> b = ~a | b ideas
-(a -> b) -> (~a | b)
 
 # Miscellaneous
 (a -> b) -> (b -> a) -> a

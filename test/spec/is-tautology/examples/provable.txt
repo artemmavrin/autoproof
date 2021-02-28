@@ -29,6 +29,7 @@ a | b -> (a -> c) -> (b -> c) -> c
 a -> (b -> a & b)
 a & b -> a
 a & b -> b
+c -> ((c -> a) -> ((c -> b) -> a & b))
 
 # Equivalence
 (a -> b) -> ((b -> a) -> (a <-> b))
@@ -43,12 +44,16 @@ a & b <-> b & a
 (a <-> b) -> (b <-> a)
 (a <-> b) <-> (b <-> a)
 
+# Diagnonal/codiagonal
+a -> a & a
+a | a -> a
+
 # Currying/exponentiation
 (a & b -> c) <-> (a -> (b -> c))
 
-# Halves of classical a -> b = ~a | b ideas
-(a | b) -> ~a -> b
+# Material implication
 (~a | b) -> (a -> b)
+(a | b) -> ~a -> b
 
 # deMorgan's laws
 (~a & ~b) -> ~(a | b)
@@ -63,8 +68,11 @@ a & b <-> b & a
 # Glivenko translations
 ~~(a | ~a)
 ~~(((a -> b) -> a) -> a)
+~~(~~a -> a)
+~~((a -> b) -> (~a | b))
+~~((~b -> ~a) -> (a -> b))
+~~(~(a -> b) -> (a & ~b))
 
 # Miscellaneous
-a -> a & a
 a & b -> a | b
 a -> b -> c -> a | d

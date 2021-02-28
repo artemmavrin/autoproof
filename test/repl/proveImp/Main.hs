@@ -1,13 +1,14 @@
 module Main where
 
 import AutoProof
-  ( parseJudgement,
+  ( Judgement (antecedents),
+    parseJudgement,
     prettyJudgement,
     prettyProof,
     proveImp,
     strengthenProof,
+    weakenProof,
   )
-import Control.Monad (when)
 import System.IO (BufferMode (NoBuffering), hSetBuffering, stdout)
 
 main :: IO ()
@@ -30,9 +31,7 @@ main = do
                 Nothing -> putStrLn "No proof found"
                 Just p -> do
                   putStrLn "Found proof:"
-                  putStrLn $ prettyProof p
                   let p' = strengthenProof p
-                  when (p' /= p) $ do
-                    putStrLn "\nFound proof with fewer hypotheses:"
-                    putStrLn $ prettyProof p'
+                  let p'' = foldl weakenProof p' (antecedents j)
+                  putStrLn $ prettyProof p''
           loop
