@@ -11,12 +11,14 @@ module AutoProof.Proof.Types
   ( Proof
       ( Ax,
         FalseElim,
+        TrueIntr,
         ImpElim,
         ImpIntr
       ),
     Height,
     axiom,
     falseElim,
+    trueIntr,
     impElim,
     impIntr,
     height,
@@ -35,6 +37,7 @@ import AutoProof.Utils.Symbols
     falseElimS,
     impElimS,
     impIntrS,
+    trueIntrS,
     vertS,
   )
 
@@ -44,6 +47,7 @@ import AutoProof.Utils.Symbols
 --
 -- * 'axiom'
 -- * 'falseElim' (falsity elimination, or the principle of explosion)
+-- * 'trueIntr' (truth introduction)
 -- * 'impElim' (implication elimination, or /modus ponens/)
 -- * 'impIntr' (implication introduction)
 data Proof a
@@ -51,6 +55,8 @@ data Proof a
     Ax !(Judgement a)
   | -- | Bottom elimination.
     FalseElim !Height !(Judgement a) (Proof a)
+  | -- | Truth introduction
+    TrueIntr !(Judgement a)
   | -- | Implication elimination
     ImpElim !Height !(Judgement a) !(Proof a) !(Proof a)
   | -- | Implication introduction
@@ -66,6 +72,7 @@ type Height = Int
 height :: Proof a -> Int
 height (Ax _) = 0
 height (FalseElim h _ _) = h
+height (TrueIntr _) = 0
 height (ImpElim h _ _ _) = h
 height (ImpIntr h _ _) = h
 
@@ -73,6 +80,7 @@ height (ImpIntr h _ _) = h
 judgement :: Proof a -> Judgement a
 judgement (Ax j) = j
 judgement (FalseElim _ j _) = j
+judgement (TrueIntr j) = j
 judgement (ImpElim _ j _ _) = j
 judgement (ImpIntr _ j _) = j
 
@@ -80,6 +88,7 @@ judgement (ImpIntr _ j _) = j
 premises :: Proof a -> [Proof a]
 premises (Ax _) = []
 premises (FalseElim _ _ p) = [p]
+premises (TrueIntr _) = []
 premises (ImpElim _ _ p q) = [p, q]
 premises (ImpIntr _ _ p) = [p]
 
@@ -113,6 +122,19 @@ axiom = Ax
 -- \]
 falseElim :: Judgement a -> Proof a -> Proof a
 falseElim = unaryConstructor FalseElim
+
+-- | Truth introduction.
+-- @('trueIntr' (g 'AutoProof.Judgement.|-' 'true'))@ represents the vacuous
+-- inference of the judgement \(g \vdash \top\):
+--
+-- \[
+--   \frac{}{
+--     g \vdash \top
+--   }
+--   \, (\top\text{I})
+-- \]
+trueIntr :: Judgement a -> Proof a
+trueIntr = TrueIntr
 
 -- | Implication elimination (/modus ponens/).
 -- @('impElim' (g 'AutoProof.Judgement.|-' b) p q)@ represents the inference of
@@ -173,6 +195,7 @@ unaryConstructor c j p = c (1 + height p) j p
 instance Eq a => Eq (Proof a) where
   (Ax j) == (Ax j') = j == j'
   (FalseElim _ j p) == (FalseElim _ j' p') = j == j' && p == p'
+  (TrueIntr j) == (TrueIntr j') = j == j'
   (ImpElim _ j p q) == (ImpElim _ j' p' q') = j == j' && p == p' && q == q'
   (ImpIntr _ j p) == (ImpIntr _ j' p') = j == j' && p == p'
   _ == _ = False
@@ -184,17 +207,24 @@ instance Ord a => Ord (Proof a) where
         Ax j' -> compare j j'
         _ -> LT
       FalseElim _ j q -> case p' of
-        Ax _ -> GT
+        Ax {} -> GT
         FalseElim _ j' q' -> compareUnary j q j' q'
         _ -> LT
-      ImpElim _ j q r -> case p' of
-        Ax _ -> GT
+      TrueIntr j -> case p' of
+        Ax {} -> GT
         FalseElim {} -> GT
+        TrueIntr j' -> compare j j'
+        _ -> LT
+      ImpElim _ j q r -> case p' of
+        Ax {} -> GT
+        FalseElim {} -> GT
+        TrueIntr {} -> GT
         ImpElim _ j' q' r' -> compareBinary j q r j' q' r'
         _ -> LT
       ImpIntr _ j q -> case p' of
-        Ax _ -> GT
+        Ax {} -> GT
         FalseElim {} -> GT
+        TrueIntr {} -> GT
         ImpElim {} -> GT
         ImpIntr _ j' q' -> compareUnary j q j' q'
     x -> x
@@ -217,6 +247,7 @@ instance Show a => Show (Proof a) where
 
       g (Ax j) = showsNullary "axiom " j
       g (FalseElim _ j p) = showsUnary "falseElim " j p
+      g (TrueIntr j) = showsNullary "trueIntr " j
       g (ImpElim _ j p q) = showsBinary "impElim " j p q
       g (ImpIntr _ j p) = showsUnary "impIntr " j p
 
@@ -252,6 +283,7 @@ instance PrettyPrintable a => PrettyPrintable (Proof a) where
 
       rule Ax {} = axiomS
       rule FalseElim {} = falseElimS
+      rule TrueIntr {} = trueIntrS
       rule ImpElim {} = impElimS
       rule ImpIntr {} = impIntrS
 

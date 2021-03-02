@@ -15,7 +15,7 @@ module AutoProof.Proof.Correctness
 where
 
 import AutoProof.Formula
-  ( Formula (Imp),
+  ( Formula (Imp, Lit),
     false,
     imp,
   )
@@ -25,7 +25,8 @@ import AutoProof.Proof.Types
       ( Ax,
         FalseElim,
         ImpElim,
-        ImpIntr
+        ImpIntr,
+        TrueIntr
       ),
     judgement,
   )
@@ -52,6 +53,11 @@ debug x@(FalseElim _ (Judgement g _) p) =
    in if b' == false && g' `Set.isSubsetOf` g
         then debug p
         else Left x
+-- Truth introduction:
+--
+-- ----- (⊤I)
+-- g ⊢ ⊤
+debug (TrueIntr (Judgement _ (Lit True))) = return ()
 -- Implication elimination: if g1 and g2 are subsets of g, then
 --
 --     p           q

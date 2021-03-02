@@ -49,6 +49,7 @@ module AutoProof
     -- ** Proof constructors
     axiom,
     falseElim,
+    trueIntr,
     impElim,
     impIntr,
 
@@ -126,6 +127,7 @@ import AutoProof.Proof
     proveImp,
     strengthenProof,
     toImp,
+    trueIntr,
     valid,
     weakenProof,
   )

@@ -37,6 +37,9 @@ axiomS = "(Ax)"
 falseElimS :: String
 falseElimS = "(" ++ falseS ++ "E)"
 
+trueIntrS :: String
+trueIntrS = "(" ++ trueS ++ "I)"
+
 impElimS :: String
 impElimS = "(" ++ impS ++ "E)"
 
