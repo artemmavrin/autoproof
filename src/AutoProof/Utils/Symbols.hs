@@ -34,6 +34,9 @@ turnstileS = ifWindows "|-" "⊢"
 axiomS :: String
 axiomS = "(Ax)"
 
+falseElimS :: String
+falseElimS = "(" ++ falseS ++ "E)"
+
 impElimS :: String
 impElimS = "(" ++ impS ++ "E)"
 
@@ -55,6 +58,7 @@ branchS = ifWindows "+-- " "├── "
 -- TODO: figure out if Windows is actually the problem with printing certain
 -- characters
 ifWindows :: a -> a -> a
+
 #ifdef mingw32_HOST_OS
 ifWindows a _ = a
 #else

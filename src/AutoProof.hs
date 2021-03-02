@@ -48,6 +48,7 @@ module AutoProof
 
     -- ** Proof constructors
     axiom,
+    falseElim,
     impElim,
     impIntr,
 
@@ -115,6 +116,7 @@ import AutoProof.Proof
     axiom,
     correct,
     debug,
+    falseElim,
     findCut,
     hasCut,
     impElim,

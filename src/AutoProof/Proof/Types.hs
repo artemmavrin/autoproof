@@ -8,9 +8,15 @@
 --
 -- Defines the 'Proof' type.
 module AutoProof.Proof.Types
-  ( Proof (Ax, ImpElim, ImpIntr),
+  ( Proof
+      ( Ax,
+        FalseElim,
+        ImpElim,
+        ImpIntr
+      ),
     Height,
     axiom,
+    falseElim,
     impElim,
     impIntr,
     height,
@@ -26,6 +32,7 @@ import AutoProof.Utils.Symbols
   ( axiomS,
     branchS,
     cornerS,
+    falseElimS,
     impElimS,
     impIntrS,
     vertS,
@@ -36,11 +43,14 @@ import AutoProof.Utils.Symbols
 -- Proofs can be created using the proof constructors
 --
 -- * 'axiom'
+-- * 'falseElim' (falsity elimination, or the principle of explosion)
 -- * 'impElim' (implication elimination, or /modus ponens/)
 -- * 'impIntr' (implication introduction)
 data Proof a
   = -- | Axiom.
     Ax !(Judgement a)
+  | -- | Bottom elimination.
+    FalseElim !Height !(Judgement a) (Proof a)
   | -- | Implication elimination
     ImpElim !Height !(Judgement a) !(Proof a) !(Proof a)
   | -- | Implication introduction
@@ -55,18 +65,21 @@ type Height = Int
 -- edges on the longest path from the root to a leaf).
 height :: Proof a -> Int
 height (Ax _) = 0
-height (ImpElim d _ _ _) = d
-height (ImpIntr d _ _) = d
+height (FalseElim h _ _) = h
+height (ImpElim h _ _ _) = h
+height (ImpIntr h _ _) = h
 
 -- | Get the final judgement of a proof.
 judgement :: Proof a -> Judgement a
 judgement (Ax j) = j
+judgement (FalseElim _ j _) = j
 judgement (ImpElim _ j _ _) = j
 judgement (ImpIntr _ j _) = j
 
 -- | List of premises (as proofs) of a given proof.
 premises :: Proof a -> [Proof a]
 premises (Ax _) = []
+premises (FalseElim _ _ p) = [p]
 premises (ImpElim _ _ p q) = [p, q]
 premises (ImpIntr _ _ p) = [p]
 
@@ -81,6 +94,25 @@ premises (ImpIntr _ _ p) = [p]
 -- \]
 axiom :: Judgement a -> Proof a
 axiom = Ax
+
+-- | Falsity elimination (principle of explosion).
+-- @('falseElim' (g 'AutoProof.Judgement.|-' a) p)@ represents the inference of
+-- the judgement \(g \vdash a\) given a proof \(p\) of \(g \vdash \bot\):
+--
+-- \[
+--   \frac{
+--     \displaystyle\frac{
+--       p
+--     }{
+--       g \vdash \bot
+--     }
+--   }{
+--     g \vdash a
+--   }
+--   \, ({\bot}\text{E})
+-- \]
+falseElim :: Judgement a -> Proof a -> Proof a
+falseElim = unaryConstructor FalseElim
 
 -- | Implication elimination (/modus ponens/).
 -- @('impElim' (g 'AutoProof.Judgement.|-' b) p q)@ represents the inference of
@@ -127,12 +159,20 @@ impElim j p q = ImpElim (1 + max (height p) (height q)) j p q
 --   \, ({\rightarrow}\text{I})
 -- \]
 impIntr :: Judgement a -> Proof a -> Proof a
-impIntr j p = ImpIntr (1 + height p) j p
+impIntr = unaryConstructor ImpIntr
+
+unaryConstructor ::
+  (Height -> Judgement a -> Proof a -> Proof a) ->
+  Judgement a ->
+  Proof a ->
+  Proof a
+unaryConstructor c j p = c (1 + height p) j p
 
 -- Instance declarations
 
 instance Eq a => Eq (Proof a) where
   (Ax j) == (Ax j') = j == j'
+  (FalseElim _ j p) == (FalseElim _ j' p') = j == j' && p == p'
   (ImpElim _ j p q) == (ImpElim _ j' p' q') = j == j' && p == p' && q == q'
   (ImpIntr _ j p) == (ImpIntr _ j' p') = j == j' && p == p'
   _ == _ = False
@@ -143,20 +183,26 @@ instance Ord a => Ord (Proof a) where
       Ax j -> case p' of
         Ax j' -> compare j j'
         _ -> LT
+      FalseElim _ j q -> case p' of
+        Ax _ -> GT
+        FalseElim _ j' q' -> compareUnary j q j' q'
+        _ -> LT
       ImpElim _ j q r -> case p' of
         Ax _ -> GT
-        ImpElim _ j' q' r' -> binary j q r j' q' r'
+        FalseElim {} -> GT
+        ImpElim _ j' q' r' -> compareBinary j q r j' q' r'
         _ -> LT
       ImpIntr _ j q -> case p' of
         Ax _ -> GT
+        FalseElim {} -> GT
         ImpElim {} -> GT
-        ImpIntr _ j' q' -> unary j q j' q'
+        ImpIntr _ j' q' -> compareUnary j q j' q'
     x -> x
     where
-      unary j q j' q' = case compare j j' of
+      compareUnary j q j' q' = case compare j j' of
         EQ -> compare q q'
         x -> x
-      binary j q r j' q' r' = case compare j j' of
+      compareBinary j q r j' q' r' = case compare j j' of
         EQ -> case compare q q' of
           EQ -> compare r r'
           y -> y
@@ -169,18 +215,19 @@ instance Show a => Show (Proof a) where
 
       f b a = showParen b $ g a
 
-      g (Ax j) = nullary "axiom " j
-      g (ImpElim _ j p q) = binary "impElim " j p q
-      g (ImpIntr _ j p) = unary "impIntr " j p
+      g (Ax j) = showsNullary "axiom " j
+      g (FalseElim _ j p) = showsUnary "falseElim " j p
+      g (ImpElim _ j p q) = showsBinary "impElim " j p q
+      g (ImpIntr _ j p) = showsUnary "impIntr " j p
 
-      nullary c j = showString c . showsPrec (appPrec + 1) j
+      showsNullary c j = showString c . showsPrec (appPrec + 1) j
 
-      unary c j p =
+      showsUnary c j p =
         showString c . showsPrec (appPrec + 1) j
           . showString " "
           . f True p
 
-      binary c j p q =
+      showsBinary c j p q =
         showString c . showsPrec (appPrec + 1) j
           . showString " "
           . f True p
@@ -204,6 +251,7 @@ instance PrettyPrintable a => PrettyPrintable (Proof a) where
       shift first other = zipWith (++) (first : repeat other)
 
       rule Ax {} = axiomS
+      rule FalseElim {} = falseElimS
       rule ImpElim {} = impElimS
       rule ImpIntr {} = impIntrS
 

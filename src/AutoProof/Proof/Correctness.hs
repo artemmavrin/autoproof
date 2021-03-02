@@ -14,11 +14,16 @@ module AutoProof.Proof.Correctness
   )
 where
 
-import AutoProof.Formula (Formula (Imp), imp)
+import AutoProof.Formula
+  ( Formula (Imp),
+    false,
+    imp,
+  )
 import AutoProof.Judgement (Judgement (Judgement))
 import AutoProof.Proof.Types
   ( Proof
       ( Ax,
+        FalseElim,
         ImpElim,
         ImpIntr
       ),
@@ -35,6 +40,18 @@ debug :: Ord a => Proof a -> Either (Proof a) ()
 -- ----- (Ax)
 -- g ⊢ a
 debug x@(Ax (Judgement g a)) = if Set.member a g then return () else Left x
+-- Falsity elimination:
+--
+--   p
+-- -----
+-- g ⊢ ⊥
+-- ----- (⊥E)
+-- g ⊢ a
+debug x@(FalseElim _ (Judgement g _) p) =
+  let Judgement g' b' = judgement p
+   in if b' == false && g' `Set.isSubsetOf` g
+        then debug p
+        else Left x
 -- Implication elimination: if g1 and g2 are subsets of g, then
 --
 --     p           q

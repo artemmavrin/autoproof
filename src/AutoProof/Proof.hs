@@ -9,10 +9,16 @@
 -- Intuitionistic natural deductions in propositional logic.
 module AutoProof.Proof
   ( -- * Proof type
-    Proof (Ax, ImpElim, ImpIntr),
+    Proof
+      ( Ax,
+        FalseElim,
+        ImpElim,
+        ImpIntr
+      ),
 
     -- ** Proof constructors
     axiom,
+    falseElim,
     impElim,
     impIntr,
 
@@ -50,8 +56,14 @@ import AutoProof.Proof.Implication (proveImp)
 import AutoProof.Proof.Provability (isTautology, toImp)
 import AutoProof.Proof.Transform (strengthenProof, weakenProof)
 import AutoProof.Proof.Types
-  ( Proof (Ax, ImpElim, ImpIntr),
+  ( Proof
+      ( Ax,
+        FalseElim,
+        ImpElim,
+        ImpIntr
+      ),
     axiom,
+    falseElim,
     height,
     impElim,
     impIntr,

@@ -16,8 +16,14 @@ where
 import AutoProof.Formula (Formula (Imp))
 import AutoProof.Judgement (Judgement (Judgement, antecedents), weakenJudgement)
 import AutoProof.Proof.Types
-  ( Proof (Ax, ImpElim, ImpIntr),
+  ( Proof
+      ( Ax,
+        FalseElim,
+        ImpElim,
+        ImpIntr
+      ),
     axiom,
+    falseElim,
     height,
     impElim,
     impIntr,
@@ -29,10 +35,20 @@ import qualified Data.Set as Set
 -- @p@ to include @a@ as an additional hypothesis.
 weakenProof :: Ord a => Proof a -> Formula a -> Proof a
 weakenProof (Ax j) a = axiom (weakenJudgement j a)
+weakenProof (FalseElim _ j p) a = weakenUnary falseElim a j p
 weakenProof x@(ImpElim _ j p q) a = weakenBinary impElim x a j p q
-weakenProof (ImpIntr _ j p) a = impIntr (weakenJudgement j a) (weakenProof p a)
+weakenProof (ImpIntr _ j p) a = weakenUnary impIntr a j p
 
--- Helper function for weakenProof
+-- Helper functions for weakenProof
+weakenUnary ::
+  Ord a =>
+  (Judgement a -> Proof a -> Proof a) ->
+  Formula a ->
+  Judgement a ->
+  Proof a ->
+  Proof a
+weakenUnary c a j p = c (weakenJudgement j a) (weakenProof p a)
+
 weakenBinary ::
   Ord a =>
   (Judgement a -> Proof a -> Proof a -> Proof a) ->
@@ -51,6 +67,10 @@ weakenBinary c x a j p q
 -- hypotheses where possible.
 strengthenProof :: Ord a => Proof a -> Proof a
 strengthenProof (Ax (Judgement _ a)) = axiom (Judgement (Set.singleton a) a)
+strengthenProof (FalseElim _ (Judgement _ a) p) =
+  let p' = strengthenProof p
+      c = antecedents (judgement p')
+   in falseElim (Judgement c a) p'
 strengthenProof (ImpElim _ (Judgement _ a) p q) =
   let p' = strengthenProof p
       q' = strengthenProof q
@@ -64,5 +84,5 @@ strengthenProof (ImpIntr _ (Judgement _ i@(Imp _ _ a _)) p) =
       c = antecedents (judgement p'')
       c' = Set.delete a c
    in impIntr (Judgement c' i) p''
--- If we're here, it means the proof is invalid! (Should this return undefined?)
-strengthenProof p = p
+-- If we're here, then the proof is invalid!
+strengthenProof _ = undefined
