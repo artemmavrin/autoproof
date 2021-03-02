@@ -51,6 +51,7 @@ module AutoProof
     falseElim,
     trueIntr,
     notElim,
+    notIntr,
     impElim,
     impIntr,
 
@@ -125,6 +126,7 @@ import AutoProof.Proof
     impIntr,
     isTautology,
     notElim,
+    notIntr,
     prettyProof,
     proveImp,
     strengthenProof,

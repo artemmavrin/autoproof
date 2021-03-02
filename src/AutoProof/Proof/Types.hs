@@ -13,6 +13,7 @@ module AutoProof.Proof.Types
         FalseElim,
         TrueIntr,
         NotElim,
+        NotIntr,
         ImpElim,
         ImpIntr
       ),
@@ -21,6 +22,7 @@ module AutoProof.Proof.Types
     falseElim,
     trueIntr,
     notElim,
+    notIntr,
     impElim,
     impIntr,
     height,
@@ -40,6 +42,7 @@ import AutoProof.Utils.Symbols
     impElimS,
     impIntrS,
     notElimS,
+    notIntrS,
     trueIntrS,
     vertS,
   )
@@ -52,6 +55,7 @@ import AutoProof.Utils.Symbols
 -- * 'falseElim' (falsity elimination, or the principle of explosion)
 -- * 'trueIntr' (truth introduction)
 -- * 'notElim' (negation elimination)
+-- * 'notIntr' (negation introduction)
 -- * 'impElim' (implication elimination, or /modus ponens/)
 -- * 'impIntr' (implication introduction)
 data Proof a
@@ -63,6 +67,8 @@ data Proof a
     TrueIntr !(Judgement a)
   | -- | Negation elimination
     NotElim !Height !(Judgement a) !(Proof a) !(Proof a)
+  | -- | Negation introduction
+    NotIntr !Height !(Judgement a) !(Proof a)
   | -- | Implication elimination
     ImpElim !Height !(Judgement a) !(Proof a) !(Proof a)
   | -- | Implication introduction
@@ -80,6 +86,7 @@ height (Ax _) = 0
 height (FalseElim h _ _) = h
 height (TrueIntr _) = 0
 height (NotElim h _ _ _) = h
+height (NotIntr h _ _) = h
 height (ImpElim h _ _ _) = h
 height (ImpIntr h _ _) = h
 
@@ -89,6 +96,7 @@ judgement (Ax j) = j
 judgement (FalseElim _ j _) = j
 judgement (TrueIntr j) = j
 judgement (NotElim _ j _ _) = j
+judgement (NotIntr _ j _) = j
 judgement (ImpElim _ j _ _) = j
 judgement (ImpIntr _ j _) = j
 
@@ -98,6 +106,7 @@ premises (Ax _) = []
 premises (FalseElim _ _ p) = [p]
 premises (TrueIntr _) = []
 premises (NotElim _ _ p q) = [p, q]
+premises (NotIntr _ _ p) = [p]
 premises (ImpElim _ _ p q) = [p, q]
 premises (ImpIntr _ _ p) = [p]
 
@@ -133,8 +142,8 @@ falseElim :: Judgement a -> Proof a -> Proof a
 falseElim = unaryConstructor FalseElim
 
 -- | Truth introduction.
--- @('trueIntr' (g 'AutoProof.Judgement.|-' 'true'))@ represents the vacuous
--- inference of the judgement \(g \vdash \top\):
+-- @('trueIntr' (g 'AutoProof.Judgement.|-' 'AutoProof.Formula.true'))@
+-- represents the vacuous inference of the judgement \(g \vdash \top\):
 --
 -- \[
 --   \frac{}{
@@ -146,9 +155,9 @@ trueIntr :: Judgement a -> Proof a
 trueIntr = TrueIntr
 
 -- | Negation elimination.
--- @('notElim' (g 'AutoProof.Judgement.|-' 'false') p q)@ represents the
--- inference of the judgement \(g \vdash \bot\) given a proof \(p\) of
--- \(g_1 \vdash \lnot a\) and a proof \(q\) of \(g_2 \vdash a\), where
+-- @('notElim' (g 'AutoProof.Judgement.|-' 'AutoProof.Formula.false') p q)@
+-- represents the inference of the judgement \(g \vdash \bot\) given a proof
+-- \(p\) of \(g_1 \vdash \lnot a\) and a proof \(q\) of \(g_2 \vdash a\), where
 -- \(g_1 \cup g_2 \subseteq g\):
 --
 -- \[
@@ -167,10 +176,30 @@ trueIntr = TrueIntr
 --   }{
 --     g \vdash \bot
 --   }
---   \, ({\bot}\text{E})
+--   \, ({\lnot}\text{E})
 -- \]
 notElim :: Judgement a -> Proof a -> Proof a -> Proof a
 notElim = binaryConstructor ImpElim
+
+-- | Negation introduction.
+-- @('notIntr' (g 'AutoProof.Judgement.|-' ('not' a)) p)@ represents the
+-- inference of the judgement \(g \vdash \lnot a\) given a proof \(p\) of
+-- \(g, a \vdash \bot\):
+--
+-- \[
+--   \frac{
+--     \displaystyle\frac{
+--       p
+--     }{
+--       g, a \vdash \bot
+--     }
+--   }{
+--     g \vdash \lnot a
+--   }
+--   \, ({\lnot}\text{I})
+-- \]
+notIntr :: Judgement a -> Proof a -> Proof a
+notIntr = unaryConstructor ImpIntr
 
 -- | Implication elimination (/modus ponens/).
 -- @('impElim' (g 'AutoProof.Judgement.|-' b) p q)@ represents the inference of
@@ -241,6 +270,7 @@ instance Eq a => Eq (Proof a) where
   (FalseElim _ j p) == (FalseElim _ j' p') = j == j' && p == p'
   (TrueIntr j) == (TrueIntr j') = j == j'
   (NotElim _ j p q) == (NotElim _ j' p' q') = j == j' && p == p' && q == q'
+  (NotIntr _ j p) == (NotIntr _ j' p') = j == j' && p == p'
   (ImpElim _ j p q) == (ImpElim _ j' p' q') = j == j' && p == p' && q == q'
   (ImpIntr _ j p) == (ImpIntr _ j' p') = j == j' && p == p'
   _ == _ = False
@@ -266,11 +296,19 @@ instance Ord a => Ord (Proof a) where
         TrueIntr {} -> GT
         NotElim _ j' q' r' -> compareBinary j q r j' q' r'
         _ -> LT
+      NotIntr _ j q -> case p' of
+        Ax {} -> GT
+        FalseElim {} -> GT
+        TrueIntr {} -> GT
+        NotElim {} -> GT
+        NotIntr _ j' q' -> compareUnary j q j' q'
+        _ -> LT
       ImpElim _ j q r -> case p' of
         Ax {} -> GT
         FalseElim {} -> GT
         TrueIntr {} -> GT
         NotElim {} -> GT
+        NotIntr {} -> GT
         ImpElim _ j' q' r' -> compareBinary j q r j' q' r'
         _ -> LT
       ImpIntr _ j q -> case p' of
@@ -278,6 +316,7 @@ instance Ord a => Ord (Proof a) where
         FalseElim {} -> GT
         TrueIntr {} -> GT
         NotElim {} -> GT
+        NotIntr {} -> GT
         ImpElim {} -> GT
         ImpIntr _ j' q' -> compareUnary j q j' q'
     x -> x
@@ -302,6 +341,7 @@ instance Show a => Show (Proof a) where
       g (FalseElim _ j p) = showsUnary "falseElim " j p
       g (TrueIntr j) = showsNullary "trueIntr " j
       g (NotElim _ j p q) = showsBinary "notElim " j p q
+      g (NotIntr _ j p) = showsUnary "notIntr " j p
       g (ImpElim _ j p q) = showsBinary "impElim " j p q
       g (ImpIntr _ j p) = showsUnary "impIntr " j p
 
@@ -339,6 +379,7 @@ instance PrettyPrintable a => PrettyPrintable (Proof a) where
       rule FalseElim {} = falseElimS
       rule TrueIntr {} = trueIntrS
       rule NotElim {} = notElimS
+      rule NotIntr {} = notIntrS
       rule ImpElim {} = impElimS
       rule ImpIntr {} = impIntrS
 

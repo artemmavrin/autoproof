@@ -27,6 +27,7 @@ import AutoProof.Proof.Types
         ImpElim,
         ImpIntr,
         NotElim,
+        NotIntr,
         TrueIntr
       ),
     judgement,
@@ -75,6 +76,18 @@ debug x@(NotElim _ (Judgement g (Lit False)) p q) =
                       && g2 `Set.isSubsetOf` g -> do
           debug p
           debug q
+        _ -> Left x
+-- Negation introduction:
+--
+--     p
+-- --------
+-- g, a ⊢ ⊥
+-- -------- (¬I)
+--  g ⊢ ¬a
+debug x@(NotIntr _ (Judgement g (Not _ _ a)) p) =
+  let (Judgement g' b) = judgement p
+   in case b of
+        Lit False | g' == Set.insert a g -> debug p
         _ -> Left x
 -- Implication elimination: if g1 and g2 are subsets of g, then
 --

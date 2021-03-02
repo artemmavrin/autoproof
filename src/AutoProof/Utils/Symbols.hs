@@ -43,6 +43,9 @@ trueIntrS = intr trueS
 notElimS :: String
 notElimS = elim notS
 
+notIntrS :: String
+notIntrS = intr notS
+
 impElimS :: String
 impElimS = elim impS
 

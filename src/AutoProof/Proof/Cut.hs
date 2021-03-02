@@ -9,12 +9,20 @@
 -- Functions related to cuts in proofs.
 module AutoProof.Proof.Cut (findCut, hasCut) where
 
-import AutoProof.Proof.Types (Proof (ImpElim, ImpIntr))
+import AutoProof.Proof.Types
+  ( Proof
+      ( ImpElim,
+        ImpIntr,
+        NotElim,
+        NotIntr
+      ),
+  )
 import Data.Maybe (isJust)
 
 -- | Find the cut nearest the root of a proof, if any.
 findCut :: Proof a -> Maybe (Proof a)
 findCut p@(ImpElim _ _ ImpIntr {} _) = Just p
+findCut p@(NotElim _ _ NotIntr {} _) = Just p
 findCut _ = Nothing
 
 -- | Check if a proof has a cut.

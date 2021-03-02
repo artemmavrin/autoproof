@@ -22,6 +22,7 @@ import AutoProof.Proof.Types
         ImpElim,
         ImpIntr,
         NotElim,
+        NotIntr,
         TrueIntr
       ),
     axiom,
@@ -31,6 +32,7 @@ import AutoProof.Proof.Types
     impIntr,
     judgement,
     notElim,
+    notIntr,
     trueIntr,
   )
 import qualified Data.Set as Set
@@ -42,6 +44,7 @@ weakenProof (Ax j) a = axiom (weakenJudgement j a)
 weakenProof (FalseElim _ j p) a = weakenUnary falseElim a j p
 weakenProof (TrueIntr j) a = trueIntr (weakenJudgement j a)
 weakenProof x@(NotElim _ j p q) a = weakenBinary notElim x a j p q
+weakenProof (NotIntr _ j p) a = weakenUnary notIntr a j p
 weakenProof x@(ImpElim _ j p q) a = weakenBinary impElim x a j p q
 weakenProof (ImpIntr _ j p) a = weakenUnary impIntr a j p
 
@@ -85,6 +88,12 @@ strengthenProof (NotElim _ (Judgement _ a) p q) =
       cq = antecedents (judgement q')
       c = Set.union cp cq
    in notElim (Judgement c a) p' q'
+strengthenProof (NotIntr _ (Judgement _ i@(Imp _ _ a _)) p) =
+  let p' = strengthenProof p
+      p'' = weakenProof p' a -- a might not be needed in p'
+      c = antecedents (judgement p'')
+      c' = Set.delete a c
+   in notIntr (Judgement c' i) p''
 strengthenProof (ImpElim _ (Judgement _ a) p q) =
   let p' = strengthenProof p
       q' = strengthenProof q
