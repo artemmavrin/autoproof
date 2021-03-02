@@ -35,16 +35,25 @@ axiomS :: String
 axiomS = "(Ax)"
 
 falseElimS :: String
-falseElimS = "(" ++ falseS ++ "E)"
+falseElimS = elim falseS
 
 trueIntrS :: String
-trueIntrS = "(" ++ trueS ++ "I)"
+trueIntrS = intr trueS
+
+notElimS :: String
+notElimS = elim notS
 
 impElimS :: String
-impElimS = "(" ++ impS ++ "E)"
+impElimS = elim impS
 
 impIntrS :: String
-impIntrS = "(" ++ impS ++ "I)"
+impIntrS = intr impS
+
+elim :: String -> String
+elim s = "(" ++ s ++ "E)"
+
+intr :: String -> String
+intr s = "(" ++ s ++ "I)"
 
 -- Pretty-printed proof components
 

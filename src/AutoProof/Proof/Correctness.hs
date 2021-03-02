@@ -15,7 +15,7 @@ module AutoProof.Proof.Correctness
 where
 
 import AutoProof.Formula
-  ( Formula (Imp, Lit),
+  ( Formula (Imp, Lit, Not),
     false,
     imp,
   )
@@ -26,6 +26,7 @@ import AutoProof.Proof.Types
         FalseElim,
         ImpElim,
         ImpIntr,
+        NotElim,
         TrueIntr
       ),
     judgement,
@@ -58,6 +59,23 @@ debug x@(FalseElim _ (Judgement g _) p) =
 -- ----- (⊤I)
 -- g ⊢ ⊤
 debug (TrueIntr (Judgement _ (Lit True))) = return ()
+-- Negation elimination: if g1 and g2 are subsets of g, then
+--
+--    p          q
+-- -------    ------
+-- g1 ⊢ ¬a    g2 ⊢ a
+-- ----------------- (¬E)
+--        g ⊢ ⊥
+debug x@(NotElim _ (Judgement g (Lit False)) p q) =
+  let Judgement g1 na = judgement p
+      Judgement g2 a = judgement q
+   in case na of
+        Not _ _ b | b == a
+                      && g1 `Set.isSubsetOf` g
+                      && g2 `Set.isSubsetOf` g -> do
+          debug p
+          debug q
+        _ -> Left x
 -- Implication elimination: if g1 and g2 are subsets of g, then
 --
 --     p           q

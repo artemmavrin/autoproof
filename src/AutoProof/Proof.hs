@@ -13,6 +13,7 @@ module AutoProof.Proof
       ( Ax,
         FalseElim,
         TrueIntr,
+        NotElim,
         ImpElim,
         ImpIntr
       ),
@@ -21,6 +22,7 @@ module AutoProof.Proof
     axiom,
     falseElim,
     trueIntr,
+    notElim,
     impElim,
     impIntr,
 
@@ -63,6 +65,7 @@ import AutoProof.Proof.Types
         FalseElim,
         ImpElim,
         ImpIntr,
+        NotElim,
         TrueIntr
       ),
     axiom,
@@ -71,6 +74,7 @@ import AutoProof.Proof.Types
     impElim,
     impIntr,
     judgement,
+    notElim,
     premises,
     prettyProof,
     trueIntr,
