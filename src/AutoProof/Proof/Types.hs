@@ -158,7 +158,7 @@ trueIntr = TrueIntr
 -- @('notElim' (g 'AutoProof.Judgement.|-' 'AutoProof.Formula.false') p q)@
 -- represents the inference of the judgement \(g \vdash \bot\) given a proof
 -- \(p\) of \(g_1 \vdash \lnot a\) and a proof \(q\) of \(g_2 \vdash a\), where
--- \(g_1 \cup g_2 \subseteq g\):
+-- \(g = g_1 \cup g_2\):
 --
 -- \[
 --   \frac{
@@ -205,7 +205,7 @@ notIntr = unaryConstructor ImpIntr
 -- @('impElim' (g 'AutoProof.Judgement.|-' b) p q)@ represents the inference of
 -- the judgement \(g \vdash b\) given a proof \(p\) of
 -- \(g_1 \vdash a \rightarrow b\) and a proof \(q\) of \(g_2 \vdash a\), where
--- \(g_1 \cup g_2 \subseteq g\):
+-- \(g = g_1 \cup g_2\):
 --
 -- \[
 --   \frac{

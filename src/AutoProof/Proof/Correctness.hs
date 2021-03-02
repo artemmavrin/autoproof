@@ -52,7 +52,7 @@ debug x@(Ax (Judgement g a)) = if Set.member a g then return () else Left x
 -- g ⊢ a
 debug x@(FalseElim _ (Judgement g _) p) =
   let Judgement g' b' = judgement p
-   in if b' == false && g' `Set.isSubsetOf` g
+   in if b' == false && g' == g
         then debug p
         else Left x
 -- Truth introduction:
@@ -60,7 +60,7 @@ debug x@(FalseElim _ (Judgement g _) p) =
 -- ----- (⊤I)
 -- g ⊢ ⊤
 debug (TrueIntr (Judgement _ (Lit True))) = return ()
--- Negation elimination: if g1 and g2 are subsets of g, then
+-- Negation elimination: if g is the union of g1 and g2, then
 --
 --    p          q
 -- -------    ------
@@ -71,9 +71,7 @@ debug x@(NotElim _ (Judgement g (Lit False)) p q) =
   let Judgement g1 na = judgement p
       Judgement g2 a = judgement q
    in case na of
-        Not _ _ b | b == a
-                      && g1 `Set.isSubsetOf` g
-                      && g2 `Set.isSubsetOf` g -> do
+        Not _ _ b | b == a && g == g1 `Set.union` g2 -> do
           debug p
           debug q
         _ -> Left x
@@ -89,7 +87,7 @@ debug x@(NotIntr _ (Judgement g (Not _ _ a)) p) =
    in case b of
         Lit False | g' == Set.insert a g -> debug p
         _ -> Left x
--- Implication elimination: if g1 and g2 are subsets of g, then
+-- Implication elimination: if g is the union of g1 and g2, then
 --
 --     p           q
 -- ----------    ------
@@ -99,9 +97,7 @@ debug x@(NotIntr _ (Judgement g (Not _ _ a)) p) =
 debug x@(ImpElim _ (Judgement g b) p q) =
   let Judgement g1 c = judgement p
       Judgement g2 a = judgement q
-   in if c == imp a b
-        && g1 `Set.isSubsetOf` g
-        && g2 `Set.isSubsetOf` g
+   in if c == imp a b && g == g1 `Set.union` g2
         then do
           debug p
           debug q
@@ -115,7 +111,7 @@ debug x@(ImpElim _ (Judgement g b) p q) =
 -- g ⊢ a → b
 debug x@(ImpIntr _ (Judgement g (Imp _ _ a b)) p) =
   let Judgement g' b' = judgement p
-   in if b' == b && a `Set.member` g' && g' `Set.isSubsetOf` Set.insert a g
+   in if b' == b && g' == Set.insert a g
         then debug p
         else Left x
 -- Pattern match failure:
