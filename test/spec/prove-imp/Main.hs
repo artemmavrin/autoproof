@@ -15,6 +15,7 @@ import AutoProof
     (|-),
   )
 import AutoProof.Parser (unsafeParseJudgement)
+import Data.Char (isSpace)
 import Data.Maybe (fromJust, isJust)
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
@@ -22,8 +23,8 @@ import qualified Test.QuickCheck as QC
 main :: IO ()
 main = do
   -- Load known provable and unprovable sequents
-  provable <- loadJudgements "test/spec/prove-imp/examples/provable.txt"
-  unprovable <- loadJudgements "test/spec/prove-imp/examples/unprovable.txt"
+  provable <- loadJudgements "test/data/judgements/provable-imp.txt"
+  unprovable <- loadJudgements "test/data/judgements/unprovable-imp.txt"
 
   -- Run tests
   H.hspec $
@@ -51,7 +52,13 @@ instance QC.Arbitrary (Judgement Char) where
 loadJudgements :: String -> IO [Judgement String]
 loadJudgements filename = do
   contents <- readFile filename
-  return (unsafeParseJudgement <$> lines contents)
+  let strings = lines contents
+  let formulaStrings = clean strings
+  return (unsafeParseJudgement <$> formulaStrings)
+  where
+    stripSpace = reverse . dropWhile isSpace . reverse . dropWhile isSpace
+    dropComments = takeWhile (/= '#')
+    clean = filter (not . null) . map (stripSpace . dropComments)
 
 timeoutMicroseconds :: Int
 timeoutMicroseconds = 60000000 -- One minute
