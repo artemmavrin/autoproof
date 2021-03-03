@@ -27,7 +27,7 @@ module AutoProof.Utils.Symbols
     orIntrRS,
     andElimLS,
     andElimRS,
-    andIntr,
+    andIntrS,
     iffElimLS,
     iffElimRS,
     iffIntrS,
@@ -103,8 +103,8 @@ andElimLS = elimL andS
 andElimRS :: String
 andElimRS = elimR andS
 
-andIntr :: String
-andIntr = intr andS
+andIntrS :: String
+andIntrS = intr andS
 
 iffElimLS :: String
 iffElimLS = elimL iffS
