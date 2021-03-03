@@ -222,9 +222,9 @@ strengthenOrElim j@(Judgement _ c) p q r = case consequent (judgement p) of
         r' = strengthenProof r
         q'' = weakenProof q' a -- a might not be needed in q'
         r'' = weakenProof r' b -- b might not be needed in r'
-        gp = antecedents (judgement p')
-        gq = antecedents (judgement q'')
-        gr = antecedents (judgement r'')
-        g = Set.union (Set.union gp gq) gr
+        g1 = antecedents (judgement p')
+        g2 = Set.delete a (antecedents (judgement q''))
+        g3 = Set.delete b (antecedents (judgement r''))
+        g = Set.union (Set.union g1 g2) g3
      in orElim (Judgement g c) p' q'' r''
   _ -> orElim j p q r -- Wrong form of inference rule!
