@@ -5,4 +5,5 @@ a |- b
 a -> b, b -> a |- a
 a -> b, b -> c, c -> a |- a
 b -> a, c -> a, (b -> c) -> a |- a
-(x -> y -> z) -> y, x |- x -> z
+(a -> b -> c) -> b, a |- a -> c
+a -> b, b -> c |- c -> a

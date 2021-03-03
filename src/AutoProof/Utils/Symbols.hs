@@ -1,7 +1,43 @@
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_HADDOCK hide, prune #-}
 
-module AutoProof.Utils.Symbols where
+module AutoProof.Utils.Symbols
+  ( -- * Formula symbols
+    falseS,
+    trueS,
+    notS,
+    impS,
+    orS,
+    andS,
+    iffS,
+
+    -- * Judgement symbols
+    turnstileS,
+
+    -- * Proof symbols
+    axiomS,
+    falseElimS,
+    trueIntrS,
+    notElimS,
+    notIntrS,
+    impElimS,
+    impIntrS,
+    orElimS,
+    orIntrLS,
+    orIntrRS,
+    andElimLS,
+    andElimRS,
+    andIntrS,
+    iffElimLS,
+    iffElimRS,
+    iffIntrS,
+
+    -- * Proof pretty-printing
+    vertS,
+    cornerS,
+    branchS,
+  )
+where
 
 -- Propositional literals, connectives, and judgement turnstile
 
@@ -34,11 +70,70 @@ turnstileS = ifWindows "|-" "⊢"
 axiomS :: String
 axiomS = "(Ax)"
 
+falseElimS :: String
+falseElimS = elim falseS
+
+trueIntrS :: String
+trueIntrS = intr trueS
+
+notElimS :: String
+notElimS = elim notS
+
+notIntrS :: String
+notIntrS = intr notS
+
 impElimS :: String
-impElimS = "(" ++ impS ++ "E)"
+impElimS = elim impS
 
 impIntrS :: String
-impIntrS = "(" ++ impS ++ "I)"
+impIntrS = intr impS
+
+orElimS :: String
+orElimS = elim orS
+
+orIntrLS :: String
+orIntrLS = intrL orS
+
+orIntrRS :: String
+orIntrRS = intrR orS
+
+andElimLS :: String
+andElimLS = elimL andS
+
+andElimRS :: String
+andElimRS = elimR andS
+
+andIntrS :: String
+andIntrS = intr andS
+
+iffElimLS :: String
+iffElimLS = elimL iffS
+
+iffElimRS :: String
+iffElimRS = elimR iffS
+
+iffIntrS :: String
+iffIntrS = intr iffS
+
+-- Inference rule symbol helper functions
+
+elim :: String -> String
+elim s = "(" ++ s ++ "E)"
+
+elimL :: String -> String
+elimL s = "(" ++ s ++ "EL)"
+
+elimR :: String -> String
+elimR s = "(" ++ s ++ "ER)"
+
+intr :: String -> String
+intr s = "(" ++ s ++ "I)"
+
+intrL :: String -> String
+intrL s = "(" ++ s ++ "IL)"
+
+intrR :: String -> String
+intrR s = "(" ++ s ++ "IR)"
 
 -- Pretty-printed proof components
 
@@ -55,6 +150,7 @@ branchS = ifWindows "+-- " "├── "
 -- TODO: figure out if Windows is actually the problem with printing certain
 -- characters
 ifWindows :: a -> a -> a
+
 #ifdef mingw32_HOST_OS
 ifWindows a _ = a
 #else

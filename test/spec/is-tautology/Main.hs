@@ -21,8 +21,8 @@ import qualified Test.QuickCheck as QC
 main :: IO ()
 main = do
   -- Load known provable and unprovable sequents
-  provable <- loadFormulas "test/spec/is-tautology/examples/provable.txt"
-  unprovable <- loadFormulas "test/spec/is-tautology/examples/unprovable.txt"
+  provable <- loadFormulas "test/data/formulas/tautologies.txt"
+  unprovable <- loadFormulas "test/data/formulas/not-tautologies.txt"
 
   -- Run tests
   H.hspec $

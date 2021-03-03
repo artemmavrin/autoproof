@@ -5,6 +5,8 @@ cradle:
       component: "autoproof:lib"
     - path: "./test/spec/formula/Main.hs"
       component: "autoproof:test:formula-test"
+    - path: "./test/spec/proof/Main.hs"
+      component: "autoproof:test:proof-test"
     - path: "./test/spec/parser/Main.hs"
       component: "autoproof:test:parser-test"
     - path: "./test/spec/prove-imp/Main.hs"
