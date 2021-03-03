@@ -260,7 +260,7 @@ trueIntr = TrueIntr
 --   \, ({\lnot}\text{E})
 -- \]
 notElim :: Judgement a -> Proof a -> Proof a -> Proof a
-notElim = binaryConstructor ImpElim
+notElim = binaryConstructor NotElim
 
 -- | Negation introduction.
 -- @('notIntr' (g 'AutoProof.Judgement.|-' ('not' a)) p)@ represents the
@@ -280,7 +280,7 @@ notElim = binaryConstructor ImpElim
 --   \, ({\lnot}\text{I})
 -- \]
 notIntr :: Judgement a -> Proof a -> Proof a
-notIntr = unaryConstructor ImpIntr
+notIntr = unaryConstructor NotIntr
 
 -- | Implication elimination (/modus ponens/).
 -- @('impElim' (g 'AutoProof.Judgement.|-' b) p q)@ represents the inference of
