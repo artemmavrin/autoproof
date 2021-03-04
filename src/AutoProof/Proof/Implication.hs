@@ -16,6 +16,7 @@ where
 import AutoProof.Formula (Formula (Imp, Var), imp)
 import AutoProof.Judgement (Judgement (Judgement))
 import AutoProof.Proof.Types (Proof, axiom, impElim, impIntr)
+import Control.Applicative ((<|>))
 import qualified Data.Set as Set
 
 -- | @('proveImp' (c 'AutoProof.Judgement.|-' a))@ finds an intuitionistic proof
@@ -84,7 +85,7 @@ proveImp (Judgement g f) = prove Set.empty g f
     prove s c v@(Var x) =
       if Set.member (v, c) s
         then Nothing -- Already visited current judgement; avoid cycles
-        else foldl findImp Nothing c
+        else foldr ((<|>) . findImp) Nothing c
       where
         -- Save the current judgement so we don't revisit it recursively
         s' = Set.insert (v, c) s
@@ -93,8 +94,7 @@ proveImp (Judgement g f) = prove Set.empty g f
         -- the variable x. When encountering a formula of the form
         -- a1 → (a2 → (... an → x)...), ensure each ai is provable, and, if so,
         -- construct a proof.
-        findImp p@(Just _) _ = p -- Already found a proof!
-        findImp Nothing a = do
+        findImp a = do
           as <- splitImp a
           construct as v
 
