@@ -42,10 +42,6 @@ instance PrettyPrintable Int where
 instance PrettyPrintable Integer where
   prettys = shows
 
-instance (PrettyPrintable a, PrettyPrintable b) => PrettyPrintable (Either a b) where
-  prettys (Left l) = showString "[" . prettys l . showString "]"
-  prettys (Right r) = prettys r
-
 -- | Difference-list representation of a pretty-printed collection of
 -- pretty-printable values.
 prettysSeq :: (Foldable t, PrettyPrintable a) => t a -> ShowS

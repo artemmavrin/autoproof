@@ -46,42 +46,33 @@ import Prelude hiding (and, not, or)
 --
 -- The transformation from \(a\) to \(g \vdash a^*\) involves two steps:
 --
--- 1. For each propositional formula \(b\), introduce a new propositional
+-- 1. For each propositional formula \(b\), introduce a var propositional
 --    variable \(x_b\). Take \(a^* = x_a\).
 -- 2. Let \(g\) be the set consisting of formulas of the following form:
 --
---     1. (propositional literals)
+--     1. (truth)
 --        \[
---          x_\top, \qquad
---          x_\bot \rightarrow \bot, \qquad
---          \bot \rightarrow x_\bot, \qquad
---          x_\top \rightarrow \top, \qquad
---          \top \rightarrow x_\top
+--          x_\top
 --        \]
---     2. (variables) for each variable \(y\) in \(a\),
---        \[
---          x_y \rightarrow y, \qquad
---          y \rightarrow x_y
---        \]
---     3. (top introduction and bottom elimination) for each subformula \(b\) of
---        \(a\),
+--     2. (truth introduction and falsity elimination) for each subformula \(b\)
+--        of \(a\),
 --        \[
 --          x_\bot \rightarrow x_b, \qquad
 --          x_b \rightarrow x_\top
 --        \]
---     4. (negation introduction and elimination) for each subformula \(b\) of
+--     3. (negation introduction and elimination) for each subformula \(b\) of
 --        \(a\) of the form \(b = \neg c\),
 --        \[
 --          (x_c \rightarrow x_\bot) \rightarrow x_b, \qquad
 --          x_b \rightarrow (x_c \rightarrow x_\bot)
 --        \]
---     5. (implication introduction and elimination) for each subformula \(b\)
+--     4. (implication introduction and elimination) for each subformula \(b\)
 --        of \(a\) of the form \(b = c \rightarrow d\),
 --        \[
 --          (x_c \rightarrow x_d) \rightarrow x_b, \qquad
 --          x_b \rightarrow (x_c \rightarrow x_d)
 --        \]
---     6. (disjunction introduction and elimination) for each subformula \(b\)
+--     5. (disjunction introduction and elimination) for each subformula \(b\)
 --        of \(a\) of the form \(b = c \lor d\), and each additional subformula
 --        \(e\) of \(a\),
 --        \[
@@ -89,40 +80,24 @@ import Prelude hiding (and, not, or)
 --          x_d \rightarrow x_b, \qquad
 --          x_b \rightarrow ((x_c \rightarrow x_e) \rightarrow ((x_d \rightarrow x_e) \rightarrow x_e))
 --        \]
---     7. (conjunction introduction and elimination) for each subformula \(b\)
+--     6. (conjunction introduction and elimination) for each subformula \(b\)
 --        of \(a\) of the form \(b = c \land d\),
 --        \[
 --          x_c \rightarrow (x_d \rightarrow x_b), \qquad
 --          x_b \rightarrow x_c, \qquad
 --          x_b \rightarrow x_d
 --        \]
---     8. (equivalence introduction and elimination) for each subformula \(b\)
+--     7. (equivalence introduction and elimination) for each subformula \(b\)
 --        of \(a\) of the form \(b = c \leftrightarrow d\),
 --        \[
 --          (x_c \rightarrow x_d) \rightarrow ((x_d \rightarrow x_c) \rightarrow x_b), \qquad
 --          x_b \rightarrow (x_c \rightarrow x_d), \qquad
 --          x_b \rightarrow (x_d \rightarrow x_c)
 --        \]
-toImp :: Ord a => Formula a -> Judgement (Either (Formula a) a)
-toImp a = Judgement g (new a)
+toImp :: Ord a => Formula a -> Judgement (Formula a)
+toImp a = Judgement g (var a)
   where
     bs = subformulas a
-
-    -- (new b) represents the variable x_b
-    new = var . Left
-
-    -- (old y) represents the variable y
-    old = var . Right
-
-    -- Initial context with formulas corresponding to propositional literals
-    g0 =
-      toDList
-        [ new true,
-          imp (new false) false,
-          imp false (new false),
-          imp (new true) true,
-          imp true (new true)
-        ]
 
     -- Final context, created by recursing over subformulas of a
     g = Set.fromList $ fromDList $ f g0 a
@@ -139,40 +114,40 @@ toImp a = Judgement g (new a)
     h g' b@(And _ _ c d) = f (f (g' . unique b) c) d
     h g' b@(Iff _ _ c d) = f (f (g' . unique b) c) d
 
+    -- Initial context
+    g0 = toDList [var true]
+
     -- Formulas that get created for every subformula b of a
-    common b = toDList [imp (new false) (new b), imp (new b) (new true)]
+    common b = toDList [imp (var false) (var b), imp (var b) (var true)]
 
     -- Formulas that get created depending on the shape of a subformula b of a
     unique = toDList . unique'
     unique' (Lit _) = []
-    unique' b@(Var x) =
-      [ imp (old x) (new b),
-        imp (new b) (old x)
-      ]
+    unique' (Var _) = []
     unique' b@(Not _ _ c) =
-      [ imp (new b) (imp (new c) (new false)),
-        imp (imp (new c) (new false)) (new b)
+      [ imp (var b) (imp (var c) (var false)),
+        imp (imp (var c) (var false)) (var b)
       ]
     unique' b@(Imp _ _ c d) =
-      [ imp (new b) (imp (new c) (new d)),
-        imp (imp (new c) (new d)) (new b)
+      [ imp (var b) (imp (var c) (var d)),
+        imp (imp (var c) (var d)) (var b)
       ]
     unique' b@(Or _ _ c d) =
       let t0 =
-            [ imp (new c) (new b),
-              imp (new d) (new b)
+            [ imp (var c) (var b),
+              imp (var d) (var b)
             ]
-          orE e = imp (new b) (imp (imp (new c) (new e)) (imp (imp (new d) (new e)) (new e)))
+          orE e = imp (var b) (imp (imp (var c) (var e)) (imp (imp (var d) (var e)) (var e)))
        in foldr ((:) . orE) t0 bs
     unique' b@(And _ _ c d) =
-      [ imp (new c) (imp (new d) (new b)),
-        imp (new b) (new c),
-        imp (new b) (new d)
+      [ imp (var c) (imp (var d) (var b)),
+        imp (var b) (var c),
+        imp (var b) (var d)
       ]
     unique' b@(Iff _ _ c d) =
-      [ imp (new b) (imp (new c) (new d)),
-        imp (new b) (imp (new d) (new c)),
-        imp (imp (new c) (new d)) (imp (imp (new d) (new c)) (new b))
+      [ imp (var b) (imp (var c) (var d)),
+        imp (var b) (imp (var d) (var c)),
+        imp (imp (var c) (var d)) (imp (imp (var d) (var c)) (var b))
       ]
 
 -- | Determine whether a formula is an intuitionistic tautology.
