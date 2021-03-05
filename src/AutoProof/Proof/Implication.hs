@@ -19,8 +19,8 @@ import AutoProof.Proof.Types (Proof, axiom, impElim, impIntr)
 import Control.Applicative ((<|>))
 import qualified Data.Set as Set
 
--- | @('proveImp' (c 'AutoProof.Judgement.|-' a))@ finds an intuitionistic proof
--- of a judgement \(c \vdash a\) in the implicational fragment of propositional
+-- | @('proveImp' (g 'AutoProof.Judgement.|-' a))@ finds an intuitionistic proof
+-- of a judgement \(g \vdash a\) in the implicational fragment of propositional
 -- logic, if such a proof exists.
 --
 -- The algorithm is adapted from section 2.4 of
@@ -36,62 +36,61 @@ import qualified Data.Set as Set
 -- >>> proveImp $ [imp (var 'a') (var 'b'), imp (var 'b') (var 'a')] |- var 'a'
 -- Nothing
 proveImp :: Ord a => Judgement a -> Maybe (Proof a)
-proveImp (Judgement g f) = prove Set.empty g f
+proveImp = prove Set.empty
   where
-    -- We search for a proof while maintaining a set @s@ of previously seen
-    -- judgements to avoid cycles
+    -- We search for a proof while maintaining a set s of previously seen
+    -- judgements of the form g ⊢ x, for x a variable, to avoid cycles
+
+    -- Easy case: if there is a proof of g ⊢ a → b, then there must be a proof
+    -- proof of g ⊢ a → b that ends with an inference of the form
     --
-    -- Easy case: if there is a proof of c ⊢ a → b, then there must be a proof
-    -- of c ⊢ a → b that ends with an inference of the form
-    --
-    --  c,a ⊢ b
+    --  g,a ⊢ b
     -- --------- (→I)
-    -- c ⊢ a → b
+    -- g ⊢ a → b
     --
-    -- so it suffices to look for a proof of c,a ⊢ b
-    prove s c i@(Imp _ _ a b) =
-      let j = Judgement c i
-       in if Set.member i c
-            then Just $ axiom j
-            else impIntr j <$> prove (Set.insert (i, c) s) (Set.insert a c) b
-    -- Trickier case: if there is a proof of c ⊢ x, where x is a variable, then
+    -- so it suffices to look for a proof of g,a ⊢ b
+    prove s j@(Judgement g i@(Imp _ _ a b)) =
+      if Set.member i g
+        then Just $ axiom j
+        else impIntr j <$> prove s (Judgement (Set.insert a g) b)
+    -- Trickier case: if there is a proof of g ⊢ x, where x is a variable, then
     -- either
     --
-    -- (1) x belongs to c, so c ⊢ x is proved via
+    -- (1) x belongs to g, so g ⊢ x is proved via
     --
     -- ----- (Ax)
-    -- c ⊢ x
+    -- g ⊢ x
     --
     -- or
     --
     -- (2) there is a sequence a1,...,an of propositional formulas such that
-    -- a1 → (a2 → (... an → x)...) belongs to c, and c ⊢ ai for all i=1,...,n.
-    -- In this case, one proof of c ⊢ x is
+    -- a1 → (a2 → (... an → x)...) belongs to g, and g ⊢ ai for all i=1,...,n.
+    -- In this case, one proof of g ⊢ x is
     --
     --                                         p1
     -- ------------------------------- (Ax)  ------
-    -- c ⊢ a1 → (a2 → (... an → x)...)       c ⊢ a1         p2
+    -- g ⊢ a1 → (a2 → (... an → x)...)       g ⊢ a1         p2
     -- -------------------------------------------- (→E)  ------
-    --        c ⊢ a2 → (... an → x)                       c ⊢ a2
+    --        g ⊢ a2 → (... an → x)                       g ⊢ a2
     --                                 ...                           pn
-    --                                                             ------
-    --                             c ⊢ an → x                      c ⊢ an
+    -- ----------------------------------------------------- (→E)  ------
+    --                             g ⊢ an → x                      g ⊢ an
     -- ------------------------------------------------------------------ (→E)
-    --                               c ⊢ x
+    --                               g ⊢ x
     --
-    -- Actually, case (1) can be thought as the n=0 case of case (2).
+    -- Actually, case (1) is the n=0 case of case (2).
     --
     -- The implementation:
-    prove s c v@(Var x) =
-      if Set.member (v, c) s
-        then Nothing -- Already visited current judgement; avoid cycles
-        else foldr ((<|>) . findImp) Nothing c
+    prove s j@(Judgement g v@(Var x)) =
+      if Set.member j s
+        then Nothing -- Already visited current judgement; skip to avoid cycles
+        else foldr ((<|>) . findImp) Nothing g -- Scan context looking for proof
       where
         -- Save the current judgement so we don't revisit it recursively
-        s' = Set.insert (v, c) s
+        s' = Set.insert j s
 
-        -- findImp is folded over the context looking for implications ending in
-        -- the variable x. When encountering a formula of the form
+        -- findImp searches each formula in the context for implications ending
+        -- in the variable x. When encountering a formula of the form
         -- a1 → (a2 → (... an → x)...), ensure each ai is provable, and, if so,
         -- construct a proof.
         findImp a = do
@@ -99,20 +98,23 @@ proveImp (Judgement g f) = prove Set.empty g f
           construct as v
 
         -- Given a formula of the form a1 → (a2 → (... an → x)...), extract the
-        -- list [an, ..., a2, a1]. For formulas of all other forms, return
-        -- Nothing.
+        -- list [an, ..., a2, a1] (note the reverse order). For formulas of all
+        -- other forms, return Nothing.
         splitImp = go []
           where
             go l (Var y) = if x == y then Just l else Nothing
             go l (Imp _ _ a b) = go (a : l) b
-            go _ _ = Nothing
+            go _ _ = Nothing -- non-implicational case
 
         -- Given a list of formulas [an, ..., a2, a1] from an implication of the
         -- form a1 → (a2 → (... an → x)...), try to prove the ai's, and use the
-        -- resulting proofs to construct a proof of x
-        construct [] b = Just $ axiom (Judgement c b)
-        construct (a : as) b =
-          impElim (Judgement c b) <$> construct as (imp a b) <*> prove s' c a
+        -- resulting proofs to construct a proof of x using nested implication
+        -- eliminations
+        construct [] b = Just $ axiom (Judgement g b)
+        construct (a : as) b = do
+          q <- prove s' (Judgement g a)
+          p <- construct as (imp a b)
+          return $ impElim (Judgement g b) p q
 
     -- Non-implicational case
-    prove _ _ _ = Nothing
+    prove _ _ = Nothing
