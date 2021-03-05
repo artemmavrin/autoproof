@@ -51,6 +51,9 @@ a | a -> a
 # Currying/exponentiation
 (a & b -> c) <-> (a -> (b -> c))
 
+# Modus ponens
+(a & (a -> b)) -> b
+
 # Material implication
 (~a | b) -> (a -> b)
 (a | b) -> ~a -> b
