@@ -44,7 +44,7 @@ data Judgement a = Judgement
     -- | The consequent or conclusion.
     consequent :: Formula a
   }
-  deriving (Eq, Ord)
+  deriving (Eq)
 
 -- | Infix judgement constructor. @(c '|-' a)@ represents the judgement
 -- \(c \vdash a\).
@@ -59,6 +59,12 @@ data Judgement a = Judgement
 c |- a = Judgement (toSet c) a
 
 infix 5 |-
+
+-- Compare judgements based on the consequent first
+instance Ord a => Ord (Judgement a) where
+  compare (Judgement g a) (Judgement g' a') = case compare a a' of
+    EQ -> compare g g'
+    x -> x
 
 instance Show a => Show (Judgement a) where
   showsPrec d (Judgement c a) =
