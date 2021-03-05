@@ -113,36 +113,41 @@ toImp a = Judgement g (var a)
     g0 = toDList [var true]
 
     -- Formulas that get created for every subformula b of a
-    common b = toDList [imp (var false) (var b), imp (var b) (var true)]
+    common b =
+      toDList
+        [ imp (var false) (var b), -- falsity elimination
+          imp (var b) (var true) -- truth introduction
+        ]
 
     -- Formulas that get created depending on the shape of a subformula b of a
     unique = toDList . unique'
     unique' (Lit _) = []
     unique' (Var _) = []
     unique' b@(Not _ _ c) =
-      [ imp (var b) (imp (var c) (var false)),
-        imp (imp (var c) (var false)) (var b)
+      [ imp (var b) (imp (var c) (var false)), -- negation elimination
+        imp (imp (var c) (var false)) (var b) -- negation introduction
       ]
     unique' b@(Imp _ _ c d) =
-      [ imp (var b) (imp (var c) (var d)),
-        imp (imp (var c) (var d)) (var b)
+      [ imp (var b) (imp (var c) (var d)), -- implication elimination
+        imp (imp (var c) (var d)) (var b) -- implication introduction
       ]
     unique' b@(Or _ _ c d) =
       let t0 =
-            [ imp (var c) (var b),
-              imp (var d) (var b)
+            [ imp (var c) (var b), -- left disjunction introduction
+              imp (var d) (var b) -- right disjunction introduction
             ]
+          -- disjunction elimination
           orE e = imp (var b) (imp (imp (var c) (var e)) (imp (imp (var d) (var e)) (var e)))
        in foldr ((:) . orE) t0 bs
     unique' b@(And _ _ c d) =
-      [ imp (var c) (imp (var d) (var b)),
-        imp (var b) (var c),
-        imp (var b) (var d)
+      [ imp (var c) (imp (var d) (var b)), -- conjunction introduction
+        imp (var b) (var c), -- left conjunction elimination
+        imp (var b) (var d) -- right conjunction elimination
       ]
     unique' b@(Iff _ _ c d) =
-      [ imp (var b) (imp (var c) (var d)),
-        imp (var b) (imp (var d) (var c)),
-        imp (imp (var c) (var d)) (imp (imp (var d) (var c)) (var b))
+      [ imp (imp (var c) (var d)) (imp (imp (var d) (var c)) (var b)), -- equivalence introduction
+        imp (var b) (imp (var c) (var d)), -- left equivalence elimination
+        imp (var b) (imp (var d) (var c)) -- right equivalence elimination
       ]
 
 -- | Determine whether a formula is an intuitionistic tautology.
