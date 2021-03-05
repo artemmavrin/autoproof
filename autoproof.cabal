@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 644c5f41829cf11fadbac7be2d863a7a76bc3039929ea3549646dae38270813b
+-- hash: 518bea7bffd662f56de9e5d1bc2f28a45ef5c55eeedae998334d550d64b1d259
 
 name:           autoproof
 version:        0.0.0.0
@@ -40,6 +40,10 @@ library
       AutoProof.Proof.Transform
       AutoProof.Proof.Types
       AutoProof.Utils.DList
+      AutoProof.Utils.Parser
+      AutoProof.Utils.Parser.Char
+      AutoProof.Utils.Parser.Combinator
+      AutoProof.Utils.Parser.Types
       AutoProof.Utils.PrettyPrintable
       AutoProof.Utils.Set
       AutoProof.Utils.Symbols
@@ -51,7 +55,6 @@ library
   build-depends:
       base >=4.7 && <5
     , containers >=0.6.4.1
-    , parsec >=3.1.14.0
   default-language: Haskell2010
 
 executable parseFormula
@@ -63,7 +66,6 @@ executable parseFormula
       autoproof
     , base >=4.7 && <5
     , containers >=0.6.4.1
-    , parsec >=3.1.14.0
   if false
     other-modules:
         Paths_autoproof
@@ -78,7 +80,6 @@ executable parseJudgement
       autoproof
     , base >=4.7 && <5
     , containers >=0.6.4.1
-    , parsec >=3.1.14.0
   if false
     other-modules:
         Paths_autoproof
@@ -93,7 +94,6 @@ executable proveImp
       autoproof
     , base >=4.7 && <5
     , containers >=0.6.4.1
-    , parsec >=3.1.14.0
   if false
     other-modules:
         Paths_autoproof
@@ -108,7 +108,6 @@ executable statman
       autoproof
     , base >=4.7 && <5
     , containers >=0.6.4.1
-    , parsec >=3.1.14.0
   if false
     other-modules:
         Paths_autoproof
@@ -126,7 +125,6 @@ test-suite formula-test
     , base >=4.7 && <5
     , containers >=0.6.4.1
     , hspec >=0.8.2
-    , parsec >=3.1.14.0
   if false
     other-modules:
         Paths_autoproof
@@ -144,7 +142,6 @@ test-suite is-tautology-test
     , base >=4.7 && <5
     , containers >=0.6.4.1
     , hspec >=0.8.2
-    , parsec >=3.1.14.0
   if false
     other-modules:
         Paths_autoproof
@@ -162,7 +159,6 @@ test-suite parser-test
     , base >=4.7 && <5
     , containers >=0.6.4.1
     , hspec >=0.8.2
-    , parsec >=3.1.14.0
   if false
     other-modules:
         Paths_autoproof
@@ -180,7 +176,6 @@ test-suite proof-test
     , base >=4.7 && <5
     , containers >=0.6.4.1
     , hspec >=0.8.2
-    , parsec >=3.1.14.0
   if false
     other-modules:
         Paths_autoproof
@@ -198,7 +193,6 @@ test-suite prove-imp-test
     , base >=4.7 && <5
     , containers >=0.6.4.1
     , hspec >=0.8.2
-    , parsec >=3.1.14.0
   if false
     other-modules:
         Paths_autoproof
@@ -216,7 +210,6 @@ test-suite strengthen-proof-imp-test
     , base >=4.7 && <5
     , containers >=0.6.4.1
     , hspec >=0.8.2
-    , parsec >=3.1.14.0
   if false
     other-modules:
         Paths_autoproof

@@ -34,23 +34,26 @@ import AutoProof.Judgement
   ( Judgement,
     (|-),
   )
-import Data.Functor.Identity (Identity)
-import Text.Parsec.Char (char, oneOf, spaces, string)
-import Text.Parsec.Combinator
-  ( between,
+import AutoProof.Utils.Parser
+  ( Parser,
+    between,
     chainl1,
     chainr1,
+    char,
     eof,
     notFollowedBy,
+    oneOf,
+    parse,
     sepBy,
+    spaces,
+    string,
   )
-import Text.Parsec.Error (ParseError)
-import Text.Parsec.Prim (ParsecT, Stream, many, parse, parserZero, try, (<|>))
+import Control.Applicative (Alternative (empty, many, (<|>)))
+import Data.Maybe (fromMaybe)
 import Prelude hiding (and, not, or)
 
--- | @('parseFormula' s)@ parses a string-like value @s@ as a propositional
--- formula, returning a @'Right' a@ on success, where @a@ is the parsed formula.
--- Otherwise, @'Left' e@ is returned, where @e@ is a @'ParseError'@.
+-- | @('parseFormula' s)@ parses a string @s@ as a propositional formula,
+-- returning a @'Just' a@ on success, where @a@ is the parsed formula.
 --
 -- For a version of 'parseFormula' that does not return a wrapped formula but
 -- also throws an error when it cannot parse, see 'unsafeParseFormula'.
@@ -85,18 +88,17 @@ import Prelude hiding (and, not, or)
 -- ==== __Examples__
 --
 -- >>> parseFormula "a -> b -> c"
--- Right (imp (var "a") (imp (var "b") (var "c")))
+-- Just (imp (var "a") (imp (var "b") (var "c")))
 --
 -- >>> parseFormula "~a | b -> c"
--- Right (imp (or (not (var "a")) (var "b")) (var "c"))
+-- Just (imp (or (not (var "a")) (var "b")) (var "c"))
 --
 -- >>> parseFormula "(a -> b) & ~c"
--- Right (and (imp (var "a") (var "b")) (not (var "c")))
-parseFormula :: Stream s Identity Char => s -> Either ParseError (Formula String)
-parseFormula = parse (formula <* eof) ""
+-- Just (and (imp (var "a") (var "b")) (not (var "c")))
+parseFormula :: String -> Maybe (Formula String)
+parseFormula = parse (formula <* eof)
 
--- | @(parseJudgement s)@ parses a string-like value @s@ as a propositional
--- judgement.
+-- | @(parseJudgement s)@ parses a string @s@ as a propositional judgement.
 --
 -- A valid judgement is made up of an antecedent, a turnstile symbol, and a
 -- consequent (in that order). The antecedents are a (potentially empty)
@@ -108,16 +110,15 @@ parseFormula = parse (formula <* eof) ""
 -- ==== __Examples__
 --
 -- >>> parseJudgement "a, a -> b |- b"
--- Right ([var "a",imp (var "a") (var "b")] |- var "b")
+-- Just ([var "a",imp (var "a") (var "b")] |- var "b")
 --
 -- >>> parseJudgement "a |- a | b"
--- Right ([var "a"] |- or (var "a") (var "b"))
-parseJudgement :: Stream s Identity Char => s -> Either ParseError (Judgement String)
-parseJudgement = parse (judgement <* eof) ""
+-- Just ([var "a"] |- or (var "a") (var "b"))
+parseJudgement :: String -> Maybe (Judgement String)
+parseJudgement = parse (judgement <* eof)
 
--- | @(unsafeParseFormula s)@ parses a string-like value @s@ as a propositional
--- formula, returning the parsed formula on success, and throwing an error on
--- failure.
+-- | @(unsafeParseFormula s)@ parses a string @s@ as a propositional formula,
+-- returning the parsed formula on success, and throwing an error on failure.
 --
 -- See 'parseFormula' for grammar spcecifications.
 --
@@ -125,12 +126,12 @@ parseJudgement = parse (judgement <* eof) ""
 --
 -- >>> unsafeParseFormula "(a => b) => c"
 -- imp (imp (var "a") (var "b")) (var "c")
-unsafeParseFormula :: Stream s Identity Char => s -> Formula String
-unsafeParseFormula = either (error . show) id . parseFormula
+unsafeParseFormula :: String -> Formula String
+unsafeParseFormula = fromMaybe (error "Parse error") . parseFormula
 
--- | @(unsafeParseJudgement s)@ parses a string-like value @s@ as a
--- propositional judgement, returning the parsed judgement on success, and
--- throwing an error on failure.
+-- | @(unsafeParseJudgement s)@ parses a string @s@ as a propositional
+-- judgement, returning the parsed judgement on success, and throwing an error
+-- on failure.
 --
 -- See 'parseJudgement' for the specification of valid judgements.
 --
@@ -141,88 +142,88 @@ unsafeParseFormula = either (error . show) id . parseFormula
 --
 -- >>> unsafeParseJudgement "a & b |- a"
 -- [and (var "a") (var "b")] |- var "a"
-unsafeParseJudgement :: Stream s Identity Char => s -> Judgement String
-unsafeParseJudgement = either (error . show) id . parseJudgement
+unsafeParseJudgement :: String -> Judgement String
+unsafeParseJudgement = fromMaybe (error "Parse error") . parseJudgement
 
 -- Top-level parsers
 
-formula :: Stream s m Char => ParsecT s u m (Formula String)
+formula :: Parser (Formula String)
 formula = padded implication
 
-context :: Stream s m Char => ParsecT s u m [Formula String]
+context :: Parser [Formula String]
 context = formula `sepBy` char ','
 
-judgement :: Stream s m Char => ParsecT s u m (Judgement String)
+judgement :: Parser (Judgement String)
 judgement = (|-) <$> context <*> (spaces *> turnstileS *> formula)
 
 -- Special symbols
 
 -- Generate a parser out of a collection of strings. The parser will parse any
 -- one of the given strings.
-symbol :: Stream s m Char => [String] -> ParsecT s u m String
-symbol [] = parserZero
+symbol :: [String] -> Parser String
+symbol [] = empty
 symbol (c : cs)
   -- Special case needed to handle the turnstile symbol "|-" separately from the
   -- disjunction symbol "|".
-  | c == "|" = try (string "|" <* notFollowedBy (char '-')) <|> symbol cs
-  | otherwise = try (string c) <|> symbol cs
+  | c == "|" = (string "|" <* notFollowedBy (char '-')) <|> symbol cs
+  | otherwise = string c <|> symbol cs
 
-impS :: Stream s m Char => ParsecT s u m String
+impS :: Parser String
 impS = symbol ["->", "=>", "→", "⇾", "⇒", "⊃"]
 
-iffS :: Stream s m Char => ParsecT s u m String
+iffS :: Parser String
 iffS = symbol ["<->", "↔", "⇿", "⇔"]
 
-andS :: Stream s m Char => ParsecT s u m String
+andS :: Parser String
 andS = symbol ["&", "^", "∧", "/\\"]
 
-orS :: Stream s m Char => ParsecT s u m String
+orS :: Parser String
 orS = symbol ["|", "∨", "\\/"]
 
-notS :: Stream s m Char => ParsecT s u m String
+notS :: Parser String
 notS = symbol ["~", "¬"]
 
-falseS :: Stream s m Char => ParsecT s u m String
+falseS :: Parser String
 falseS = symbol ["⊥", "false"]
 
-trueS :: Stream s m Char => ParsecT s u m String
+trueS :: Parser String
 trueS = symbol ["⊤", "true"]
 
-turnstileS :: Stream s m Char => ParsecT s u m String
+turnstileS :: Parser String
 turnstileS = symbol ["|-", "⊢"]
 
 -- Propositional formula components
 
 -- Right-associative nested implications
-implication :: Stream s m Char => ParsecT s u m (Formula String)
-implication = chainr1 equivalence (try $ padded (imp <$ impS))
+implication :: Parser (Formula String)
+implication = chainr1 equivalence (padded (imp <$ impS))
 
 -- Left-associative nested equivalences
-equivalence :: Stream s m Char => ParsecT s u m (Formula String)
-equivalence = chainl1 disjunction (try $ padded (iff <$ iffS))
+equivalence :: Parser (Formula String)
+equivalence = chainl1 disjunction (padded (iff <$ iffS))
 
 -- Left-associative nested disjunctions
-disjunction :: Stream s m Char => ParsecT s u m (Formula String)
-disjunction = chainl1 conjunction (try $ padded (or <$ orS))
+disjunction :: Parser (Formula String)
+disjunction = chainl1 conjunction (padded (or <$ orS))
 
 -- Left-associative nested conjunctions
-conjunction :: Stream s m Char => ParsecT s u m (Formula String)
-conjunction = chainl1 negation (try $ padded (and <$ andS))
+conjunction :: Parser (Formula String)
+conjunction = chainl1 negation (padded (and <$ andS))
 
 -- Zero or more consecutive negations
-negation :: Stream s m Char => ParsecT s u m (Formula String)
-negation = spaces *> (foldl (.) id <$> try (many (not <$ notS)) <*> atom)
+negation :: Parser (Formula String)
+negation = spaces *> (foldl (.) id <$> many (not <$ notS) <*> atom)
 
-atom :: Stream s m Char => ParsecT s u m (Formula String)
-atom = enclosed formula <|> try false <|> try true <|> variable
+atom :: Parser (Formula String)
+atom = enclosed formula <|> false <|> true <|> variable
 
-false :: Stream s m Char => ParsecT s u m (Formula String)
+false :: Parser (Formula String)
 false = lit False <$ falseS
 
-true :: Stream s m Char => ParsecT s u m (Formula String)
+true :: Parser (Formula String)
 true = lit True <$ trueS
 
-variable :: Stream s m Char => ParsecT s u m (Formula String)
+variable :: Parser (Formula String)
 variable = var <$> name
   where
     name = (:) <$> nameStart <*> many nameChar
@@ -231,8 +232,8 @@ variable = var <$> name
 
 -- Helper functions
 
-padded :: Stream s m Char => ParsecT s u m a -> ParsecT s u m a
+padded :: Parser a -> Parser a
 padded = between spaces spaces
 
-enclosed :: Stream s m Char => ParsecT s u m a -> ParsecT s u m a
+enclosed :: Parser a -> Parser a
 enclosed = between (char '(') (char ')')

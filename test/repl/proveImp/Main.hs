@@ -24,8 +24,8 @@ main = do
         then loop
         else do
           case parseJudgement line of
-            Left e -> print e
-            Right j -> do
+            Nothing -> putStrLn "Parse error"
+            Just j -> do
               putStrLn $ "Trying to prove " ++ prettyJudgement j
               case proveImp j of
                 Nothing -> putStrLn "No proof found"

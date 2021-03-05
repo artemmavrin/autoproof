@@ -16,8 +16,8 @@ main = do
         then loop
         else do
           case parseFormula line of
-            Left e -> print e
-            Right p -> do
+            Nothing -> putStrLn "Parse error"
+            Just p -> do
               putStrLn $ prettyFormula p
               print p
           loop
