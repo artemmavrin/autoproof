@@ -7,20 +7,15 @@
 -- Portability : POSIX
 --
 -- Check provability of general propositional formulas
-module AutoProof.Proof.Provability (toImp, isTautology) where
+module AutoProof.Proof.Provability (toImp, isTautology, proveTautology) where
 
 import AutoProof.Formula
-  ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
-    false,
-    imp,
-    subformulas,
-    true,
-    var,
-  )
-import AutoProof.Judgement (Judgement (Judgement))
-import AutoProof.Proof.Implication (proveImp)
-import AutoProof.Utils.DList (fromDList, toDList)
-import Data.Maybe (isJust)
+import AutoProof.Judgement
+import AutoProof.Proof.Implication
+import AutoProof.Proof.Transform
+import AutoProof.Proof.Types
+import AutoProof.Utils.DList
+import Data.Maybe
 import qualified Data.Set as Set
 import Prelude hiding (and, not, or)
 
@@ -171,3 +166,26 @@ toImp a = Judgement g (var a)
 -- True
 isTautology :: Ord a => Formula a -> Bool
 isTautology = isJust . proveImp . toImp
+
+-- Convert back from an implicational proof to a "regular" proof
+
+fromImpFormula :: Formula (Formula a) -> Formula a
+fromImpFormula (Lit b) = Lit b
+fromImpFormula (Var a) = a
+fromImpFormula (Imp _ _ a b) = imp (fromImpFormula a) (fromImpFormula b)
+fromImpFormula _ = undefined -- should be unreachable!
+
+fromImpJudgement :: Ord a => Judgement (Formula a) -> Judgement a
+fromImpJudgement (Judgement g a) = map fromImpFormula (Set.toList g) |- fromImpFormula a
+
+fromImpProof :: Ord a => Proof (Formula a) -> Proof a
+fromImpProof (Ax j) = axiom (fromImpJudgement j)
+fromImpProof (ImpElim _ j p q) = impElim (fromImpJudgement j) (fromImpProof p) (fromImpProof q)
+fromImpProof (ImpIntr _ j p) = impIntr (fromImpJudgement j) (fromImpProof p)
+fromImpProof _ = undefined -- should be unreachable!
+
+-- | Find an intuitionistic proof of a formula, if a proof exists.
+proveTautology :: Ord a => Formula a -> Maybe (Proof a)
+proveTautology a = do
+  p <- proveImp (toImp a)
+  return $ fromImpProof (strengthenProof p)
