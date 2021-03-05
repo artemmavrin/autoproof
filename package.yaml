@@ -225,3 +225,21 @@ executables:
     when:
     - condition: false
       other-modules: Paths_autoproof
+  proveTautology:
+    main:                Main.hs
+    source-dirs:         test/repl/proveTautology
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Werror
+    - -Wall
+    - -Wcompat
+    - -Wincomplete-record-updates
+    - -Wincomplete-uni-patterns
+    - -Wredundant-constraints
+    dependencies:
+    - autoproof
+    when:
+    - condition: false
+      other-modules: Paths_autoproof

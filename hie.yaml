@@ -23,3 +23,5 @@ cradle:
       component: "autoproof:exe:proveImp"
     - path: "./test/repl/statman/Main.hs"
       component: "autoproof:exe:statman"
+    - path: "./test/repl/proveTautology/Main.hs"
+      component: "autoproof:exe:proveTautology"
