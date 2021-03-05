@@ -64,4 +64,4 @@ validateRandomValidProofOfTautology =
 validateRandomValidProofOfJudgement :: H.SpecWith ()
 validateRandomValidProofOfJudgement =
   H.it "trying to prove and strengthen random judgements" $
-    QC.withMaxSuccess 1000 assertValidProofOfJudgement
+    QC.withMaxSuccess 10000 assertValidProofOfJudgement

@@ -47,9 +47,16 @@ a
 
 # DeMorgan's laws
 ~(a & b) -> ~a | ~b
+~(a & b) <-> ~a | ~b
 
 # linearity (Gödel-Dummett) axiom
 (a -> b) | (b -> a)
+
+# Kreisel-Putnam axiom
+(~a -> b | c) -> ((~a -> b) | (~a -> c))
+
+# Scott’s axiom
+((~~a -> a) -> (a | ~a)) -> (~~a | ~a)
 
 # Smetanich's axiom
 (~b -> a) -> (((a -> b) -> a) -> a)
