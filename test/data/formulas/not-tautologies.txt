@@ -5,6 +5,9 @@ false
 # Law of excluded middle
 a | ~a
 
+# Weak law of excluded middle
+~a | ~~a
+
 # Pierce's law
 ((a -> b) -> a) -> a
 
@@ -22,6 +25,7 @@ a | ~a
 
 # Consequentia mirabilis
 (~a -> a) -> a
+(~~a | a) -> a
 
 # Tarski's formula
 a | (a -> b)
@@ -43,6 +47,15 @@ a
 
 # DeMorgan's laws
 ~(a & b) -> ~a | ~b
+
+# linearity (Gödel-Dummett) axiom
+(a -> b) | (b -> a)
+
+# Smetanich's axiom
+(~b -> a) -> (((a -> b) -> a) -> a)
+
+# Global choice for disjunctions
+(a -> b | c) -> ((a -> b) | (a -> c))
 
 # Miscellaneous
 (a -> b) -> (b -> a) -> a

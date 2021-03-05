@@ -76,3 +76,5 @@ a | a -> a
 # Miscellaneous
 a & b -> a | b
 a -> b -> c -> a | d
+(~~a -> a) -> (((a -> b) -> a) -> a)
+(~~a -> b) -> (((a -> b) -> a) -> a)
