@@ -151,6 +151,26 @@ tests:
     when:
     - condition: false
       other-modules: Paths_autoproof
+  prove-tautology-test:
+    main:                Main.hs
+    source-dirs:         test/spec/prove-tautology
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Werror
+    - -Wall
+    - -Wcompat
+    - -Wincomplete-record-updates
+    - -Wincomplete-uni-patterns
+    - -Wredundant-constraints
+    dependencies:
+    - autoproof
+    - hspec >= 0.8.2
+    - QuickCheck >= 2.14.2
+    when:
+    - condition: false
+      other-modules: Paths_autoproof
 
 executables:
   parseFormula:
@@ -210,6 +230,24 @@ executables:
   statman:
     main:                Main.hs
     source-dirs:         test/repl/statman
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Werror
+    - -Wall
+    - -Wcompat
+    - -Wincomplete-record-updates
+    - -Wincomplete-uni-patterns
+    - -Wredundant-constraints
+    dependencies:
+    - autoproof
+    when:
+    - condition: false
+      other-modules: Paths_autoproof
+  proveTautology:
+    main:                Main.hs
+    source-dirs:         test/repl/proveTautology
     ghc-options:
     - -threaded
     - -rtsopts

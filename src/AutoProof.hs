@@ -66,6 +66,7 @@ module AutoProof
 
     -- ** Provability testing and proof search
     isTautology,
+    proveTautology,
     proveImp,
     toImp,
 
@@ -147,6 +148,7 @@ import AutoProof.Proof
     orIntrR,
     prettyProof,
     proveImp,
+    proveTautology,
     strengthenProof,
     toImp,
     trueIntr,

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 644c5f41829cf11fadbac7be2d863a7a76bc3039929ea3549646dae38270813b
+-- hash: 9cda5b3d054f3fa4e7dd26cd5189090fd6606b0f029238607c4a40fa7747282b
 
 name:           autoproof
 version:        0.0.0.0
@@ -88,6 +88,21 @@ executable proveImp
   main-is: Main.hs
   hs-source-dirs:
       test/repl/proveImp
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  build-depends:
+      autoproof
+    , base >=4.7 && <5
+    , containers >=0.6.4.1
+    , parsec >=3.1.14.0
+  if false
+    other-modules:
+        Paths_autoproof
+  default-language: Haskell2010
+
+executable proveTautology
+  main-is: Main.hs
+  hs-source-dirs:
+      test/repl/proveTautology
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       autoproof
@@ -191,6 +206,24 @@ test-suite prove-imp-test
   main-is: Main.hs
   hs-source-dirs:
       test/spec/prove-imp
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  build-depends:
+      QuickCheck >=2.14.2
+    , autoproof
+    , base >=4.7 && <5
+    , containers >=0.6.4.1
+    , hspec >=0.8.2
+    , parsec >=3.1.14.0
+  if false
+    other-modules:
+        Paths_autoproof
+  default-language: Haskell2010
+
+test-suite prove-tautology-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      test/spec/prove-tautology
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       QuickCheck >=2.14.2

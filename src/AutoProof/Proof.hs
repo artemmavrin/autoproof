@@ -50,6 +50,7 @@ module AutoProof.Proof
     height,
     judgement,
     premises,
+    axioms,
 
     -- * Operations on proofs
     weakenProof,
@@ -59,6 +60,7 @@ module AutoProof.Proof
     proveImp,
     toImp,
     isTautology,
+    proveTautology,
 
     -- * Cuts
     findCut,
@@ -77,7 +79,7 @@ where
 import AutoProof.Proof.Correctness (correct, debug, valid)
 import AutoProof.Proof.Cut (findCut, hasCut)
 import AutoProof.Proof.Implication (proveImp)
-import AutoProof.Proof.Provability (isTautology, toImp)
+import AutoProof.Proof.Provability (isTautology, proveTautology, toImp)
 import AutoProof.Proof.Transform (strengthenProof, weakenProof)
 import AutoProof.Proof.Types
   ( Proof
@@ -102,6 +104,7 @@ import AutoProof.Proof.Types
     andElimR,
     andIntr,
     axiom,
+    axioms,
     falseElim,
     height,
     iffElimL,

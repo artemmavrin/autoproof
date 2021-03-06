@@ -46,11 +46,13 @@ module AutoProof.Proof.Types
     height,
     judgement,
     premises,
+    axioms,
     prettyProof,
   )
 where
 
-import AutoProof.Judgement (Judgement)
+import AutoProof.Formula (Formula)
+import AutoProof.Judgement (Judgement (Judgement))
 import AutoProof.Utils.PrettyPrintable (PrettyPrintable (pretty))
 import AutoProof.Utils.Symbols
   ( andElimLS,
@@ -73,6 +75,8 @@ import AutoProof.Utils.Symbols
     trueIntrS,
     vertS,
   )
+import Data.Set (Set)
+import qualified Data.Set as Set
 
 -- | A natural deduction proof tree for intuitionistic propositional logic.
 --
@@ -557,6 +561,29 @@ ternaryConstructor ::
   Proof a ->
   Proof a
 ternaryConstructor c j p q r = c (1 + max (height p) (max (height q) (height r))) j p q r
+
+-- Miscellaneous proof operations
+
+-- | Get the set of axioms used in a proof.
+axioms :: Ord a => Proof a -> Set (Formula a)
+axioms = go Set.empty
+  where
+    go s (Ax (Judgement _ a)) = Set.insert a s
+    go s (FalseElim _ _ p) = go s p
+    go s (TrueIntr _) = s
+    go s (NotElim _ _ p q) = go (go s p) q
+    go s (NotIntr _ _ p) = go s p
+    go s (ImpElim _ _ p q) = go (go s p) q
+    go s (ImpIntr _ _ p) = go s p
+    go s (OrElim _ _ p q r) = go (go (go s p) q) r
+    go s (OrIntrL _ _ p) = go s p
+    go s (OrIntrR _ _ p) = go s p
+    go s (AndElimL _ _ p) = go s p
+    go s (AndElimR _ _ p) = go s p
+    go s (AndIntr _ _ p q) = go (go s p) q
+    go s (IffElimL _ _ p) = go s p
+    go s (IffElimR _ _ p) = go s p
+    go s (IffIntr _ _ p q) = go (go s p) q
 
 -- Instance declarations
 
