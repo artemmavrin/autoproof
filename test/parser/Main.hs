@@ -22,7 +22,7 @@ import Prelude hiding (and, not, or)
 
 main :: IO ()
 main = do
-  goodFormulas <- lines <$> readFile "test/spec/parser/examples/propositions.txt"
+  goodFormulas <- lines <$> readFile "test/parser/examples/propositions.txt"
   H.hspec $
     H.describe "parseFormula" $ do
       mapM_ assertSuccessfulParse goodFormulas

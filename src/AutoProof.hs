@@ -88,6 +88,7 @@ module AutoProof
     parseJudgement,
 
     -- * Pretty-printing
+    pretty,
     prettyFormula,
     prettyJudgement,
     prettyProof,
@@ -155,4 +156,5 @@ import AutoProof.Proof
     valid,
     weakenProof,
   )
+import AutoProof.Utils.PrettyPrintable (PrettyPrintable (pretty))
 import Prelude hiding (and, not, or)
