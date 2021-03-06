@@ -21,7 +21,14 @@ import AutoProof.Formula
     true,
     var,
   )
-import AutoProof.Judgement (Judgement (..), (|-))
+import AutoProof.Judgement
+  ( Judgement
+      ( Judgement,
+        antecedents,
+        consequent
+      ),
+    (|-),
+  )
 import AutoProof.Proof.Implication (proveImp)
 import AutoProof.Proof.Transform (strengthenProof)
 import AutoProof.Proof.Types
@@ -277,7 +284,6 @@ proveTautologyFromImp a = do
   let g = antecedents (judgement p)
   return $ strengthenProof (foldl proveImpAxiom (fromImpProof p) g)
   where
-    proveImpAxiom :: Ord a => Proof a -> Formula (Formula a) -> Proof a
     proveImpAxiom p b = subAxiom p (proveToImpHypothesis b)
 
     -- Substitute a proof for an axiom
@@ -443,7 +449,7 @@ proveToImpHypothesis (Imp _ _ (Var (And _ _ c d)) (Var d'))
           (axiom ([and c d] |- and c d))
       )
 -- Equivalence introduction
-proveToImpHypothesis (Imp _ _ (Imp _ _ (Var c) (Var d)) (Imp _ _ (Imp _ _ (Var c') (Var d')) (Var (Iff _ _ c'' d''))))
+proveToImpHypothesis (Imp _ _ (Imp _ _ (Var c) (Var d)) (Imp _ _ (Imp _ _ (Var d') (Var c')) (Var (Iff _ _ c'' d''))))
   | c == c' && c == c'' && d == d' && d == d'' =
     impIntr
       ([] |- imp (imp c d) (imp (imp d c) (iff c d)))
@@ -469,7 +475,7 @@ proveToImpHypothesis (Imp _ _ (Var (Iff _ _ c d)) (Imp _ _ (Var d') (Var c')))
   | c == c' && d == d' =
     impIntr
       ([] |- imp (iff c d) (imp d c))
-      ( iffElimL
+      ( iffElimR
           ([iff c d] |- imp d c)
           (axiom ([iff c d] |- iff c d))
       )
