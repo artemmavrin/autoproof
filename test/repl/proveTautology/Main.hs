@@ -1,13 +1,15 @@
 module Main where
 
 import AutoProof
-  ( parseFormula,
+  ( correct,
+    debug,
+    parseFormula,
     prettyFormula,
     prettyProof,
-    correct,
     proveTautology,
-    (|-)
+    (|-),
   )
+import AutoProof.Utils.Symbols (turnstileS)
 import System.IO (BufferMode (NoBuffering), hSetBuffering, stdout)
 
 main :: IO ()
@@ -17,7 +19,7 @@ main = do
   loop
   where
     loop = do
-      putStr "(Ctrl+C to quit)> "
+      putStr $ "(Ctrl+C to quit) " ++ turnstileS ++ " "
       line <- getLine
       if null line
         then loop
@@ -25,7 +27,7 @@ main = do
           case parseFormula line of
             Left e -> print e
             Right a -> do
-              putStrLn $ "Trying to prove " ++ prettyFormula a
+              putStrLn $ "Trying to prove " ++ turnstileS ++ " " ++ prettyFormula a
               case proveTautology a of
                 Nothing -> putStrLn "No proof found"
                 Just p -> do
@@ -33,5 +35,11 @@ main = do
                   putStrLn $ prettyProof p
                   if correct ([] |- a) p
                     then putStrLn "The proof is correct"
-                    else putStrLn "The proof is incorrect"
+                    else do
+                      putStrLn "The proof is incorrect"
+                      case debug p of
+                        Right () -> return ()
+                        Left q -> do
+                          putStrLn "Invalid inference:"
+                          putStrLn $ prettyProof q
           loop
