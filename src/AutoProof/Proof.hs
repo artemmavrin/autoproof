@@ -50,6 +50,7 @@ module AutoProof.Proof
     height,
     judgement,
     premises,
+    axioms,
 
     -- * Operations on proofs
     weakenProof,
@@ -103,6 +104,7 @@ import AutoProof.Proof.Types
     andElimR,
     andIntr,
     axiom,
+    axioms,
     falseElim,
     height,
     iffElimL,
