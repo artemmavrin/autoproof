@@ -16,6 +16,7 @@ module AutoProof.Utils.PrettyPrintable
   )
 where
 
+import AutoProof.Utils.DList (fromDList, toDList)
 import Data.Foldable (toList)
 
 -- | Class for types that can be "pretty-printed" in a human-readable format.
@@ -24,11 +25,11 @@ class PrettyPrintable a where
 
   -- | Pretty-print a value.
   pretty :: a -> String
-  pretty a = prettys a ""
+  pretty = fromDList . prettys
 
   -- | Difference-list representation of a pretty-printed value.
   prettys :: a -> ShowS
-  prettys a s = pretty a ++ s
+  prettys = toDList . pretty
 
 instance PrettyPrintable Char where
   prettys = showChar
