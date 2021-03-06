@@ -44,6 +44,12 @@ a & b <-> b & a
 (a <-> b) -> (b <-> a)
 (a <-> b) <-> (b <-> a)
 
+# Functoriality
+(a -> b) -> (a & c -> b & c)
+(a -> b) -> (a | c -> b | c)
+(a -> b) -> ((b -> c) -> (a -> c))
+(a -> b) -> ((c -> a) -> (c -> b))
+
 # Diagnonal/codiagonal
 a -> a & a
 a | a -> a
