@@ -15,7 +15,7 @@ import AutoProof
     prettyFormula,
     var,
   )
-import Data.Either (isRight)
+import Data.Maybe (isJust)
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
 import Prelude hiding (and, not, or)
@@ -58,7 +58,7 @@ instance QC.Arbitrary (Formula String) where
   arbitrary = QC.sized formula
 
 parsesPretty :: Formula String -> Bool
-parsesPretty p = (parseFormula . prettyFormula) p == Right p
+parsesPretty p = (parseFormula . prettyFormula) p == Just p
 
 makeAssertion :: QC.Testable p => String -> Int -> p -> H.SpecWith ()
 makeAssertion label maxS prop = H.it label $ QC.withMaxSuccess maxS prop
@@ -73,4 +73,4 @@ assertParsesPretty =
 assertSuccessfulParse :: String -> H.SpecWith ()
 assertSuccessfulParse s =
   H.it ("should parse: " ++ show s) $
-    s `H.shouldSatisfy` (isRight . parseFormula)
+    s `H.shouldSatisfy` (isJust . parseFormula)

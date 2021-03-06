@@ -24,8 +24,8 @@ main = do
         then loop
         else do
           case parseFormula line of
-            Left e -> print e
-            Right a -> do
+            Nothing -> putStrLn "Parse error"
+            Just a -> do
               putStrLn $ "Trying to prove " ++ prettyFormula a
               let j = toImp a
               case proveImp (toImp a) of

@@ -16,8 +16,8 @@ main = do
         then loop
         else do
           case parseJudgement line of
-            Left e -> print e
-            Right p -> do
+            Nothing -> putStrLn "Parse error"
+            Just p -> do
               putStrLn $ prettyJudgement p
               print p
           loop

@@ -25,8 +25,8 @@ main = do
         then loop
         else do
           case parseFormula line of
-            Left e -> print e
-            Right a -> do
+            Nothing -> putStrLn "Parse error!"
+            Just a -> do
               putStrLn $ "Trying to prove " ++ turnstileS ++ " " ++ prettyFormula a
               case proveTautology a of
                 Nothing -> putStrLn "No proof found"
