@@ -8,6 +8,10 @@
 --
 -- Provides a lightweight, general-purpose parser type and some related
 -- combinators.
+--
+-- The API is deliberately nearly a subset of the @parsec@ API. One big
+-- difference is the behavior of the 'Control.Applicative.Alternative' instace;
+-- our instance always backtracks, so there is no need for a @try@ function.
 module AutoProof.Utils.Parser
   ( -- * The Parser type
     Parser,

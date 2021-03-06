@@ -17,6 +17,8 @@ import Control.Monad (MonadPlus, (>=>))
 
 -- The parser type and its instances
 
+-- | The 'Parser' type is a simple state monad with state type 'String' and
+-- inner monad 'Maybe'.
 newtype Parser a = Parser {runParser :: String -> Maybe (String, a)}
 
 instance Functor Parser where
