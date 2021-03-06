@@ -100,37 +100,37 @@ import qualified Data.Set as Set
 -- * 'iffIntr' (equivalence introduction)
 data Proof a
   = -- | Axiom.
-    Ax !(Judgement a)
+    Ax (Judgement a)
   | -- | Bottom elimination.
-    FalseElim !Height !(Judgement a) (Proof a)
+    FalseElim !Height (Judgement a) (Proof a)
   | -- | Truth introduction
-    TrueIntr !(Judgement a)
+    TrueIntr (Judgement a)
   | -- | Negation elimination
-    NotElim !Height !(Judgement a) !(Proof a) !(Proof a)
+    NotElim !Height (Judgement a) !(Proof a) !(Proof a)
   | -- | Negation introduction
-    NotIntr !Height !(Judgement a) !(Proof a)
+    NotIntr !Height (Judgement a) !(Proof a)
   | -- | Implication elimination
-    ImpElim !Height !(Judgement a) !(Proof a) !(Proof a)
+    ImpElim !Height (Judgement a) !(Proof a) !(Proof a)
   | -- | Implication introduction
-    ImpIntr !Height !(Judgement a) !(Proof a)
+    ImpIntr !Height (Judgement a) !(Proof a)
   | -- | Disjunction elimination
-    OrElim !Height !(Judgement a) !(Proof a) !(Proof a) !(Proof a)
+    OrElim !Height (Judgement a) !(Proof a) !(Proof a) !(Proof a)
   | -- | Left disjunction introduction
-    OrIntrL !Height !(Judgement a) !(Proof a)
+    OrIntrL !Height (Judgement a) !(Proof a)
   | -- | Right disjunction introduction
-    OrIntrR !Height !(Judgement a) !(Proof a)
+    OrIntrR !Height (Judgement a) !(Proof a)
   | -- | Left conjunction introduction
-    AndElimL !Height !(Judgement a) !(Proof a)
+    AndElimL !Height (Judgement a) !(Proof a)
   | -- | Right conjunction introduction
-    AndElimR !Height !(Judgement a) !(Proof a)
+    AndElimR !Height (Judgement a) !(Proof a)
   | -- | Conjunction introduction
-    AndIntr !Height !(Judgement a) !(Proof a) !(Proof a)
+    AndIntr !Height (Judgement a) !(Proof a) !(Proof a)
   | -- | Left equivalence introduction
-    IffElimL !Height !(Judgement a) !(Proof a)
+    IffElimL !Height (Judgement a) !(Proof a)
   | -- | Right equivalence introduction
-    IffElimR !Height !(Judgement a) !(Proof a)
+    IffElimR !Height (Judgement a) !(Proof a)
   | -- | Equivalence introduction
-    IffIntr !Height !(Judgement a) !(Proof a) !(Proof a)
+    IffIntr !Height (Judgement a) !(Proof a) !(Proof a)
 
 -- | Height of a proof
 type Height = Int

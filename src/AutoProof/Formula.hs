@@ -68,9 +68,9 @@ import Prelude hiding (and, not, or)
 -- * equivalence \(\leftrightarrow\) ('iff').
 data Formula a
   = -- | Propositional literal (truth or falsity).
-    Lit !Bool
+    Lit Bool
   | -- | Propositional variable.
-    Var !a
+    Var a
   | -- | Negation.
     Not !Height !Size !(Formula a)
   | -- | Implication.
