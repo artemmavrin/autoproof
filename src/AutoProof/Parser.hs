@@ -64,8 +64,8 @@ import Prelude hiding (and, not, or)
 --
 --     * Negation: @"~"@, @"¬"@.
 --     * Implication: @"->"@, @"=>"@, @"→"@, @"⇾"@, @"⇒"@ @"⊃"@.
---     * Disjunction: @"|"@, @"\\/"@, @"∨"@
---     * Conjunction: @"&"@, @"/\\"@, @"∧"@, @"^"@
+--     * Disjunction: @"|"@, @"\\/"@, @"∨"@, @"+"@
+--     * Conjunction: @"&"@, @"/\\"@, @"∧"@, @"^"@, @"*"@
 --     * Equivalence: @"\<-\>"@, @"↔"@, @"⇿"@, @"⇔"@
 --
 -- * Implication is right-associative and has lower precedence than the other
@@ -175,10 +175,10 @@ iffS :: Parser String
 iffS = symbol ["<->", "↔", "⇿", "⇔"]
 
 andS :: Parser String
-andS = symbol ["&", "^", "∧", "/\\"]
+andS = symbol ["&", "^", "∧", "/\\", "*"]
 
 orS :: Parser String
-orS = symbol ["|", "∨", "\\/"]
+orS = symbol ["|", "∨", "\\/", "+"]
 
 notS :: Parser String
 notS = symbol ["~", "¬"]
