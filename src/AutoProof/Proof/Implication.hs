@@ -49,7 +49,7 @@ proveImp = prove Set.empty
     -- g ⊢ a → b
     --
     -- so it suffices to look for a proof of g,a ⊢ b
-    prove s j@(Judgement g i@(Imp _ _ a b)) =
+    prove s j@(Judgement g i@(Imp _ a b)) =
       if Set.member i g
         then Just $ axiom j
         else impIntr j <$> prove s (Judgement (Set.insert a g) b)
@@ -81,7 +81,7 @@ proveImp = prove Set.empty
     -- Actually, case (1) is the n=0 case of case (2).
     --
     -- The implementation:
-    prove s j@(Judgement g v@(Var x)) =
+    prove s j@(Judgement g v@(Var _ x)) =
       if Set.member j s
         then Nothing -- Already visited current judgement; skip to avoid cycles
         else foldr ((<|>) . findImp) Nothing g -- Scan context looking for proof
@@ -102,8 +102,8 @@ proveImp = prove Set.empty
         -- other forms, return Nothing.
         splitImp = go []
           where
-            go l (Var y) = if x == y then Just l else Nothing
-            go l (Imp _ _ a b) = go (a : l) b
+            go l (Var _ y) = if x == y then Just l else Nothing
+            go l (Imp _ a b) = go (a : l) b
             go _ _ = Nothing -- non-implicational case
 
         -- Given a list of formulas [an, ..., a2, a1] from an implication of the

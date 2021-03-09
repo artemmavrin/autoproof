@@ -15,7 +15,7 @@ module AutoProof.Proof.Correctness
 where
 
 import AutoProof.Formula
-  ( Formula (And, Imp, Lit, Not, Or, Iff),
+  ( Formula (And, Iff, Imp, Lit, Not, Or),
     false,
     imp,
   )
@@ -68,7 +68,7 @@ debug x@(FalseElim _ (Judgement g _) p) =
 --
 -- ----- (⊤I)
 -- g ⊢ ⊤
-debug (TrueIntr (Judgement _ (Lit True))) = return ()
+debug (TrueIntr (Judgement _ (Lit _ True))) = return ()
 -- Negation elimination: if g is the union of g1 and g2, then
 --
 --    p          q
@@ -76,11 +76,11 @@ debug (TrueIntr (Judgement _ (Lit True))) = return ()
 -- g1 ⊢ ¬a    g2 ⊢ a
 -- ----------------- (¬E)
 --        g ⊢ ⊥
-debug x@(NotElim _ (Judgement g (Lit False)) p q) =
+debug x@(NotElim _ (Judgement g (Lit _ False)) p q) =
   let Judgement g1 na = judgement p
       Judgement g2 a = judgement q
    in case na of
-        Not _ _ b | b == a && g == Set.union g1 g2 -> do
+        Not _ b | b == a && g == Set.union g1 g2 -> do
           debug p
           debug q
         _ -> Left x
@@ -91,10 +91,10 @@ debug x@(NotElim _ (Judgement g (Lit False)) p q) =
 -- g, a ⊢ ⊥
 -- -------- (¬I)
 --  g ⊢ ¬a
-debug x@(NotIntr _ (Judgement g (Not _ _ a)) p) =
+debug x@(NotIntr _ (Judgement g (Not _ a)) p) =
   let (Judgement g' f) = judgement p
    in case f of
-        Lit False | g' == Set.insert a g -> debug p
+        Lit _ False | g' == Set.insert a g -> debug p
         _ -> Left x
 -- Implication elimination: if g is the union of g1 and g2, then
 --
@@ -118,7 +118,7 @@ debug x@(ImpElim _ (Judgement g b) p q) =
 --  g,a ⊢ b
 -- --------- (→I)
 -- g ⊢ a → b
-debug x@(ImpIntr _ (Judgement g (Imp _ _ a b)) p) =
+debug x@(ImpIntr _ (Judgement g (Imp _ a b)) p) =
   let Judgement g' b' = judgement p
    in if b' == b && g' == Set.insert a g
         then debug p
@@ -135,11 +135,11 @@ debug x@(OrElim _ (Judgement g c) p q r) =
       Judgement g2 c2 = judgement q
       Judgement g3 c3 = judgement r
    in case ab of
-        Or _ _ a b | c2 == c
-                       && c3 == c
-                       && a `Set.member` g2
-                       && b `Set.member` g3
-                       && Set.insert a (Set.insert b g) == Set.union (Set.union g1 g2) g3 ->
+        Or _ a b | c2 == c
+                     && c3 == c
+                     && a `Set.member` g2
+                     && b `Set.member` g3
+                     && Set.insert a (Set.insert b g) == Set.union (Set.union g1 g2) g3 ->
           do
             debug p
             debug q
@@ -152,7 +152,7 @@ debug x@(OrElim _ (Judgement g c) p q r) =
 --   g ⊢ a
 -- --------- (∨IL)
 -- g ⊢ a ∨ b
-debug x@(OrIntrL _ (Judgement g (Or _ _ a _)) p) =
+debug x@(OrIntrL _ (Judgement g (Or _ a _)) p) =
   let Judgement g' a' = judgement p
    in if a' == a && g' == g
         then debug p
@@ -164,7 +164,7 @@ debug x@(OrIntrL _ (Judgement g (Or _ _ a _)) p) =
 --   g ⊢ b
 -- --------- (∨IL)
 -- g ⊢ a ∨ b
-debug x@(OrIntrR _ (Judgement g (Or _ _ _ b)) p) =
+debug x@(OrIntrR _ (Judgement g (Or _ _ b)) p) =
   let Judgement g' b' = judgement p
    in if b' == b && g' == g
         then debug p
@@ -179,7 +179,7 @@ debug x@(OrIntrR _ (Judgement g (Or _ _ _ b)) p) =
 debug x@(AndElimL _ (Judgement g a) p) =
   let Judgement g' ab = judgement p
    in case ab of
-        And _ _ a' _ | a' == a && g' == g -> debug p
+        And _ a' _ | a' == a && g' == g -> debug p
         _ -> Left x
 -- Conjunction elimination (right):
 --
@@ -191,7 +191,7 @@ debug x@(AndElimL _ (Judgement g a) p) =
 debug x@(AndElimR _ (Judgement g b) p) =
   let Judgement g' ab = judgement p
    in case ab of
-        And _ _ _ b' | b' == b && g' == g -> debug p
+        And _ _ b' | b' == b && g' == g -> debug p
         _ -> Left x
 -- Conjunction introduction: if g is the union of g1 and g2, then
 --
@@ -200,7 +200,7 @@ debug x@(AndElimR _ (Judgement g b) p) =
 -- g1 ⊢ a     g2 ⊢ b
 -- ----------------- (∧I)
 --     g ⊢ a ∧ b
-debug x@(AndIntr _ (Judgement g (And _ _ a b)) p q) =
+debug x@(AndIntr _ (Judgement g (And _ a b)) p q) =
   let Judgement g1 a' = judgement p
       Judgement g2 b' = judgement q
    in if a' == a && b' == b && g == Set.union g1 g2
@@ -215,10 +215,10 @@ debug x@(AndIntr _ (Judgement g (And _ _ a b)) p q) =
 -- g ⊢ a ↔ b
 -- --------- (↔EL)
 -- g ⊢ a → b
-debug x@(IffElimL _ (Judgement g (Imp _ _ a b)) p) =
+debug x@(IffElimL _ (Judgement g (Imp _ a b)) p) =
   let Judgement g' ab = judgement p
    in case ab of
-        Iff _ _ a' b' | a' == a && b' == b && g' == g -> debug p
+        Iff _ a' b' | a' == a && b' == b && g' == g -> debug p
         _ -> Left x
 -- Equivalence elimination (right):
 --
@@ -227,10 +227,10 @@ debug x@(IffElimL _ (Judgement g (Imp _ _ a b)) p) =
 -- g ⊢ a ↔ b
 -- --------- (↔EL)
 -- g ⊢ b → a
-debug x@(IffElimR _ (Judgement g (Imp _ _ b a)) p) =
+debug x@(IffElimR _ (Judgement g (Imp _ b a)) p) =
   let Judgement g' ab = judgement p
    in case ab of
-        Iff _ _ a' b' | a' == a && b' == b && g' == g -> debug p
+        Iff _ a' b' | a' == a && b' == b && g' == g -> debug p
         _ -> Left x
 -- Equivalence introduction: if g is the union of g1 and g2, then
 --
@@ -239,10 +239,10 @@ debug x@(IffElimR _ (Judgement g (Imp _ _ b a)) p) =
 -- g1 ⊢ a → b     g2 ⊢ b → a
 -- ------------------------- (↔I)
 --         g ⊢ a ↔ b
-debug x@(IffIntr _ (Judgement g (Iff _ _ a b)) p q) =
+debug x@(IffIntr _ (Judgement g (Iff _ a b)) p q) =
   let Judgement g1 ab = judgement p
       Judgement g2 ba = judgement q
-   in if ab == imp a b  && ba == imp b a && g == Set.union g1 g2
+   in if ab == imp a b && ba == imp b a && g == Set.union g1 g2
         then do
           debug p
           debug q

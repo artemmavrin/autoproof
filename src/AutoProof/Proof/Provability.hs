@@ -15,6 +15,7 @@ import AutoProof.Formula
     false,
     iff,
     imp,
+    lit,
     not,
     or,
     subformulas,
@@ -158,13 +159,13 @@ toImp a = Judgement g (var a)
     f g' b = h (g' . common b) b
 
     -- Add unique formulas into the growing context g'
-    h g' b@(Lit _) = g' . unique b
-    h g' b@(Var _) = g' . unique b
-    h g' b@(Not _ _ c) = f (g' . unique b) c
-    h g' b@(Imp _ _ c d) = f (f (g' . unique b) c) d
-    h g' b@(Or _ _ c d) = f (f (g' . unique b) c) d
-    h g' b@(And _ _ c d) = f (f (g' . unique b) c) d
-    h g' b@(Iff _ _ c d) = f (f (g' . unique b) c) d
+    h g' b@(Lit _ _) = g' . unique b
+    h g' b@(Var _ _) = g' . unique b
+    h g' b@(Not _ c) = f (g' . unique b) c
+    h g' b@(Imp _ c d) = f (f (g' . unique b) c) d
+    h g' b@(Or _ c d) = f (f (g' . unique b) c) d
+    h g' b@(And _ c d) = f (f (g' . unique b) c) d
+    h g' b@(Iff _ c d) = f (f (g' . unique b) c) d
 
     -- Initial context (vacuous truth introduction)
     g0 = toDList [var true]
@@ -178,17 +179,17 @@ toImp a = Judgement g (var a)
 
     -- Formulas that get created depending on the shape of a subformula b of a
     unique = toDList . unique'
-    unique' (Lit _) = []
-    unique' (Var _) = []
-    unique' b@(Not _ _ c) =
+    unique' (Lit _ _) = []
+    unique' (Var _ _) = []
+    unique' b@(Not _ c) =
       [ imp (var b) (imp (var c) (var false)), -- negation elimination
         imp (imp (var c) (var false)) (var b) -- negation introduction
       ]
-    unique' b@(Imp _ _ c d) =
+    unique' b@(Imp _ c d) =
       [ imp (var b) (imp (var c) (var d)), -- implication elimination
         imp (imp (var c) (var d)) (var b) -- implication introduction
       ]
-    unique' b@(Or _ _ c d) =
+    unique' b@(Or _ c d) =
       let t0 =
             [ imp (var c) (var b), -- left disjunction introduction
               imp (var d) (var b) -- right disjunction introduction
@@ -196,12 +197,12 @@ toImp a = Judgement g (var a)
           -- disjunction elimination
           orE e = imp (var b) (imp (imp (var c) (var e)) (imp (imp (var d) (var e)) (var e)))
        in foldr ((:) . orE) t0 bs
-    unique' b@(And _ _ c d) =
+    unique' b@(And _ c d) =
       [ imp (var c) (imp (var d) (var b)), -- conjunction introduction
         imp (var b) (var c), -- left conjunction elimination
         imp (var b) (var d) -- right conjunction elimination
       ]
-    unique' b@(Iff _ _ c d) =
+    unique' b@(Iff _ c d) =
       [ imp (imp (var c) (var d)) (imp (imp (var d) (var c)) (var b)), -- equivalence introduction
         imp (var b) (imp (var c) (var d)), -- left equivalence elimination
         imp (var b) (imp (var d) (var c)) -- right equivalence elimination
@@ -252,9 +253,9 @@ proveTautology a =
 -- Convert a formula with extra variables x_a (as described in toImp) back to an
 -- ordinary formula
 fromImpFormula :: Formula (Formula a) -> Formula a
-fromImpFormula (Lit b) = Lit b
-fromImpFormula (Var a) = a
-fromImpFormula (Imp _ _ a b) = imp (fromImpFormula a) (fromImpFormula b)
+fromImpFormula (Lit _ b) = lit b
+fromImpFormula (Var _ a) = a
+fromImpFormula (Imp _ a b) = imp (fromImpFormula a) (fromImpFormula b)
 fromImpFormula _ = undefined -- should be unreachable!
 
 -- Convert a judgement with extra variables x_a (as described in toImp) back to
@@ -309,17 +310,17 @@ proveTautologyFromImp a = do
 -- each hypothesis into a proof. Each pattern matching case corresponds to a
 -- specific inference rule.
 --
--- Recall from toImp that a variable Var a, where a itself is a propositional
+-- Recall from toImp that a variable Var _ a, where a itself is a propositional
 -- formula, represents a new propositional variable x_a.
 proveToImpHypothesis :: Ord a => Formula (Formula a) -> Proof a
 -- Axiom
-proveToImpHypothesis (Imp _ _ (Var a) (Var a'))
+proveToImpHypothesis (Imp _ (Var _ a) (Var _ a'))
   | a == a' =
     impIntr
       ([] |- imp a a)
       (axiom ([a] |- a))
 -- Falsity elimination
-proveToImpHypothesis (Imp _ _ (Var (Lit False)) (Var b)) =
+proveToImpHypothesis (Imp _ (Var _ (Lit _ False)) (Var _ b)) =
   impIntr
     ([] |- imp false b)
     ( falseElim
@@ -330,14 +331,14 @@ proveToImpHypothesis (Imp _ _ (Var (Lit False)) (Var b)) =
         )
     )
 -- Vacuous truth introduction (special case)
-proveToImpHypothesis (Var (Lit True)) = trueIntr ([] |- true)
+proveToImpHypothesis (Var _ (Lit _ True)) = trueIntr ([] |- true)
 -- Truth introduction
-proveToImpHypothesis (Imp _ _ (Var b) (Var (Lit True))) =
+proveToImpHypothesis (Imp _ (Var _ b) (Var _ (Lit _ True))) =
   impIntr
     ([] |- imp b true)
     (trueIntr ([b] |- true))
 -- Negation elimination
-proveToImpHypothesis (Imp _ _ (Var (Not _ _ c)) (Imp _ _ (Var c') (Var (Lit False))))
+proveToImpHypothesis (Imp _ (Var _ (Not _ c)) (Imp _ (Var _ c') (Var _ (Lit _ False))))
   | c == c' =
     impIntr
       ([] |- imp (not c) (imp c false))
@@ -350,7 +351,7 @@ proveToImpHypothesis (Imp _ _ (Var (Not _ _ c)) (Imp _ _ (Var c') (Var (Lit Fals
           )
       )
 -- Negation introduction
-proveToImpHypothesis (Imp _ _ (Imp _ _ (Var c) (Var (Lit False))) (Var (Not _ _ c')))
+proveToImpHypothesis (Imp _ (Imp _ (Var _ c) (Var _ (Lit _ False))) (Var _ (Not _ c')))
   | c == c' =
     impIntr
       ([] |- imp (imp c false) (not c))
@@ -363,19 +364,19 @@ proveToImpHypothesis (Imp _ _ (Imp _ _ (Var c) (Var (Lit False))) (Var (Not _ _ 
           )
       )
 -- Implication elimination
-proveToImpHypothesis (Imp _ _ (Var (Imp _ _ c d)) (Imp _ _ (Var c') (Var d')))
+proveToImpHypothesis (Imp _ (Var _ (Imp _ c d)) (Imp _ (Var _ c') (Var _ d')))
   | c == c' && d == d' =
     impIntr
       ([] |- imp (imp c d) (imp c d))
       (axiom ([imp c d] |- imp c d))
 -- Implication introduction
-proveToImpHypothesis (Imp _ _ (Imp _ _ (Var c) (Var d)) (Var (Imp _ _ c' d')))
+proveToImpHypothesis (Imp _ (Imp _ (Var _ c) (Var _ d)) (Var _ (Imp _ c' d')))
   | c == c' && d == d' =
     impIntr
       ([] |- imp (imp c d) (imp c d))
       (axiom ([imp c d] |- imp c d))
 -- Left disjunction introduction
-proveToImpHypothesis (Imp _ _ (Var c) (Var (Or _ _ c' d)))
+proveToImpHypothesis (Imp _ (Var _ c) (Var _ (Or _ c' d)))
   | c == c' =
     impIntr
       ([] |- imp c (or c d))
@@ -384,7 +385,7 @@ proveToImpHypothesis (Imp _ _ (Var c) (Var (Or _ _ c' d)))
           (axiom ([c] |- c))
       )
 -- Right disjunction introduction
-proveToImpHypothesis (Imp _ _ (Var d) (Var (Or _ _ c d')))
+proveToImpHypothesis (Imp _ (Var _ d) (Var _ (Or _ c d')))
   | d == d' =
     impIntr
       ([] |- imp d (or c d))
@@ -393,7 +394,7 @@ proveToImpHypothesis (Imp _ _ (Var d) (Var (Or _ _ c d')))
           (axiom ([d] |- d))
       )
 -- Disjunction elimination
-proveToImpHypothesis (Imp _ _ (Var (Or _ _ c d)) (Imp _ _ (Imp _ _ (Var c') (Var e)) (Imp _ _ (Imp _ _ (Var d') (Var e')) (Var e''))))
+proveToImpHypothesis (Imp _ (Var _ (Or _ c d)) (Imp _ (Imp _ (Var _ c') (Var _ e)) (Imp _ (Imp _ (Var _ d') (Var _ e')) (Var _ e''))))
   | c == c' && d == d' && e == e' && e == e'' =
     impIntr
       ([] |- imp (or c d) (imp (imp c e) (imp (imp d e) e)))
@@ -418,7 +419,7 @@ proveToImpHypothesis (Imp _ _ (Var (Or _ _ c d)) (Imp _ _ (Imp _ _ (Var c') (Var
           )
       )
 -- Conjunction introduction
-proveToImpHypothesis (Imp _ _ (Var c) (Imp _ _ (Var d) (Var (And _ _ c' d'))))
+proveToImpHypothesis (Imp _ (Var _ c) (Imp _ (Var _ d) (Var _ (And _ c' d'))))
   | c == c' && d == d' =
     impIntr
       ([] |- imp c (imp d (and c d)))
@@ -431,7 +432,7 @@ proveToImpHypothesis (Imp _ _ (Var c) (Imp _ _ (Var d) (Var (And _ _ c' d'))))
           )
       )
 -- Left conjunction elimination
-proveToImpHypothesis (Imp _ _ (Var (And _ _ c d)) (Var c'))
+proveToImpHypothesis (Imp _ (Var _ (And _ c d)) (Var _ c'))
   | c == c' =
     impIntr
       ([] |- imp (and c d) c)
@@ -440,7 +441,7 @@ proveToImpHypothesis (Imp _ _ (Var (And _ _ c d)) (Var c'))
           (axiom ([and c d] |- and c d))
       )
 -- Right conjunction elimination
-proveToImpHypothesis (Imp _ _ (Var (And _ _ c d)) (Var d'))
+proveToImpHypothesis (Imp _ (Var _ (And _ c d)) (Var _ d'))
   | d == d' =
     impIntr
       ([] |- imp (and c d) d)
@@ -449,7 +450,7 @@ proveToImpHypothesis (Imp _ _ (Var (And _ _ c d)) (Var d'))
           (axiom ([and c d] |- and c d))
       )
 -- Equivalence introduction
-proveToImpHypothesis (Imp _ _ (Imp _ _ (Var c) (Var d)) (Imp _ _ (Imp _ _ (Var d') (Var c')) (Var (Iff _ _ c'' d''))))
+proveToImpHypothesis (Imp _ (Imp _ (Var _ c) (Var _ d)) (Imp _ (Imp _ (Var _ d') (Var _ c')) (Var _ (Iff _ c'' d''))))
   | c == c' && c == c'' && d == d' && d == d'' =
     impIntr
       ([] |- imp (imp c d) (imp (imp d c) (iff c d)))
@@ -462,7 +463,7 @@ proveToImpHypothesis (Imp _ _ (Imp _ _ (Var c) (Var d)) (Imp _ _ (Imp _ _ (Var d
           )
       )
 -- Left equivalence elimination
-proveToImpHypothesis (Imp _ _ (Var (Iff _ _ c d)) (Imp _ _ (Var c') (Var d')))
+proveToImpHypothesis (Imp _ (Var _ (Iff _ c d)) (Imp _ (Var _ c') (Var _ d')))
   | c == c' && d == d' =
     impIntr
       ([] |- imp (iff c d) (imp c d))
@@ -471,7 +472,7 @@ proveToImpHypothesis (Imp _ _ (Var (Iff _ _ c d)) (Imp _ _ (Var c') (Var d')))
           (axiom ([iff c d] |- iff c d))
       )
 -- Right equivalence elimination
-proveToImpHypothesis (Imp _ _ (Var (Iff _ _ c d)) (Imp _ _ (Var d') (Var c')))
+proveToImpHypothesis (Imp _ (Var _ (Iff _ c d)) (Imp _ (Var _ d') (Var _ c')))
   | c == c' && d == d' =
     impIntr
       ([] |- imp (iff c d) (imp d c))

@@ -146,9 +146,9 @@ strengthenProof (Ax (Judgement _ a)) = axiom (Judgement (Set.singleton a) a)
 strengthenProof (FalseElim _ j p) = strengthenUnary falseElim j p
 strengthenProof (TrueIntr (Judgement _ a)) = trueIntr (Judgement Set.empty a)
 strengthenProof (NotElim _ j p q) = strengthenBinary notElim j p q
-strengthenProof (NotIntr _ (Judgement _ a@(Not _ _ b)) p) = strengthenUnaryImp notIntr a b p
+strengthenProof (NotIntr _ (Judgement _ a@(Not _ b)) p) = strengthenUnaryImp notIntr a b p
 strengthenProof (ImpElim _ j p q) = strengthenBinary impElim j p q
-strengthenProof (ImpIntr _ (Judgement _ a@(Imp _ _ b _)) p) = strengthenUnaryImp impIntr a b p
+strengthenProof (ImpIntr _ (Judgement _ a@(Imp _ b _)) p) = strengthenUnaryImp impIntr a b p
 strengthenProof (OrElim _ j p q r) = strengthenOrElim j p q r
 strengthenProof (OrIntrL _ j p) = strengthenUnary orIntrL j p
 strengthenProof (OrIntrR _ j p) = strengthenUnary orIntrR j p
@@ -216,7 +216,7 @@ strengthenOrElim ::
   Proof a ->
   Proof a
 strengthenOrElim j@(Judgement _ c) p q r = case consequent (judgement p) of
-  Or _ _ a b ->
+  Or _ a b ->
     let p' = strengthenProof p
         q' = strengthenProof q
         r' = strengthenProof r
