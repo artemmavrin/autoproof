@@ -6,8 +6,7 @@
 -- Stability   : experimental
 -- Portability : POSIX
 --
--- Propositional, intuitionistic natural deduction automated theorem-proving
--- library.
+-- Automated theorem-proving in intuitionistic propositional logic.
 module AutoProof
   ( -- * Formulas
     Formula,
@@ -35,7 +34,7 @@ module AutoProof
 
     -- * Judgements
     Context,
-    Judgement (Judgement, antecedents, consequent),
+    Judgement (Judgement, antecedents, succedent),
 
     -- ** Judgement constructor
     (|-),
@@ -70,10 +69,6 @@ module AutoProof
     proveImp,
     toImp,
 
-    -- ** Operations on proofs
-    strengthenProof,
-    weakenProof,
-
     -- ** Cuts
     findCut,
     hasCut,
@@ -82,6 +77,9 @@ module AutoProof
     correct,
     valid,
     debug,
+
+    -- * Abstract syntax trees
+    AST (Root, root, children, height, size),
 
     -- * Parsing
     parseFormula,
@@ -95,6 +93,7 @@ module AutoProof
   )
 where
 
+import AutoProof.AST (AST (Root, children, height, root, size))
 import AutoProof.Formula
   ( Formula,
     and,
@@ -116,7 +115,7 @@ import AutoProof.Formula
   )
 import AutoProof.Judgement
   ( Context,
-    Judgement (Judgement, antecedents, consequent),
+    Judgement (Judgement, antecedents, succedent),
     prettyJudgement,
     weakenJudgement,
     (|-),
@@ -150,11 +149,9 @@ import AutoProof.Proof
     prettyProof,
     proveImp,
     proveTautology,
-    strengthenProof,
     toImp,
     trueIntr,
     valid,
-    weakenProof,
   )
 import AutoProof.Utils.PrettyPrintable (PrettyPrintable (pretty))
 import Prelude hiding (and, not, or)

@@ -6,7 +6,7 @@
 -- Stability   : experimental
 -- Portability : POSIX
 --
--- Intuitionistic natural deductions in propositional logic.
+-- Intuitionistic proofs in propositional logic.
 module AutoProof.Proof
   ( -- * Proof type
     Proof
@@ -45,12 +45,6 @@ module AutoProof.Proof
     iffElimL,
     iffElimR,
     iffIntr,
-
-    -- * Proof metadata
-    height,
-    judgement,
-    premises,
-    axioms,
 
     -- * Operations on proofs
     weakenProof,
@@ -104,21 +98,17 @@ import AutoProof.Proof.Types
     andElimR,
     andIntr,
     axiom,
-    axioms,
     falseElim,
-    height,
     iffElimL,
     iffElimR,
     iffIntr,
     impElim,
     impIntr,
-    judgement,
     notElim,
     notIntr,
     orElim,
     orIntrL,
     orIntrR,
-    premises,
     prettyProof,
     trueIntr,
   )

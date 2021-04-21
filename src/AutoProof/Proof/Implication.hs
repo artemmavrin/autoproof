@@ -6,8 +6,7 @@
 -- Stability   : experimental
 -- Portability : POSIX
 --
--- Intuitionistic natural deduction proofs in the implicational fragment of
--- propositional logic.
+-- Intuitionistic proofs in the implicational fragment of propositional logic.
 module AutoProof.Proof.Implication
   ( proveImp,
   )

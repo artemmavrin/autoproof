@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeFamilies #-}
+
 -- |
 -- Module      : AutoProof.Proof.Types
 -- Copyright   : (c) Artem Mavrin, 2021
@@ -26,7 +28,6 @@ module AutoProof.Proof.Types
         IffElimR,
         IffIntr
       ),
-    Height,
     axiom,
     falseElim,
     trueIntr,
@@ -43,14 +44,19 @@ module AutoProof.Proof.Types
     iffElimL,
     iffElimR,
     iffIntr,
-    height,
-    judgement,
-    premises,
     axioms,
     prettyProof,
   )
 where
 
+import AutoProof.AST
+  ( AST (Root, children, height, metadata, root),
+    ASTMetadata,
+    atomicASTConstructor,
+    binaryRootedASTConstructor,
+    ternaryRootedASTConstructor,
+    unaryRootedASTConstructor,
+  )
 import AutoProof.Formula (Formula)
 import AutoProof.Judgement (Judgement (Judgement))
 import AutoProof.Utils.PrettyPrintable (PrettyPrintable (pretty))
@@ -78,7 +84,7 @@ import AutoProof.Utils.Symbols
 import Data.Set (Set)
 import qualified Data.Set as Set
 
--- | A natural deduction proof tree for intuitionistic propositional logic.
+-- | A proof tree for intuitionistic propositional logic.
 --
 -- Proofs can be created using the proof constructors
 --
@@ -99,101 +105,92 @@ import qualified Data.Set as Set
 -- * 'iffElimR' (right equivalence elimination)
 -- * 'iffIntr' (equivalence introduction)
 data Proof a
-  = -- | Axiom.
-    Ax (Judgement a)
-  | -- | Bottom elimination.
-    FalseElim !Height (Judgement a) (Proof a)
-  | -- | Truth introduction
-    TrueIntr (Judgement a)
-  | -- | Negation elimination
-    NotElim !Height (Judgement a) !(Proof a) !(Proof a)
-  | -- | Negation introduction
-    NotIntr !Height (Judgement a) !(Proof a)
-  | -- | Implication elimination
-    ImpElim !Height (Judgement a) !(Proof a) !(Proof a)
-  | -- | Implication introduction
-    ImpIntr !Height (Judgement a) !(Proof a)
-  | -- | Disjunction elimination
-    OrElim !Height (Judgement a) !(Proof a) !(Proof a) !(Proof a)
-  | -- | Left disjunction introduction
-    OrIntrL !Height (Judgement a) !(Proof a)
-  | -- | Right disjunction introduction
-    OrIntrR !Height (Judgement a) !(Proof a)
-  | -- | Left conjunction introduction
-    AndElimL !Height (Judgement a) !(Proof a)
-  | -- | Right conjunction introduction
-    AndElimR !Height (Judgement a) !(Proof a)
-  | -- | Conjunction introduction
-    AndIntr !Height (Judgement a) !(Proof a) !(Proof a)
-  | -- | Left equivalence introduction
-    IffElimL !Height (Judgement a) !(Proof a)
-  | -- | Right equivalence introduction
-    IffElimR !Height (Judgement a) !(Proof a)
-  | -- | Equivalence introduction
-    IffIntr !Height (Judgement a) !(Proof a) !(Proof a)
+  = -- | Axiom. Use 'axiom'.
+    Ax !ASTMetadata (Judgement a)
+  | -- | Bottom elimination. Use 'falseElim'.
+    FalseElim !ASTMetadata (Judgement a) (Proof a)
+  | -- | Truth introduction. Use 'trueIntr'.
+    TrueIntr !ASTMetadata (Judgement a)
+  | -- | Negation elimination. Use 'notElim'.
+    NotElim !ASTMetadata (Judgement a) !(Proof a) !(Proof a)
+  | -- | Negation introduction. Use 'notIntr'.
+    NotIntr !ASTMetadata (Judgement a) !(Proof a)
+  | -- | Implication elimination. Use 'impElim'.
+    ImpElim !ASTMetadata (Judgement a) !(Proof a) !(Proof a)
+  | -- | Implication introduction. Use 'impIntr'.
+    ImpIntr !ASTMetadata (Judgement a) !(Proof a)
+  | -- | Disjunction elimination. Use 'orElim'.
+    OrElim !ASTMetadata (Judgement a) !(Proof a) !(Proof a) !(Proof a)
+  | -- | Left disjunction introduction. Use 'orIntrL'.
+    OrIntrL !ASTMetadata (Judgement a) !(Proof a)
+  | -- | Right disjunction introduction. Use 'orIntrR'.
+    OrIntrR !ASTMetadata (Judgement a) !(Proof a)
+  | -- | Left conjunction elimination. Use 'andElimL'.
+    AndElimL !ASTMetadata (Judgement a) !(Proof a)
+  | -- | Right conjunction elimination. Use 'andElimR'.
+    AndElimR !ASTMetadata (Judgement a) !(Proof a)
+  | -- | Conjunction introduction. Use 'andIntr'.
+    AndIntr !ASTMetadata (Judgement a) !(Proof a) !(Proof a)
+  | -- | Left equivalence elimination. Use 'iffElimL'.
+    IffElimL !ASTMetadata (Judgement a) !(Proof a)
+  | -- | Right equivalence elimination. Use 'iffElimR'.
+    IffElimR !ASTMetadata (Judgement a) !(Proof a)
+  | -- | Equivalence introduction. Use 'iffIntr'.
+    IffIntr !ASTMetadata (Judgement a) !(Proof a) !(Proof a)
 
--- | Height of a proof
-type Height = Int
+instance AST (Proof a) where
+  type Root (Proof a) = Judgement a
 
--- | \(O(1)\). Get the height of a proof.
---
--- The /height/ of a proof is its height as a rooted tree (i.e., the number of
--- edges on the longest path from the root to a leaf).
-height :: Proof a -> Int
-height (Ax _) = 0
-height (FalseElim h _ _) = h
-height (TrueIntr _) = 0
-height (NotElim h _ _ _) = h
-height (NotIntr h _ _) = h
-height (ImpElim h _ _ _) = h
-height (ImpIntr h _ _) = h
-height (OrElim h _ _ _ _) = h
-height (OrIntrL h _ _) = h
-height (OrIntrR h _ _) = h
-height (AndElimL h _ _) = h
-height (AndElimR h _ _) = h
-height (AndIntr h _ _ _) = h
-height (IffElimL h _ _) = h
-height (IffElimR h _ _) = h
-height (IffIntr h _ _ _) = h
+  root (Ax _ j) = j
+  root (FalseElim _ j _) = j
+  root (TrueIntr _ j) = j
+  root (NotElim _ j _ _) = j
+  root (NotIntr _ j _) = j
+  root (ImpElim _ j _ _) = j
+  root (ImpIntr _ j _) = j
+  root (OrElim _ j _ _ _) = j
+  root (OrIntrL _ j _) = j
+  root (OrIntrR _ j _) = j
+  root (AndElimL _ j _) = j
+  root (AndElimR _ j _) = j
+  root (AndIntr _ j _ _) = j
+  root (IffElimL _ j _) = j
+  root (IffElimR _ j _) = j
+  root (IffIntr _ j _ _) = j
 
--- | Get the final judgement of a proof.
-judgement :: Proof a -> Judgement a
-judgement (Ax j) = j
-judgement (FalseElim _ j _) = j
-judgement (TrueIntr j) = j
-judgement (NotElim _ j _ _) = j
-judgement (NotIntr _ j _) = j
-judgement (ImpElim _ j _ _) = j
-judgement (ImpIntr _ j _) = j
-judgement (OrElim _ j _ _ _) = j
-judgement (OrIntrL _ j _) = j
-judgement (OrIntrR _ j _) = j
-judgement (AndElimL _ j _) = j
-judgement (AndElimR _ j _) = j
-judgement (AndIntr _ j _ _) = j
-judgement (IffElimL _ j _) = j
-judgement (IffElimR _ j _) = j
-judgement (IffIntr _ j _ _) = j
+  children (Ax _ _) = []
+  children (FalseElim _ _ p) = [p]
+  children (TrueIntr _ _) = []
+  children (NotElim _ _ p q) = [p, q]
+  children (NotIntr _ _ p) = [p]
+  children (ImpElim _ _ p q) = [p, q]
+  children (ImpIntr _ _ p) = [p]
+  children (OrElim _ _ p q r) = [p, q, r]
+  children (OrIntrL _ _ p) = [p]
+  children (OrIntrR _ _ p) = [p]
+  children (AndElimL _ _ p) = [p]
+  children (AndElimR _ _ p) = [p]
+  children (AndIntr _ _ p q) = [p, q]
+  children (IffElimL _ _ p) = [p]
+  children (IffElimR _ _ p) = [p]
+  children (IffIntr _ _ p q) = [p, q]
 
--- | List of premises (as proofs) of a given proof.
-premises :: Proof a -> [Proof a]
-premises (Ax _) = []
-premises (FalseElim _ _ p) = [p]
-premises (TrueIntr _) = []
-premises (NotElim _ _ p q) = [p, q]
-premises (NotIntr _ _ p) = [p]
-premises (ImpElim _ _ p q) = [p, q]
-premises (ImpIntr _ _ p) = [p]
-premises (OrElim _ _ p q r) = [p, q, r]
-premises (OrIntrL _ _ p) = [p]
-premises (OrIntrR _ _ p) = [p]
-premises (AndElimL _ _ p) = [p]
-premises (AndElimR _ _ p) = [p]
-premises (AndIntr _ _ p q) = [p, q]
-premises (IffElimL _ _ p) = [p]
-premises (IffElimR _ _ p) = [p]
-premises (IffIntr _ _ p q) = [p, q]
+  metadata (Ax m _) = m
+  metadata (FalseElim m _ _) = m
+  metadata (TrueIntr m _) = m
+  metadata (NotElim m _ _ _) = m
+  metadata (NotIntr m _ _) = m
+  metadata (ImpElim m _ _ _) = m
+  metadata (ImpIntr m _ _) = m
+  metadata (OrElim m _ _ _ _) = m
+  metadata (OrIntrL m _ _) = m
+  metadata (OrIntrR m _ _) = m
+  metadata (AndElimL m _ _) = m
+  metadata (AndElimR m _ _) = m
+  metadata (AndIntr m _ _ _) = m
+  metadata (IffElimL m _ _) = m
+  metadata (IffElimR m _ _) = m
+  metadata (IffIntr m _ _ _) = m
 
 -- | An axiom @('axiom' (g 'AutoProof.Judgement.|-' a))@ represents the
 -- inference of the judgement \(g \vdash a\), where \(a \in g\):
@@ -205,7 +202,7 @@ premises (IffIntr _ _ p q) = [p, q]
 --   \, (\text{Ax})
 -- \]
 axiom :: Judgement a -> Proof a
-axiom = Ax
+axiom = atomicASTConstructor Ax
 
 -- | Falsity elimination (principle of explosion).
 -- @('falseElim' (g 'AutoProof.Judgement.|-' a) p)@ represents the inference of
@@ -224,7 +221,7 @@ axiom = Ax
 --   \, ({\bot}\text{E})
 -- \]
 falseElim :: Judgement a -> Proof a -> Proof a
-falseElim = unaryConstructor FalseElim
+falseElim = unaryRootedASTConstructor FalseElim
 
 -- | Truth introduction.
 -- @('trueIntr' (g 'AutoProof.Judgement.|-' 'AutoProof.Formula.true'))@
@@ -237,7 +234,7 @@ falseElim = unaryConstructor FalseElim
 --   \, (\top\text{I})
 -- \]
 trueIntr :: Judgement a -> Proof a
-trueIntr = TrueIntr
+trueIntr = atomicASTConstructor TrueIntr
 
 -- | Negation elimination.
 -- @('notElim' (g 'AutoProof.Judgement.|-' 'AutoProof.Formula.false') p q)@
@@ -264,7 +261,7 @@ trueIntr = TrueIntr
 --   \, ({\lnot}\text{E})
 -- \]
 notElim :: Judgement a -> Proof a -> Proof a -> Proof a
-notElim = binaryConstructor NotElim
+notElim = binaryRootedASTConstructor NotElim
 
 -- | Negation introduction.
 -- @('notIntr' (g 'AutoProof.Judgement.|-' ('not' a)) p)@ represents the
@@ -284,7 +281,7 @@ notElim = binaryConstructor NotElim
 --   \, ({\lnot}\text{I})
 -- \]
 notIntr :: Judgement a -> Proof a -> Proof a
-notIntr = unaryConstructor NotIntr
+notIntr = unaryRootedASTConstructor NotIntr
 
 -- | Implication elimination (/modus ponens/).
 -- @('impElim' (g 'AutoProof.Judgement.|-' b) p q)@ represents the inference of
@@ -311,7 +308,7 @@ notIntr = unaryConstructor NotIntr
 --   \, ({\rightarrow}\text{E})
 -- \]
 impElim :: Judgement a -> Proof a -> Proof a -> Proof a
-impElim = binaryConstructor ImpElim
+impElim = binaryRootedASTConstructor ImpElim
 
 -- | Implication introduction.
 -- @('impIntr' (g 'AutoProof.Judgement.|-' ('AutoProof.Formula.imp' a b) p)@
@@ -331,7 +328,7 @@ impElim = binaryConstructor ImpElim
 --   \, ({\rightarrow}\text{I})
 -- \]
 impIntr :: Judgement a -> Proof a -> Proof a
-impIntr = unaryConstructor ImpIntr
+impIntr = unaryRootedASTConstructor ImpIntr
 
 -- | Disjunction elimination.
 -- @('orElim' (g 'AutoProof.Judgement.|-' c) p q r)@ represents the inference of
@@ -364,7 +361,7 @@ impIntr = unaryConstructor ImpIntr
 --   \, ({\lor}\text{E})
 -- \]
 orElim :: Judgement a -> Proof a -> Proof a -> Proof a -> Proof a
-orElim = ternaryConstructor OrElim
+orElim = ternaryRootedASTConstructor OrElim
 
 -- | Left disjunction introduction.
 -- @('orIntrL' (g 'AutoProof.Judgement.|-' ('AutoProof.Formula.or' a b)) p)@
@@ -384,7 +381,7 @@ orElim = ternaryConstructor OrElim
 --   \, ({\lor}\text{IL})
 -- \]
 orIntrL :: Judgement a -> Proof a -> Proof a
-orIntrL = unaryConstructor OrIntrL
+orIntrL = unaryRootedASTConstructor OrIntrL
 
 -- | Right disjunction introduction.
 -- @('orIntrR' (g 'AutoProof.Judgement.|-' ('AutoProof.Formula.or' a b)) p)@
@@ -404,7 +401,7 @@ orIntrL = unaryConstructor OrIntrL
 --   \, ({\lor}\text{IR})
 -- \]
 orIntrR :: Judgement a -> Proof a -> Proof a
-orIntrR = unaryConstructor OrIntrR
+orIntrR = unaryRootedASTConstructor OrIntrR
 
 -- | Left conjunction elimination.
 -- @('andElimL' (g 'AutoProof.Judgement.|-' a) p)@ represents the inference of
@@ -423,7 +420,7 @@ orIntrR = unaryConstructor OrIntrR
 --   \, ({\land}\text{EL})
 -- \]
 andElimL :: Judgement a -> Proof a -> Proof a
-andElimL = unaryConstructor AndElimL
+andElimL = unaryRootedASTConstructor AndElimL
 
 -- | Right conjunction elimination.
 -- @('andElimR' (g 'AutoProof.Judgement.|-' b) p)@ represents the inference of
@@ -442,7 +439,7 @@ andElimL = unaryConstructor AndElimL
 --   \, ({\land}\text{ER})
 -- \]
 andElimR :: Judgement a -> Proof a -> Proof a
-andElimR = unaryConstructor AndElimR
+andElimR = unaryRootedASTConstructor AndElimR
 
 -- | Conjunction introduction.
 -- @('andIntr' (g 'AutoProof.Judgement.|-' ('AutoProof.Formula.and' a b)) p)@
@@ -469,7 +466,7 @@ andElimR = unaryConstructor AndElimR
 --   \, ({\land}\text{I})
 -- \]
 andIntr :: Judgement a -> Proof a -> Proof a -> Proof a
-andIntr = binaryConstructor AndIntr
+andIntr = binaryRootedASTConstructor AndIntr
 
 -- | Left equivalence elimination.
 -- @('iffElimL' (g 'AutoProof.Judgement.|-' ('AutoProof.Formula.imp' a b)) p)@
@@ -489,7 +486,7 @@ andIntr = binaryConstructor AndIntr
 --   \, ({\leftrightarrow}\text{EL})
 -- \]
 iffElimL :: Judgement a -> Proof a -> Proof a
-iffElimL = unaryConstructor IffElimL
+iffElimL = unaryRootedASTConstructor IffElimL
 
 -- | Right equivalence elimination.
 -- @('iffElimR' (g 'AutoProof.Judgement.|-' ('AutoProof.Formula.imp' b a)) p)@
@@ -509,7 +506,7 @@ iffElimL = unaryConstructor IffElimL
 --   \, ({\leftrightarrow}\text{ER})
 -- \]
 iffElimR :: Judgement a -> Proof a -> Proof a
-iffElimR = unaryConstructor IffElimR
+iffElimR = unaryRootedASTConstructor IffElimR
 
 -- | Equivalence introduction.
 -- @('iffIntr' (g 'AutoProof.Judgement.|-' ('AutoProof.Formula.iff' a b)) p)@
@@ -536,31 +533,7 @@ iffElimR = unaryConstructor IffElimR
 --   \, ({\leftrightarrow}\text{I})
 -- \]
 iffIntr :: Judgement a -> Proof a -> Proof a -> Proof a
-iffIntr = binaryConstructor IffIntr
-
-unaryConstructor ::
-  (Height -> Judgement a -> Proof a -> Proof a) ->
-  Judgement a ->
-  Proof a ->
-  Proof a
-unaryConstructor c j p = c (1 + height p) j p
-
-binaryConstructor ::
-  (Height -> Judgement a -> Proof a -> Proof a -> Proof a) ->
-  Judgement a ->
-  Proof a ->
-  Proof a ->
-  Proof a
-binaryConstructor c j p q = c (1 + max (height p) (height q)) j p q
-
-ternaryConstructor ::
-  (Height -> Judgement a -> Proof a -> Proof a -> Proof a -> Proof a) ->
-  Judgement a ->
-  Proof a ->
-  Proof a ->
-  Proof a ->
-  Proof a
-ternaryConstructor c j p q r = c (1 + max (height p) (max (height q) (height r))) j p q r
+iffIntr = binaryRootedASTConstructor IffIntr
 
 -- Miscellaneous proof operations
 
@@ -568,9 +541,9 @@ ternaryConstructor c j p q r = c (1 + max (height p) (max (height q) (height r))
 axioms :: Ord a => Proof a -> Set (Formula a)
 axioms = go Set.empty
   where
-    go s (Ax (Judgement _ a)) = Set.insert a s
+    go s (Ax _ (Judgement _ a)) = Set.insert a s
     go s (FalseElim _ _ p) = go s p
-    go s (TrueIntr _) = s
+    go s (TrueIntr _ _) = s
     go s (NotElim _ _ p q) = go (go s p) q
     go s (NotIntr _ _ p) = go s p
     go s (ImpElim _ _ p q) = go (go s p) q
@@ -588,9 +561,9 @@ axioms = go Set.empty
 -- Instance declarations
 
 instance Eq a => Eq (Proof a) where
-  (Ax j) == (Ax j') = j == j'
+  (Ax _ j) == (Ax _ j') = j == j'
   (FalseElim _ j p) == (FalseElim _ j' p') = j == j' && p == p'
-  (TrueIntr j) == (TrueIntr j') = j == j'
+  (TrueIntr _ j) == (TrueIntr _ j') = j == j'
   (NotElim _ j p q) == (NotElim _ j' p' q') = j == j' && p == p' && q == q'
   (NotIntr _ j p) == (NotIntr _ j' p') = j == j' && p == p'
   (ImpElim _ j p q) == (ImpElim _ j' p' q') = j == j' && p == p' && q == q'
@@ -609,17 +582,17 @@ instance Eq a => Eq (Proof a) where
 instance Ord a => Ord (Proof a) where
   compare p p' = case compare (height p) (height p') of
     EQ -> case p of
-      Ax j -> case p' of
-        Ax j' -> compare j j'
+      Ax _ j -> case p' of
+        Ax _ j' -> compare j j'
         _ -> LT
       FalseElim _ j q -> case p' of
         Ax {} -> GT
         FalseElim _ j' q' -> compareUnary j q j' q'
         _ -> LT
-      TrueIntr j -> case p' of
+      TrueIntr _ j -> case p' of
         Ax {} -> GT
         FalseElim {} -> GT
-        TrueIntr j' -> compare j j'
+        TrueIntr _ j' -> compare j j'
         _ -> LT
       NotElim _ j q r -> case p' of
         Ax {} -> GT
@@ -801,9 +774,9 @@ instance Show a => Show (Proof a) where
 
       f b a = showParen b $ g a
 
-      g (Ax j) = showsNullary "axiom " j
+      g (Ax _ j) = showsNullary "axiom " j
       g (FalseElim _ j p) = showsUnary "falseElim " j p
-      g (TrueIntr j) = showsNullary "trueIntr " j
+      g (TrueIntr _ j) = showsNullary "trueIntr " j
       g (NotElim _ j p q) = showsBinary "notElim " j p q
       g (NotIntr _ j p) = showsUnary "notIntr " j p
       g (ImpElim _ j p q) = showsBinary "impElim " j p q
@@ -845,9 +818,9 @@ instance PrettyPrintable a => PrettyPrintable (Proof a) where
   -- Adapted from drawTree in Data.Tree from the containers package
   pretty = unlines . reverse . draw
     where
-      draw p = line p : drawPremises (reverse (premises p))
+      draw p = line p : drawPremises (reverse (children p))
 
-      line p = rule p ++ " " ++ pretty (judgement p)
+      line p = rule p ++ " " ++ pretty (root p)
 
       drawPremises [] = []
       drawPremises [q] =

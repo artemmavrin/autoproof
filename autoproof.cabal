@@ -4,11 +4,11 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 03c69aee36b719abd5c1531e0811aedd8c7a0eaa1e853b61f60e006956ebbeed
+-- hash: 918611b9168de4ddfb8bcd4589807c653edf28b103be90e24af248be9ec7d223
 
 name:           autoproof
 version:        0.0.0.0
-synopsis:       Intuitionistic natural deduction library
+synopsis:       Automated theorem-proving in intuitionistic propositional logic
 description:    Please see the README on GitHub at <https://github.com/artemmavrin/autoproof#readme>
 category:       Logic
 homepage:       https://github.com/artemmavrin/autoproof#readme
@@ -29,6 +29,7 @@ source-repository head
 library
   exposed-modules:
       AutoProof
+      AutoProof.AST
       AutoProof.Formula
       AutoProof.Judgement
       AutoProof.Parser

@@ -9,6 +9,7 @@
 -- Check provability of general propositional formulas
 module AutoProof.Proof.Provability (toImp, isTautology, proveTautology) where
 
+import AutoProof.AST (AST (children, root))
 import AutoProof.Formula
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
     and,
@@ -26,7 +27,7 @@ import AutoProof.Judgement
   ( Judgement
       ( Judgement,
         antecedents,
-        consequent
+        succedent
       ),
     (|-),
   )
@@ -61,13 +62,11 @@ import AutoProof.Proof.Types
     iffIntr,
     impElim,
     impIntr,
-    judgement,
     notElim,
     notIntr,
     orElim,
     orIntrL,
     orIntrR,
-    premises,
     trueIntr,
   )
 import AutoProof.Utils.DList (fromDList, toDList)
@@ -266,7 +265,7 @@ fromImpJudgement (Judgement g a) = map fromImpFormula (Set.toList g) |- fromImpF
 -- Convert a proof with extra variables x_a (as described in toImp) back to an
 -- ordinary proof
 fromImpProof :: Ord a => Proof (Formula a) -> Proof a
-fromImpProof (Ax j) = axiom (fromImpJudgement j)
+fromImpProof (Ax _ j) = axiom (fromImpJudgement j)
 fromImpProof (ImpElim _ j p q) = impElim (fromImpJudgement j) (fromImpProof p) (fromImpProof q)
 fromImpProof (ImpIntr _ j p) = impIntr (fromImpJudgement j) (fromImpProof p)
 -- This should be uncreachable! This function is intended to operate on proofs
@@ -282,15 +281,15 @@ proveTautologyFromImp a = do
   -- Strengthening the proof here lets us remove some redundant hypotheses
   -- created by toImp.
   p <- strengthenProof <$> proveImp (toImp a)
-  let g = antecedents (judgement p)
+  let g = antecedents (root p)
   return $ strengthenProof (foldl proveImpAxiom (fromImpProof p) g)
   where
     proveImpAxiom p b = subAxiom p (proveToImpHypothesis b)
 
     -- Substitute a proof for an axiom
-    subAxiom p@(Ax (Judgement _ b)) q = if b == consequent (judgement q) then q else p
+    subAxiom p@(Ax _ (Judgement _ b)) q = if b == succedent (root q) then q else p
     subAxiom (FalseElim _ j p) q = falseElim j (subAxiom p q)
-    subAxiom p@(TrueIntr _) _ = p
+    subAxiom p@(TrueIntr _ _) _ = p
     subAxiom (NotElim _ j p q) r = notElim j (subAxiom p r) (subAxiom q r)
     subAxiom (NotIntr _ j p) q = notIntr j (subAxiom p q)
     subAxiom (ImpElim _ j p q) r = impElim j (subAxiom p r) (subAxiom q r)
@@ -502,6 +501,6 @@ proveToImpHypothesis _ = undefined
 findSufficientSubproof :: Ord a => Proof a -> Proof a
 findSufficientSubproof p = fromMaybe p (f p)
   where
-    j = judgement p
-    f q = foldr ((<|>) . f) (g q) (sort (premises q))
-    g q = if judgement q == j then Just q else Nothing
+    j = root p
+    f q = foldr ((<|>) . f) (g q) (sort (children q))
+    g q = if root q == j then Just q else Nothing

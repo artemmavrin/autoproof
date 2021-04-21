@@ -10,7 +10,7 @@
 module AutoProof.Judgement
   ( -- * Types and constructors
     Context,
-    Judgement (Judgement, antecedents, consequent),
+    Judgement (Judgement, antecedents, succedent),
     (|-),
 
     -- * Pretty-printing
@@ -34,15 +34,15 @@ import qualified Data.Set as Set
 -- | A set of propositional formulas, used as antecedents of a judgement.
 type Context a = Set (Formula a)
 
--- | @(Judgement c a)@ represents the judgement \(c \vdash a\).
+-- | @(Judgement c a)@ represents the judgement or sequent \(c \vdash a\).
 --
 -- >>> Judgement Set.empty (imp (and (var 'a') (var 'b')) (var 'a'))
 -- [] |- imp (and (var 'a') (var 'b')) (var 'a')
 data Judgement a = Judgement
-  { -- | The antecedents or hypotheses.
+  { -- | The antecedents (or hypotheses).
     antecedents :: Context a,
-    -- | The consequent or conclusion.
-    consequent :: Formula a
+    -- | The succedent (or consequent, or conclusion).
+    succedent :: Formula a
   }
   deriving (Eq)
 

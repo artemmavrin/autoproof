@@ -6,7 +6,7 @@ maintainer:          "artemvmavrin@gmail.com"
 copyright:           "2021 Artem Mavrin"
 github:              "artemmavrin/autoproof"
 category:            Logic
-synopsis:            Intuitionistic natural deduction library
+synopsis:            Automated theorem-proving in intuitionistic propositional logic
 
 extra-source-files:
 - README.md

@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeFamilies #-}
+
 -- |
 -- Module      : AutoProof.Formula
 -- Copyright   : (c) Artem Mavrin, 2021
@@ -34,17 +36,16 @@ module AutoProof.Formula
     -- * Operations on formulas
     subformulas,
     substitute,
-
-    -- * Formula metadata
-    Metadata (Metadata, height_, size_),
-    Height,
-    Size,
-    metadata,
-    height,
-    size,
   )
 where
 
+import AutoProof.AST
+  ( AST (Root, children, metadata, root),
+    ASTMetadata,
+    atomicASTConstructor,
+    binaryASTConstructor,
+    unaryASTConstructor,
+  )
 import AutoProof.Utils.PrettyPrintable (PrettyPrintable (pretty, prettys))
 import AutoProof.Utils.Symbols (andS, falseS, iffS, impS, notS, orS, trueS)
 import Data.Set (Set)
@@ -71,70 +72,49 @@ import Prelude hiding (and, not, or)
 data Formula a
   = -- | Propositional literal (truth or falsity). Use 'lit' or 'false' or
     -- 'true'.
-    Lit !Metadata Bool
+    Lit !ASTMetadata Bool
   | -- | Propositional variable. Use 'var'.
-    Var !Metadata a
+    Var !ASTMetadata a
   | -- | Negation. Use 'not'.
-    Not !Metadata !(Formula a)
+    Not !ASTMetadata !(Formula a)
   | -- | Implication. Use 'imp' or '-->'.
-    Imp !Metadata !(Formula a) !(Formula a)
+    Imp !ASTMetadata !(Formula a) !(Formula a)
   | -- | Disjunction. Use 'or' or '\/'
-    Or !Metadata !(Formula a) !(Formula a)
+    Or !ASTMetadata !(Formula a) !(Formula a)
   | -- | Conjunction. Use 'and' or '/\'.
-    And !Metadata !(Formula a) !(Formula a)
+    And !ASTMetadata !(Formula a) !(Formula a)
   | -- | Equivalence. Use 'iff' or '<->'.
-    Iff !Metadata !(Formula a) !(Formula a)
+    Iff !ASTMetadata !(Formula a) !(Formula a)
 
--- | Height of a formula.
-type Height = Int
+instance AST (Formula a) where
+  type Root (Formula a) = Maybe a
 
--- | Size of a formula.
-type Size = Int
+  root (Var _ x) = Just x
+  root _ = Nothing
 
--- | Metadata about a formula.
-data Metadata = Metadata
-  { -- | Height of a formula (see 'height').
-    height_ :: !Height,
-    -- | Size of a formula (see 'size').
-    size_ :: !Size
-  }
-  deriving (Eq, Ord)
+  children (Lit _ _) = []
+  children (Var _ _) = []
+  children (Not _ a) = [a]
+  children (Imp _ a b) = [a, b]
+  children (Or _ a b) = [a, b]
+  children (And _ a b) = [a, b]
+  children (Iff _ a b) = [a, b]
 
--- | Extract a formula's metadata.
-metadata :: Formula a -> Metadata
-metadata (Lit m _) = m
-metadata (Var m _) = m
-metadata (Not m _) = m
-metadata (Imp m _ _) = m
-metadata (Or m _ _) = m
-metadata (And m _ _) = m
-metadata (Iff m _ _) = m
+  metadata (Lit m _) = m
+  metadata (Var m _) = m
+  metadata (Not m _) = m
+  metadata (Imp m _ _) = m
+  metadata (Or m _ _) = m
+  metadata (And m _ _) = m
+  metadata (Iff m _ _) = m
 
--- | \(O(1)\). Get the height of a propositional formula.
---
--- The /height/ of a propositional formula is its height as a rooted tree (i.e.,
--- the number of edges on the longest path from the root to a leaf).
---
--- >>> height $ imp (var 'a') (or (var 'b') (var 'c'))
--- 2
-height :: Formula a -> Height
-height = height_ . metadata
-
--- | \(O(1)\). Get the size of a propositional formula.
---
--- The /size/ of a propositional formula is the number of symbols (atomic
--- propositions and connectives) that make up that formula.
---
--- >>> size $ imp (var 'a') (or (var 'b') (var 'c'))
--- 5
-size :: Formula a -> Size
-size = size_ . metadata
+-- Formula constructors
 
 -- | Propositional literal constructor. @('lit' 'True')@ is \(\top\) (i.e.,
 -- truth, tautology, or top), and @('lit' 'False')@ is \(\bot\) (i.e., falsity,
 -- contradiction, or bottom).
 lit :: Bool -> Formula a
-lit = atomicConstructor Lit
+lit = atomicASTConstructor Lit
 
 -- | \(\top\) constructor. @'true'@ is an alias for @('lit' 'True')@.
 true :: Formula a
@@ -147,65 +127,36 @@ false = lit False
 -- | Propositional variable constructor. @('var' x)@ represents a propositional
 -- variable \(x\).
 var :: a -> Formula a
-var = atomicConstructor Var
+var = atomicASTConstructor Var
 
 -- | Negation constructor. @('not' p)@ represents the formula \(\lnot p\).
 --
 -- /Note:/ The name of 'not' clashes with 'Prelude.not' from "Prelude".
 not :: Formula a -> Formula a
-not = unaryConstructor Not
+not = unaryASTConstructor Not
 
 -- | Implication constructor. @('imp' p q)@ represents the formula
 -- \(p \rightarrow q\).
 imp :: Formula a -> Formula a -> Formula a
-imp = binaryConstructor Imp
+imp = binaryASTConstructor Imp
 
 -- | Disjunction constructor. @('or' p q)@ represents the formula \(p \lor q\).
 --
 -- /Note:/ The name of 'or' clashes with 'Prelude.or' from "Prelude".
 or :: Formula a -> Formula a -> Formula a
-or = binaryConstructor Or
+or = binaryASTConstructor Or
 
 -- | Conjunction constructor. @('and' p q)@ represents the formula
 -- \(p \land q\).
 --
 -- /Note:/ The name of 'and' clashes with 'Prelude.and' from "Prelude".
 and :: Formula a -> Formula a -> Formula a
-and = binaryConstructor And
+and = binaryASTConstructor And
 
 -- | Equivalence constructor. @('iff' p q)@ represents the formula
 -- \(p \leftrightarrow q\).
 iff :: Formula a -> Formula a -> Formula a
-iff = binaryConstructor Iff
-
--- Helper functions for formula constructors that handle metadata calculation
-
-atomicConstructor ::
-  (Metadata -> b -> Formula a) ->
-  b ->
-  Formula a
-atomicConstructor c = c (Metadata {height_ = 0, size_ = 1})
-
-unaryConstructor ::
-  (Metadata -> Formula a -> Formula a) ->
-  Formula a ->
-  Formula a
-unaryConstructor c p = c m p
-  where
-    m = Metadata {height_ = 1 + height p, size_ = 1 + size p}
-
-binaryConstructor ::
-  (Metadata -> Formula a -> Formula a -> Formula a) ->
-  Formula a ->
-  Formula a ->
-  Formula a
-binaryConstructor c p q = c m p q
-  where
-    m =
-      Metadata
-        { height_ = 1 + max (height p) (height q),
-          size_ = 1 + size p + size q
-        }
+iff = binaryASTConstructor Iff
 
 -- | Right-associative infix alternative for 'imp'. @(p '-->' q)@ represents the
 -- implication \(p \rightarrow q\).
@@ -268,6 +219,7 @@ instance Show a => Show (Formula a) where
 
       h c p q = showString c . f True p . showString " " . f True q
 
+-- | Syntactic equality.
 instance Eq a => Eq (Formula a) where
   (Lit _ a) == (Lit _ b) = a == b
   (Var _ a) == (Var _ b) = a == b
@@ -278,6 +230,9 @@ instance Eq a => Eq (Formula a) where
   (Iff _ a c) == (Iff _ b d) = a == b && c == d
   _ == _ = False
 
+-- | First compare heights, then compare sizes, then resolve using the
+-- convention @Lit < Var < Not < Imp < Or < And < Iff@ (on equality, compare
+-- children from left to right).
 instance Ord a => Ord (Formula a) where
   compare a b = case compare (metadata a) (metadata b) of
     EQ -> case a of
@@ -338,6 +293,7 @@ instance PrettyPrintable a => PrettyPrintable (Formula a) where
       g (And _ p q) = f True p . padded andS . f True q
       g (Iff _ p q) = f True p . padded iffS . f True q
 
+      -- Pad a symbol with one space character on each side
       padded :: String -> ShowS
       padded s = showString (' ' : s) . showString " "
 

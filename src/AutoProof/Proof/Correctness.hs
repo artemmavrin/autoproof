@@ -14,6 +14,7 @@ module AutoProof.Proof.Correctness
   )
 where
 
+import AutoProof.AST (AST (root))
 import AutoProof.Formula
   ( Formula (And, Iff, Imp, Lit, Not, Or),
     false,
@@ -39,7 +40,6 @@ import AutoProof.Proof.Types
         OrIntrR,
         TrueIntr
       ),
-    judgement,
   )
 import Data.Either (isRight)
 import qualified Data.Set as Set
@@ -51,7 +51,7 @@ debug :: Ord a => Proof a -> Either (Proof a) ()
 --
 -- ----- (Ax)
 -- g ⊢ a
-debug x@(Ax (Judgement g a)) = if Set.member a g then return () else Left x
+debug x@(Ax _ (Judgement g a)) = if Set.member a g then return () else Left x
 -- Falsity elimination:
 --
 --   p
@@ -60,7 +60,7 @@ debug x@(Ax (Judgement g a)) = if Set.member a g then return () else Left x
 -- ----- (⊥E)
 -- g ⊢ a
 debug x@(FalseElim _ (Judgement g _) p) =
-  let Judgement g' f = judgement p
+  let Judgement g' f = root p
    in if f == false && g' == g
         then debug p
         else Left x
@@ -68,7 +68,7 @@ debug x@(FalseElim _ (Judgement g _) p) =
 --
 -- ----- (⊤I)
 -- g ⊢ ⊤
-debug (TrueIntr (Judgement _ (Lit _ True))) = return ()
+debug (TrueIntr _ (Judgement _ (Lit _ True))) = return ()
 -- Negation elimination: if g is the union of g1 and g2, then
 --
 --    p          q
@@ -77,8 +77,8 @@ debug (TrueIntr (Judgement _ (Lit _ True))) = return ()
 -- ----------------- (¬E)
 --        g ⊢ ⊥
 debug x@(NotElim _ (Judgement g (Lit _ False)) p q) =
-  let Judgement g1 na = judgement p
-      Judgement g2 a = judgement q
+  let Judgement g1 na = root p
+      Judgement g2 a = root q
    in case na of
         Not _ b | b == a && g == Set.union g1 g2 -> do
           debug p
@@ -92,7 +92,7 @@ debug x@(NotElim _ (Judgement g (Lit _ False)) p q) =
 -- -------- (¬I)
 --  g ⊢ ¬a
 debug x@(NotIntr _ (Judgement g (Not _ a)) p) =
-  let (Judgement g' f) = judgement p
+  let (Judgement g' f) = root p
    in case f of
         Lit _ False | g' == Set.insert a g -> debug p
         _ -> Left x
@@ -104,8 +104,8 @@ debug x@(NotIntr _ (Judgement g (Not _ a)) p) =
 -- -------------------- (→E)
 --        g ⊢ b
 debug x@(ImpElim _ (Judgement g b) p q) =
-  let Judgement g1 c = judgement p
-      Judgement g2 a = judgement q
+  let Judgement g1 c = root p
+      Judgement g2 a = root q
    in if c == imp a b && g == g1 `Set.union` g2
         then do
           debug p
@@ -119,7 +119,7 @@ debug x@(ImpElim _ (Judgement g b) p q) =
 -- --------- (→I)
 -- g ⊢ a → b
 debug x@(ImpIntr _ (Judgement g (Imp _ a b)) p) =
-  let Judgement g' b' = judgement p
+  let Judgement g' b' = root p
    in if b' == b && g' == Set.insert a g
         then debug p
         else Left x
@@ -131,9 +131,9 @@ debug x@(ImpIntr _ (Judgement g (Imp _ a b)) p) =
 -- ------------------------------------ (∨E)
 --                g ⊢ c
 debug x@(OrElim _ (Judgement g c) p q r) =
-  let Judgement g1 ab = judgement p
-      Judgement g2 c2 = judgement q
-      Judgement g3 c3 = judgement r
+  let Judgement g1 ab = root p
+      Judgement g2 c2 = root q
+      Judgement g3 c3 = root r
    in case ab of
         Or _ a b | c2 == c
                      && c3 == c
@@ -153,7 +153,7 @@ debug x@(OrElim _ (Judgement g c) p q r) =
 -- --------- (∨IL)
 -- g ⊢ a ∨ b
 debug x@(OrIntrL _ (Judgement g (Or _ a _)) p) =
-  let Judgement g' a' = judgement p
+  let Judgement g' a' = root p
    in if a' == a && g' == g
         then debug p
         else Left x
@@ -165,7 +165,7 @@ debug x@(OrIntrL _ (Judgement g (Or _ a _)) p) =
 -- --------- (∨IL)
 -- g ⊢ a ∨ b
 debug x@(OrIntrR _ (Judgement g (Or _ _ b)) p) =
-  let Judgement g' b' = judgement p
+  let Judgement g' b' = root p
    in if b' == b && g' == g
         then debug p
         else Left x
@@ -177,7 +177,7 @@ debug x@(OrIntrR _ (Judgement g (Or _ _ b)) p) =
 -- --------- (∧EL)
 --   g ⊢ a
 debug x@(AndElimL _ (Judgement g a) p) =
-  let Judgement g' ab = judgement p
+  let Judgement g' ab = root p
    in case ab of
         And _ a' _ | a' == a && g' == g -> debug p
         _ -> Left x
@@ -189,7 +189,7 @@ debug x@(AndElimL _ (Judgement g a) p) =
 -- --------- (∧ER)
 --   g ⊢ b
 debug x@(AndElimR _ (Judgement g b) p) =
-  let Judgement g' ab = judgement p
+  let Judgement g' ab = root p
    in case ab of
         And _ _ b' | b' == b && g' == g -> debug p
         _ -> Left x
@@ -201,8 +201,8 @@ debug x@(AndElimR _ (Judgement g b) p) =
 -- ----------------- (∧I)
 --     g ⊢ a ∧ b
 debug x@(AndIntr _ (Judgement g (And _ a b)) p q) =
-  let Judgement g1 a' = judgement p
-      Judgement g2 b' = judgement q
+  let Judgement g1 a' = root p
+      Judgement g2 b' = root q
    in if a' == a && b' == b && g == Set.union g1 g2
         then do
           debug p
@@ -216,7 +216,7 @@ debug x@(AndIntr _ (Judgement g (And _ a b)) p q) =
 -- --------- (↔EL)
 -- g ⊢ a → b
 debug x@(IffElimL _ (Judgement g (Imp _ a b)) p) =
-  let Judgement g' ab = judgement p
+  let Judgement g' ab = root p
    in case ab of
         Iff _ a' b' | a' == a && b' == b && g' == g -> debug p
         _ -> Left x
@@ -228,7 +228,7 @@ debug x@(IffElimL _ (Judgement g (Imp _ a b)) p) =
 -- --------- (↔EL)
 -- g ⊢ b → a
 debug x@(IffElimR _ (Judgement g (Imp _ b a)) p) =
-  let Judgement g' ab = judgement p
+  let Judgement g' ab = root p
    in case ab of
         Iff _ a' b' | a' == a && b' == b && g' == g -> debug p
         _ -> Left x
@@ -240,8 +240,8 @@ debug x@(IffElimR _ (Judgement g (Imp _ b a)) p) =
 -- ------------------------- (↔I)
 --         g ⊢ a ↔ b
 debug x@(IffIntr _ (Judgement g (Iff _ a b)) p q) =
-  let Judgement g1 ab = judgement p
-      Judgement g2 ba = judgement q
+  let Judgement g1 ab = root p
+      Judgement g2 ba = root q
    in if ab == imp a b && ba == imp b a && g == Set.union g1 g2
         then do
           debug p
@@ -258,6 +258,6 @@ valid p = isRight (debug p)
 correct :: Ord a => Judgement a -> Proof a -> Bool
 correct (Judgement c a) p =
   valid p
-    && ( let Judgement c' b = judgement p
+    && ( let Judgement c' b = root p
           in a == b && c' `Set.isSubsetOf` c
        )

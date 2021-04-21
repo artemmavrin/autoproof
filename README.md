@@ -1,6 +1,6 @@
 # AutoProof
 
-![build](https://github.com/artemmavrin/autoproof/workflows/test/badge.svg)
-![GitHub last commit](https://img.shields.io/github/last-commit/artemmavrin/autoproof)
+[![test](https://github.com/artemmavrin/autoproof/actions/workflows/test.yml/badge.svg)](https://github.com/artemmavrin/autoproof/actions/workflows/test.yml)
+[![GitHub last commit](https://img.shields.io/github/last-commit/artemmavrin/autoproof)](https://github.com/artemmavrin/autoproof)
 
-A (work-in-progress) intuitionistic natural deduction library.
+A work-in-progress automated theorem-proving library for intuitionistic propositional logic.

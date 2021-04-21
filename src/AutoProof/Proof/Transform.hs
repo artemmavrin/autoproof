@@ -13,12 +13,13 @@ module AutoProof.Proof.Transform
   )
 where
 
+import AutoProof.AST (AST (height, root))
 import AutoProof.Formula (Formula (Imp, Not, Or))
 import AutoProof.Judgement
   ( Judgement
       ( Judgement,
         antecedents,
-        consequent
+        succedent
       ),
     weakenJudgement,
   )
@@ -46,13 +47,11 @@ import AutoProof.Proof.Types
     andIntr,
     axiom,
     falseElim,
-    height,
     iffElimL,
     iffElimR,
     iffIntr,
     impElim,
     impIntr,
-    judgement,
     notElim,
     notIntr,
     orElim,
@@ -65,9 +64,9 @@ import qualified Data.Set as Set
 -- | The /weakening/ structural rule. @('weakenProof' p a)@ modifies the proof
 -- @p@ to include @a@ as an additional hypothesis.
 weakenProof :: Ord a => Proof a -> Formula a -> Proof a
-weakenProof (Ax j) a = weakenNullary axiom a j
+weakenProof (Ax _ j) a = weakenNullary axiom a j
 weakenProof x@(FalseElim _ j p) a = weakenUnary falseElim x a j p
-weakenProof (TrueIntr j) a = weakenNullary trueIntr a j
+weakenProof (TrueIntr _ j) a = weakenNullary trueIntr a j
 weakenProof x@(NotElim _ j p q) a = weakenBinary notElim x a j p q
 weakenProof x@(NotIntr _ j p) a = weakenUnary notIntr x a j p
 weakenProof x@(ImpElim _ j p q) a = weakenBinary impElim x a j p q
@@ -115,8 +114,8 @@ weakenBinary ::
   Proof a
 weakenBinary c x a j@(Judgement g _) p q
   | a `Set.member` g = x
-  | a `Set.member` antecedents (judgement p) = c (weakenJudgement j a) p q
-  | a `Set.member` antecedents (judgement q) = c (weakenJudgement j a) p q
+  | a `Set.member` antecedents (root p) = c (weakenJudgement j a) p q
+  | a `Set.member` antecedents (root q) = c (weakenJudgement j a) p q
   | height p <= height q = c (weakenJudgement j a) (weakenProof p a) q
   | otherwise = c (weakenJudgement j a) p (weakenProof q a)
 
@@ -132,9 +131,9 @@ weakenTernary ::
   Proof a
 weakenTernary c x a j@(Judgement g _) p q r
   | a `Set.member` g = x
-  | a `Set.member` antecedents (judgement p) = c (weakenJudgement j a) p q r
-  | a `Set.member` antecedents (judgement q) = c (weakenJudgement j a) p q r
-  | a `Set.member` antecedents (judgement r) = c (weakenJudgement j a) p q r
+  | a `Set.member` antecedents (root p) = c (weakenJudgement j a) p q r
+  | a `Set.member` antecedents (root q) = c (weakenJudgement j a) p q r
+  | a `Set.member` antecedents (root r) = c (weakenJudgement j a) p q r
   | height p <= min (height q) (height r) = c (weakenJudgement j a) (weakenProof p a) q r
   | height q <= min (height p) (height r) = c (weakenJudgement j a) p (weakenProof q a) r
   | otherwise = c (weakenJudgement j a) p q (weakenProof r a)
@@ -142,9 +141,9 @@ weakenTernary c x a j@(Judgement g _) p q r
 -- | Strengthen a proof by preserving its structure but removing redundant
 -- hypotheses where possible.
 strengthenProof :: Ord a => Proof a -> Proof a
-strengthenProof (Ax (Judgement _ a)) = axiom (Judgement (Set.singleton a) a)
+strengthenProof (Ax _ (Judgement _ a)) = axiom (Judgement (Set.singleton a) a)
 strengthenProof (FalseElim _ j p) = strengthenUnary falseElim j p
-strengthenProof (TrueIntr (Judgement _ a)) = trueIntr (Judgement Set.empty a)
+strengthenProof (TrueIntr _ (Judgement _ a)) = trueIntr (Judgement Set.empty a)
 strengthenProof (NotElim _ j p q) = strengthenBinary notElim j p q
 strengthenProof (NotIntr _ (Judgement _ a@(Not _ b)) p) = strengthenUnaryImp notIntr a b p
 strengthenProof (ImpElim _ j p q) = strengthenBinary impElim j p q
@@ -174,7 +173,7 @@ strengthenUnary ::
   Proof a
 strengthenUnary c (Judgement _ a) p =
   let p' = strengthenProof p
-      g = antecedents (judgement p')
+      g = antecedents (root p')
    in c (Judgement g a) p'
 
 strengthenBinary ::
@@ -187,8 +186,8 @@ strengthenBinary ::
 strengthenBinary c (Judgement _ a) p q =
   let p' = strengthenProof p
       q' = strengthenProof q
-      gp = antecedents (judgement p')
-      gq = antecedents (judgement q')
+      gp = antecedents (root p')
+      gq = antecedents (root q')
       g = Set.union gp gq
    in c (Judgement g a) p' q'
 
@@ -204,7 +203,7 @@ strengthenUnaryImp ::
 strengthenUnaryImp c a b p =
   let p' = strengthenProof p
       p'' = weakenProof p' b -- b might not be needed in p'
-      g = antecedents (judgement p'')
+      g = antecedents (root p'')
       g' = Set.delete b g
    in c (Judgement g' a) p''
 
@@ -215,16 +214,16 @@ strengthenOrElim ::
   Proof a ->
   Proof a ->
   Proof a
-strengthenOrElim j@(Judgement _ c) p q r = case consequent (judgement p) of
+strengthenOrElim j@(Judgement _ c) p q r = case succedent (root p) of
   Or _ a b ->
     let p' = strengthenProof p
         q' = strengthenProof q
         r' = strengthenProof r
         q'' = weakenProof q' a -- a might not be needed in q'
         r'' = weakenProof r' b -- b might not be needed in r'
-        g1 = antecedents (judgement p')
-        g2 = Set.delete a (antecedents (judgement q''))
-        g3 = Set.delete b (antecedents (judgement r''))
+        g1 = antecedents (root p')
+        g2 = Set.delete a (antecedents (root q''))
+        g3 = Set.delete b (antecedents (root r''))
         g = Set.union (Set.union g1 g2) g3
      in orElim (Judgement g c) p' q'' r''
   _ -> orElim j p q r -- Wrong form of inference rule!
