@@ -14,6 +14,10 @@ module AutoProof.AST
     AST (Root, root, children, height, size, metadata),
     ASTMetadata (ASTMetadata, getHeight, getSize),
 
+    -- * AST functions
+    subtrees,
+    properSubtrees,
+
     -- *  Helper functions for creating AST constructors
     atomicASTConstructor,
     unaryASTConstructor,
@@ -23,6 +27,9 @@ module AutoProof.AST
     ternaryRootedASTConstructor,
   )
 where
+
+import Data.Set (Set)
+import qualified Data.Set as Set
 
 -- | Container type for AST properties, intended for constant-time access.
 data ASTMetadata = ASTMetadata
@@ -105,3 +112,13 @@ ternaryMetadata t u v =
     { getHeight = 1 + max (height t) (max (height u) (height v)),
       getSize = 1 + size t + size u + size v
     }
+
+-- | @('subtrees' t)@ is the set of all subtrees of an AST @t@ (including @t@
+-- itself).
+subtrees :: (AST t, Ord t) => t -> Set t
+subtrees t = Set.insert t (properSubtrees t)
+
+-- | @('properSubtrees' t)@ is the the set of all /proper/ subtrees of an AST
+-- @t@ (i.e., not including @t@ itself).
+properSubtrees :: (AST t, Ord t) => t -> Set t
+properSubtrees t = foldr (Set.union . subtrees) Set.empty (children t)
