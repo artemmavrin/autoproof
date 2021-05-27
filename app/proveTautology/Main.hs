@@ -20,6 +20,7 @@ import AutoProof.Utils.Symbols (turnstileS)
 import Control.Monad (unless, when)
 import Data.Char (isSpace)
 import Data.Foldable (forM_)
+import Data.List (intercalate)
 import System.Environment (getArgs)
 import System.IO
   ( BufferMode (NoBuffering),
@@ -29,32 +30,52 @@ import System.IO
     stdout,
   )
 
+data Opts = Opts
+  { showCuts :: Bool,
+    unknownOpts :: [String]
+  }
+
 header :: String
 header = "proveTautology REPL"
 
 prompt :: String
 prompt = turnstileS ++ " "
 
-newtype Opts = Opts
-  { showCuts :: Bool
-  }
+findCutsArg :: String
+findCutsArg = "--find-cuts"
+
+allowedArgs :: [String]
+allowedArgs = [findCutsArg]
 
 main :: IO ()
 main = do
   hSetBuffering stdout NoBuffering
-  args <- getArgs
-  let opts =
-        Opts
-          { showCuts = "--find-cuts" `elem` args
-          }
+  opts <- getOpts
+  handleOpts opts
   putStrLn header
   loop opts
+
+getOpts :: IO Opts
+getOpts = do
+  args <- getArgs
+  return
+    Opts
+      { showCuts = findCutsArg `elem` args,
+        unknownOpts = filter (`notElem` allowedArgs) args
+      }
+
+handleOpts :: Opts -> IO ()
+handleOpts opts = do
+  unless (null $ unknownOpts opts) (handleUnknownOpts opts)
+
+handleUnknownOpts :: Opts -> IO ()
+handleUnknownOpts opts = do
+  hPutStrLn stderr ("Unknown options: " ++ intercalate ", " (unknownOpts opts))
 
 loop :: Opts -> IO ()
 loop opts = do
   putStr prompt
-  line <- getLine
-  handleLine opts $ stripSpace line
+  getLine >>= handleLine opts . stripSpace
   loop opts
 
 handleLine :: Opts -> String -> IO ()
