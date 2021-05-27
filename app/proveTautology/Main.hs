@@ -10,14 +10,17 @@ import AutoProof
     Proof,
     correct,
     debug,
+    findCut,
     parseFormula,
     pretty,
     proveTautology,
     (|-),
   )
 import AutoProof.Utils.Symbols (turnstileS)
-import Control.Monad (unless)
+import Control.Monad (unless, when)
 import Data.Char (isSpace)
+import Data.Foldable (forM_)
+import System.Environment (getArgs)
 import System.IO
   ( BufferMode (NoBuffering),
     hPutStrLn,
@@ -32,46 +35,61 @@ header = "proveTautology REPL"
 prompt :: String
 prompt = turnstileS ++ " "
 
+newtype Opts = Opts
+  { showCuts :: Bool
+  }
+
 main :: IO ()
 main = do
   hSetBuffering stdout NoBuffering
+  args <- getArgs
+  let opts =
+        Opts
+          { showCuts = "--find-cuts" `elem` args
+          }
   putStrLn header
-  loop
+  loop opts
 
-loop :: IO ()
-loop = do
+loop :: Opts -> IO ()
+loop opts = do
   putStr prompt
   line <- getLine
-  handleLine $ stripSpace line
-  loop
+  handleLine opts $ stripSpace line
+  loop opts
 
-handleLine :: String -> IO ()
-handleLine "" = return ()
-handleLine line = case parseFormula line of
+handleLine :: Opts -> String -> IO ()
+handleLine _ "" = return ()
+handleLine opts line = case parseFormula line of
   Nothing -> hPutStrLn stderr "Parse error"
-  Just a -> handleFormula a
+  Just a -> handleFormula opts a
 
-handleFormula :: Formula String -> IO ()
-handleFormula a = do
+handleFormula :: Opts -> Formula String -> IO ()
+handleFormula opts a = do
   putStrLn $ "Trying to prove " ++ pretty a
   case proveTautology a of
     Nothing -> putStrLn "No proof found"
-    Just p -> handleProof a p
+    Just p -> handleProof opts a p
 
-handleProof :: Formula String -> Proof String -> IO ()
-handleProof a p = do
+handleProof :: Opts -> Formula String -> Proof String -> IO ()
+handleProof opts a p = do
   putStrLn "Found proof:"
   putStrLn $ pretty p
-  unless (correct ([] |- a) p) (handleIncorrectProof p)
+  when (showCuts opts) (forM_ (findCut p) (handleCut opts))
+  unless (correct ([] |- a) p) (handleIncorrectProof opts p)
 
-handleIncorrectProof :: Proof String -> IO ()
-handleIncorrectProof p = do
+handleIncorrectProof :: Opts -> Proof String -> IO ()
+handleIncorrectProof _ p = do
   hPutStrLn stderr "The proof is incorrect."
   case debug p of
     Right () -> return ()
     Left q -> do
       hPutStrLn stderr "Invalid inference:"
       hPutStrLn stderr $ pretty q
+
+handleCut :: Opts -> Proof String -> IO ()
+handleCut _ p = do
+  hPutStrLn stderr "Found a cut in the proof:"
+  hPutStrLn stderr $ pretty p
 
 -- Remove whitespace at the beginning and end of a string
 stripSpace :: String -> String
