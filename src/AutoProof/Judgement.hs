@@ -36,8 +36,8 @@ type Context a = Set (Formula a)
 
 -- | @(Judgement c a)@ represents the judgement or sequent \(c \vdash a\).
 --
--- >>> Judgement Set.empty (imp (and (var 'a') (var 'b')) (var 'a'))
--- [] |- imp (and (var 'a') (var 'b')) (var 'a')
+-- >>> Judgement Set.empty (Imp (And (Var 'a') (Var 'b')) (Var 'a'))
+-- [] |- Imp (And (Var 'a') (Var 'b')) (Var 'a')
 data Judgement a = Judgement
   { -- | The antecedents (or hypotheses).
     antecedents :: Context a,
@@ -49,8 +49,8 @@ data Judgement a = Judgement
 -- | Infix judgement constructor. @(c '|-' a)@ represents the judgement
 -- \(c \vdash a\).
 --
--- >>> [var 'a', var 'a' --> var 'b'] |- var 'b'
--- [var 'a',imp (var 'a') (var 'b')] |- var 'b'
+-- >>> [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
+-- [Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'b'
 --
 -- /Note:/ If @c@ is already a 'Data.Set.Set', then it is recommended to use
 -- @(Judgement c a)@ in favor of @(c '|-' a)@, since the latter will create a
@@ -84,14 +84,14 @@ instance PrettyPrintable a => PrettyPrintable (Judgement a) where
 --
 -- ==== __Examples__
 --
--- >>> prettyJudgement $ [var 'a', var 'a' --> var 'b'] |- var 'b'
+-- >>> prettyJudgement $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
 -- "a, a → b ⊢ b"
 prettyJudgement :: PrettyPrintable a => Judgement a -> String
 prettyJudgement = pretty
 
 -- | Weaken a judgement by inserting a formula into its hypotheses.
 --
--- >>> weakenJudgement ([var 'a', var 'a' --> var 'b'] |- var 'b') (var 'c')
--- [var 'a',var 'c',imp (var 'a') (var 'b')] |- var 'b'
+-- >>> weakenJudgement ([Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b') (Var 'c')
+-- [Var 'a',Var 'c',Imp (Var 'a') (Var 'b')] |- Var 'b'
 weakenJudgement :: Ord a => Judgement a -> Formula a -> Judgement a
 weakenJudgement (Judgement c a) b = Judgement (Set.insert b c) a

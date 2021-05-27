@@ -9,28 +9,12 @@
 -- Automated theorem-proving in intuitionistic propositional logic.
 module AutoProof
   ( -- * Formulas
-    Formula,
-
-    -- ** Formula constructors
-    lit,
-    true,
-    false,
-    var,
-    not,
-    imp,
-    or,
-    and,
-    iff,
-
-    -- ** Infix formula constructors
-    (-->),
-    (<->),
-    (\/),
-    (/\),
+    Formula (Lit, Var, Not, Imp, Or, And, Iff),
 
     -- ** Operations on formulas
     subformulas,
     substitute,
+    atoms,
 
     -- * Judgements
     Context,
@@ -95,23 +79,11 @@ where
 
 import AutoProof.AST (AST (Root, children, height, root, size))
 import AutoProof.Formula
-  ( Formula,
-    and,
-    false,
-    iff,
-    imp,
-    lit,
-    not,
-    or,
+  ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
+    atoms,
     prettyFormula,
     subformulas,
     substitute,
-    true,
-    var,
-    (-->),
-    (/\),
-    (<->),
-    (\/),
   )
 import AutoProof.Judgement
   ( Context,
@@ -154,4 +126,3 @@ import AutoProof.Proof
     valid,
   )
 import AutoProof.Utils.PrettyPrintable (PrettyPrintable (pretty))
-import Prelude hiding (and, not, or)

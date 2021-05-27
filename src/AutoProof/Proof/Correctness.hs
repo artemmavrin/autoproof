@@ -15,11 +15,7 @@ module AutoProof.Proof.Correctness
 where
 
 import AutoProof.AST (AST (root))
-import AutoProof.Formula
-  ( Formula (And, Iff, Imp, Lit, Not, Or),
-    false,
-    imp,
-  )
+import AutoProof.Formula (Formula (And, Iff, Imp, Lit, Not, Or))
 import AutoProof.Judgement (Judgement (Judgement))
 import AutoProof.Proof.Types
   ( Proof
@@ -61,14 +57,14 @@ debug x@(Ax _ (Judgement g a)) = if Set.member a g then return () else Left x
 -- g ⊢ a
 debug x@(FalseElim _ (Judgement g _) p) =
   let Judgement g' f = root p
-   in if f == false && g' == g
+   in if f == Lit False && g' == g
         then debug p
         else Left x
 -- Truth introduction:
 --
 -- ----- (⊤I)
 -- g ⊢ ⊤
-debug (TrueIntr _ (Judgement _ (Lit _ True))) = return ()
+debug (TrueIntr _ (Judgement _ (Lit True))) = return ()
 -- Negation elimination: if g is the union of g1 and g2, then
 --
 --    p          q
@@ -76,11 +72,11 @@ debug (TrueIntr _ (Judgement _ (Lit _ True))) = return ()
 -- g1 ⊢ ¬a    g2 ⊢ a
 -- ----------------- (¬E)
 --        g ⊢ ⊥
-debug x@(NotElim _ (Judgement g (Lit _ False)) p q) =
+debug x@(NotElim _ (Judgement g (Lit False)) p q) =
   let Judgement g1 na = root p
       Judgement g2 a = root q
    in case na of
-        Not _ b | b == a && g == Set.union g1 g2 -> do
+        Not b | b == a && g == Set.union g1 g2 -> do
           debug p
           debug q
         _ -> Left x
@@ -91,10 +87,10 @@ debug x@(NotElim _ (Judgement g (Lit _ False)) p q) =
 -- g, a ⊢ ⊥
 -- -------- (¬I)
 --  g ⊢ ¬a
-debug x@(NotIntr _ (Judgement g (Not _ a)) p) =
+debug x@(NotIntr _ (Judgement g (Not a)) p) =
   let (Judgement g' f) = root p
    in case f of
-        Lit _ False | g' == Set.insert a g -> debug p
+        Lit False | g' == Set.insert a g -> debug p
         _ -> Left x
 -- Implication elimination: if g is the union of g1 and g2, then
 --
@@ -106,7 +102,7 @@ debug x@(NotIntr _ (Judgement g (Not _ a)) p) =
 debug x@(ImpElim _ (Judgement g b) p q) =
   let Judgement g1 c = root p
       Judgement g2 a = root q
-   in if c == imp a b && g == g1 `Set.union` g2
+   in if c == Imp a b && g == g1 `Set.union` g2
         then do
           debug p
           debug q
@@ -118,7 +114,7 @@ debug x@(ImpElim _ (Judgement g b) p q) =
 --  g,a ⊢ b
 -- --------- (→I)
 -- g ⊢ a → b
-debug x@(ImpIntr _ (Judgement g (Imp _ a b)) p) =
+debug x@(ImpIntr _ (Judgement g (Imp a b)) p) =
   let Judgement g' b' = root p
    in if b' == b && g' == Set.insert a g
         then debug p
@@ -135,11 +131,11 @@ debug x@(OrElim _ (Judgement g c) p q r) =
       Judgement g2 c2 = root q
       Judgement g3 c3 = root r
    in case ab of
-        Or _ a b | c2 == c
-                     && c3 == c
-                     && a `Set.member` g2
-                     && b `Set.member` g3
-                     && Set.insert a (Set.insert b g) == Set.union (Set.union g1 g2) g3 ->
+        Or a b | c2 == c
+                   && c3 == c
+                   && a `Set.member` g2
+                   && b `Set.member` g3
+                   && Set.insert a (Set.insert b g) == Set.union (Set.union g1 g2) g3 ->
           do
             debug p
             debug q
@@ -152,7 +148,7 @@ debug x@(OrElim _ (Judgement g c) p q r) =
 --   g ⊢ a
 -- --------- (∨IL)
 -- g ⊢ a ∨ b
-debug x@(OrIntrL _ (Judgement g (Or _ a _)) p) =
+debug x@(OrIntrL _ (Judgement g (Or a _)) p) =
   let Judgement g' a' = root p
    in if a' == a && g' == g
         then debug p
@@ -164,7 +160,7 @@ debug x@(OrIntrL _ (Judgement g (Or _ a _)) p) =
 --   g ⊢ b
 -- --------- (∨IL)
 -- g ⊢ a ∨ b
-debug x@(OrIntrR _ (Judgement g (Or _ _ b)) p) =
+debug x@(OrIntrR _ (Judgement g (Or _ b)) p) =
   let Judgement g' b' = root p
    in if b' == b && g' == g
         then debug p
@@ -179,7 +175,7 @@ debug x@(OrIntrR _ (Judgement g (Or _ _ b)) p) =
 debug x@(AndElimL _ (Judgement g a) p) =
   let Judgement g' ab = root p
    in case ab of
-        And _ a' _ | a' == a && g' == g -> debug p
+        And a' _ | a' == a && g' == g -> debug p
         _ -> Left x
 -- Conjunction elimination (right):
 --
@@ -191,7 +187,7 @@ debug x@(AndElimL _ (Judgement g a) p) =
 debug x@(AndElimR _ (Judgement g b) p) =
   let Judgement g' ab = root p
    in case ab of
-        And _ _ b' | b' == b && g' == g -> debug p
+        And _ b' | b' == b && g' == g -> debug p
         _ -> Left x
 -- Conjunction introduction: if g is the union of g1 and g2, then
 --
@@ -200,7 +196,7 @@ debug x@(AndElimR _ (Judgement g b) p) =
 -- g1 ⊢ a     g2 ⊢ b
 -- ----------------- (∧I)
 --     g ⊢ a ∧ b
-debug x@(AndIntr _ (Judgement g (And _ a b)) p q) =
+debug x@(AndIntr _ (Judgement g (And a b)) p q) =
   let Judgement g1 a' = root p
       Judgement g2 b' = root q
    in if a' == a && b' == b && g == Set.union g1 g2
@@ -215,10 +211,10 @@ debug x@(AndIntr _ (Judgement g (And _ a b)) p q) =
 -- g ⊢ a ↔ b
 -- --------- (↔EL)
 -- g ⊢ a → b
-debug x@(IffElimL _ (Judgement g (Imp _ a b)) p) =
+debug x@(IffElimL _ (Judgement g (Imp a b)) p) =
   let Judgement g' ab = root p
    in case ab of
-        Iff _ a' b' | a' == a && b' == b && g' == g -> debug p
+        Iff a' b' | a' == a && b' == b && g' == g -> debug p
         _ -> Left x
 -- Equivalence elimination (right):
 --
@@ -227,10 +223,10 @@ debug x@(IffElimL _ (Judgement g (Imp _ a b)) p) =
 -- g ⊢ a ↔ b
 -- --------- (↔EL)
 -- g ⊢ b → a
-debug x@(IffElimR _ (Judgement g (Imp _ b a)) p) =
+debug x@(IffElimR _ (Judgement g (Imp b a)) p) =
   let Judgement g' ab = root p
    in case ab of
-        Iff _ a' b' | a' == a && b' == b && g' == g -> debug p
+        Iff a' b' | a' == a && b' == b && g' == g -> debug p
         _ -> Left x
 -- Equivalence introduction: if g is the union of g1 and g2, then
 --
@@ -239,10 +235,10 @@ debug x@(IffElimR _ (Judgement g (Imp _ b a)) p) =
 -- g1 ⊢ a → b     g2 ⊢ b → a
 -- ------------------------- (↔I)
 --         g ⊢ a ↔ b
-debug x@(IffIntr _ (Judgement g (Iff _ a b)) p q) =
+debug x@(IffIntr _ (Judgement g (Iff a b)) p q) =
   let Judgement g1 ab = root p
       Judgement g2 ba = root q
-   in if ab == imp a b && ba == imp b a && g == Set.union g1 g2
+   in if ab == Imp a b && ba == Imp b a && g == Set.union g1 g2
         then do
           debug p
           debug q

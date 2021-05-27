@@ -4,14 +4,12 @@
 module Main where
 
 import AutoProof
-  ( Formula,
+  ( Formula (Imp, Var),
     Judgement,
     correct,
     hasCut,
-    imp,
     prettyJudgement,
     proveImp,
-    var,
     (|-),
   )
 import AutoProof.Parser (unsafeParseJudgement)
@@ -39,8 +37,8 @@ formula n
   | n == 0 = variable
   | otherwise = QC.oneof [variable, implication]
   where
-    variable = var <$> QC.chooseEnum ('a', 'e')
-    implication = imp <$> subformula <*> subformula
+    variable = Var <$> QC.chooseEnum ('a', 'e')
+    implication = Imp <$> subformula <*> subformula
     subformula = formula $ n `div` 2
 
 instance QC.Arbitrary (Formula Char) where

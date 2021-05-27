@@ -4,21 +4,13 @@
 module Main where
 
 import AutoProof
-  ( Formula,
-    and,
-    iff,
-    imp,
-    lit,
-    not,
-    or,
+  ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
     parseFormula,
     prettyFormula,
-    var,
   )
 import Data.Maybe (isJust)
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
-import Prelude hiding (and, not, or)
 
 main :: IO ()
 main = do
@@ -44,13 +36,13 @@ formula n
   | otherwise = QC.oneof formulas
   where
     formulas = [literal, variable, negation, implication, disjunction, conjunction, equivalence]
-    literal = lit <$> QC.arbitrary
-    variable = var <$> QC.elements names
-    negation = not <$> subformula
-    implication = imp <$> subformula <*> subformula
-    disjunction = or <$> subformula <*> subformula
-    conjunction = and <$> subformula <*> subformula
-    equivalence = iff <$> subformula <*> subformula
+    literal = Lit <$> QC.arbitrary
+    variable = Var <$> QC.elements names
+    negation = Not <$> subformula
+    implication = Imp <$> subformula <*> subformula
+    disjunction = Or <$> subformula <*> subformula
+    conjunction = And <$> subformula <*> subformula
+    equivalence = Iff <$> subformula <*> subformula
     subformula = formula $ n `div` 2
 
 -- Enable random formula generation for testing

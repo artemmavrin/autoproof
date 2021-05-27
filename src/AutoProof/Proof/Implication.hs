@@ -12,7 +12,7 @@ module AutoProof.Proof.Implication
   )
 where
 
-import AutoProof.Formula (Formula (Imp, Var), imp)
+import AutoProof.Formula (Formula (Imp, Var))
 import AutoProof.Judgement (Judgement (Judgement))
 import AutoProof.Proof.Types (Proof, axiom, impElim, impIntr)
 import Control.Applicative ((<|>))
@@ -29,10 +29,10 @@ import qualified Data.Set as Set
 --
 -- ==== __Examples__
 --
--- >>> proveImp $ [var 'a', imp (var 'a') (var 'b')] |- var 'b'
--- Just (impElim ([var 'a',imp (var 'a') (var 'b')] |- var 'b') (axiom ([var 'a',imp (var 'a') (var 'b')] |- imp (var 'a') (var 'b'))) (axiom ([var 'a',imp (var 'a') (var 'b')] |- var 'a')))
+-- >>> proveImp $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
+-- Just (impElim ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'b') (axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Imp (Var 'a') (Var 'b'))) (axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'a')))
 --
--- >>> proveImp $ [imp (var 'a') (var 'b'), imp (var 'b') (var 'a')] |- var 'a'
+-- >>> proveImp $ [Imp (Var 'a') (Var 'b'), Imp (Var 'b') (Var 'a')] |- Var 'a'
 -- Nothing
 proveImp :: Ord a => Judgement a -> Maybe (Proof a)
 proveImp = prove Set.empty
@@ -48,7 +48,7 @@ proveImp = prove Set.empty
     -- g ⊢ a → b
     --
     -- so it suffices to look for a proof of g,a ⊢ b
-    prove s j@(Judgement g i@(Imp _ a b)) =
+    prove s j@(Judgement g i@(Imp a b)) =
       if Set.member i g
         then Just $ axiom j
         else impIntr j <$> prove s (Judgement (Set.insert a g) b)
@@ -80,7 +80,7 @@ proveImp = prove Set.empty
     -- Actually, case (1) is the n=0 case of case (2).
     --
     -- The implementation:
-    prove s j@(Judgement g v@(Var _ x)) =
+    prove s j@(Judgement g v@(Var x)) =
       if Set.member j s
         then Nothing -- Already visited current judgement; skip to avoid cycles
         else foldr ((<|>) . findImp) Nothing g -- Scan context looking for proof
@@ -101,8 +101,8 @@ proveImp = prove Set.empty
         -- other forms, return Nothing.
         splitImp = go []
           where
-            go l (Var _ y) = if x == y then Just l else Nothing
-            go l (Imp _ a b) = go (a : l) b
+            go l (Var y) = if x == y then Just l else Nothing
+            go l (Imp a b) = go (a : l) b
             go _ _ = Nothing -- non-implicational case
 
         -- Given a list of formulas [an, ..., a2, a1] from an implication of the
@@ -112,7 +112,7 @@ proveImp = prove Set.empty
         construct [] b = Just $ axiom (Judgement g b)
         construct (a : as) b = do
           q <- prove s' (Judgement g a)
-          p <- construct as (imp a b)
+          p <- construct as (Imp a b)
           return $ impElim (Judgement g b) p q
 
     -- Non-implicational case

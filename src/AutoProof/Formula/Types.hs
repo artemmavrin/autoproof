@@ -1,3 +1,4 @@
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE TypeFamilies #-}
 
 -- |
@@ -13,23 +14,6 @@ module AutoProof.Formula.Types
   ( -- * Formula type
     Formula (Lit, Var, Not, Imp, Or, And, Iff),
 
-    -- * Formula constructors
-    lit,
-    true,
-    false,
-    var,
-    not,
-    imp,
-    or,
-    and,
-    iff,
-
-    -- * Infix formula constructors
-    (-->),
-    (\/),
-    (/\),
-    (<->),
-
     -- * Pretty-printing
     prettyFormula,
   )
@@ -44,153 +28,96 @@ import AutoProof.AST
   )
 import AutoProof.Utils.PrettyPrintable (PrettyPrintable (pretty, prettys))
 import AutoProof.Utils.Symbols (andS, falseS, iffS, impS, notS, orS, trueS)
-import Prelude hiding (and, not, or)
 
 -- | Formulas of propositional logic are built inductively from atomic
 -- propositions
 --
--- * truth \(\top\) ('true'),
--- * falsity \(\bot\) ('false'), and
--- * propositional variables \(a, b, c, \ldots\) ('var')
+-- * truth \(\top\),
+-- * falsity \(\bot\), and
+-- * propositional variables \(a, b, c, \ldots\)
 --
 -- using the unary connective
 --
--- * negation \(\lnot\) ('not')
+-- * negation \(\lnot\)
 --
 -- and the binary connectives
 --
--- * implication \(\rightarrow\) ('imp', '-->'),
--- * disjunction \(\lor\) ('or', '\/'),
--- * conjunction \(\land\) ('and', '/\'), and
--- * equivalence \(\leftrightarrow\) ('iff', '<->').
+-- * implication \(\rightarrow\),
+-- * disjunction \(\lor\),
+-- * conjunction \(\land\), and
+-- * equivalence \(\leftrightarrow\).
 data Formula a
-  = -- | Propositional literal (truth or falsity). Use 'lit' or 'false' or
-    -- 'true'.
-    Lit !ASTMetadata Bool
-  | -- | Propositional variable. Use 'var'.
-    Var !ASTMetadata a
-  | -- | Negation. Use 'not'.
-    Not !ASTMetadata !(Formula a)
-  | -- | Implication. Use 'imp' or '-->'.
-    Imp !ASTMetadata !(Formula a) !(Formula a)
-  | -- | Disjunction. Use 'or' or '\/'
-    Or !ASTMetadata !(Formula a) !(Formula a)
-  | -- | Conjunction. Use 'and' or '/\'.
-    And !ASTMetadata !(Formula a) !(Formula a)
-  | -- | Equivalence. Use 'iff' or '<->'.
-    Iff !ASTMetadata !(Formula a) !(Formula a)
+  = Lit_ !ASTMetadata Bool
+  | Var_ !ASTMetadata a
+  | Not_ !ASTMetadata !(Formula a)
+  | Imp_ !ASTMetadata !(Formula a) !(Formula a)
+  | Or_ !ASTMetadata !(Formula a) !(Formula a)
+  | And_ !ASTMetadata !(Formula a) !(Formula a)
+  | Iff_ !ASTMetadata !(Formula a) !(Formula a)
+
+-- Smart constructors and pattern matching synonyms
+
+-- | Propositional literal/constant. @('Lit' 'True')@ is \(\top\) (i.e., truth,
+-- tautology, or top), and @('Lit' 'False')@ is \(\bot\) (i.e., falsity,
+-- contradiction, or bottom).
+pattern Lit :: Bool -> Formula a
+pattern Lit x <- Lit_ _ x where
+  Lit = atomicASTConstructor Lit_
+
+-- | Propositional variable. @('Var' x)@ represents a propositional variable
+-- \(x\).
+pattern Var :: a -> Formula a
+pattern Var x <- Var_ _ x where
+  Var = atomicASTConstructor Var_
+
+-- | Negation. @('Not' p)@ represents the formula \(\lnot p\).
+pattern Not :: Formula a -> Formula a
+pattern Not a <- Not_ _ a where
+  Not = unaryASTConstructor Not_
+
+-- | Implication. @('Imp' p q)@ represents the formula \(p \rightarrow q\).
+pattern Imp :: Formula a -> Formula a -> Formula a
+pattern Imp a b <- Imp_ _ a b where
+  Imp = binaryASTConstructor Imp_
+
+-- | Disjunction. @('Or' p q)@ represents the formula \(p \lor q\).
+pattern Or :: Formula a -> Formula a -> Formula a
+pattern Or a b <- Or_ _ a b where
+  Or = binaryASTConstructor Or_
+
+-- | Conjunction. @('And' p q)@ represents the formula \(p \land q\).
+pattern And :: Formula a -> Formula a -> Formula a
+pattern And a b <- And_ _ a b where
+  And = binaryASTConstructor And_
+
+-- | Equivalence. @('Iff' p q)@ represents the formula \(p \leftrightarrow q\).
+pattern Iff :: Formula a -> Formula a -> Formula a
+pattern Iff a b <- Iff_ _ a b where
+  Iff = binaryASTConstructor Iff_
+
+{-# COMPLETE Lit, Var, Not, Imp, Or, And, Iff #-}
 
 instance AST (Formula a) where
   type Root (Formula a) = Maybe a
 
-  root (Var _ x) = Just x
+  root (Var x) = Just x
   root _ = Nothing
 
-  children (Lit _ _) = []
-  children (Var _ _) = []
-  children (Not _ a) = [a]
-  children (Imp _ a b) = [a, b]
-  children (Or _ a b) = [a, b]
-  children (And _ a b) = [a, b]
-  children (Iff _ a b) = [a, b]
+  children (Lit _) = []
+  children (Var _) = []
+  children (Not a) = [a]
+  children (Imp a b) = [a, b]
+  children (Or a b) = [a, b]
+  children (And a b) = [a, b]
+  children (Iff a b) = [a, b]
 
-  metadata (Lit m _) = m
-  metadata (Var m _) = m
-  metadata (Not m _) = m
-  metadata (Imp m _ _) = m
-  metadata (Or m _ _) = m
-  metadata (And m _ _) = m
-  metadata (Iff m _ _) = m
-
--- Formula constructors
-
--- | Propositional literal constructor. @('lit' 'True')@ is \(\top\) (i.e.,
--- truth, tautology, or top), and @('lit' 'False')@ is \(\bot\) (i.e., falsity,
--- contradiction, or bottom).
-lit :: Bool -> Formula a
-lit = atomicASTConstructor Lit
-
--- | \(\top\) constructor. @'true'@ is an alias for @('lit' 'True')@.
-true :: Formula a
-true = lit True
-
--- | \(\bot\) constructor. @'false'@ is an alias for @('lit' 'False')@.
-false :: Formula a
-false = lit False
-
--- | Propositional variable constructor. @('var' x)@ represents a propositional
--- variable \(x\).
-var :: a -> Formula a
-var = atomicASTConstructor Var
-
--- | Negation constructor. @('not' p)@ represents the formula \(\lnot p\).
---
--- /Note:/ The name of 'not' clashes with 'Prelude.not' from "Prelude".
-not :: Formula a -> Formula a
-not = unaryASTConstructor Not
-
--- | Implication constructor. @('imp' p q)@ represents the formula
--- \(p \rightarrow q\).
-imp :: Formula a -> Formula a -> Formula a
-imp = binaryASTConstructor Imp
-
--- | Disjunction constructor. @('or' p q)@ represents the formula \(p \lor q\).
---
--- /Note:/ The name of 'or' clashes with 'Prelude.or' from "Prelude".
-or :: Formula a -> Formula a -> Formula a
-or = binaryASTConstructor Or
-
--- | Conjunction constructor. @('and' p q)@ represents the formula
--- \(p \land q\).
---
--- /Note:/ The name of 'and' clashes with 'Prelude.and' from "Prelude".
-and :: Formula a -> Formula a -> Formula a
-and = binaryASTConstructor And
-
--- | Equivalence constructor. @('iff' p q)@ represents the formula
--- \(p \leftrightarrow q\).
-iff :: Formula a -> Formula a -> Formula a
-iff = binaryASTConstructor Iff
-
--- | Right-associative infix alternative for 'imp'. @(p '-->' q)@ represents the
--- implication \(p \rightarrow q\).
---
--- >>> var 'a' --> var 'b' --> var 'c'
--- imp (var 'a') (imp (var 'b') (var 'c'))
-(-->) :: Formula a -> Formula a -> Formula a
-(-->) = imp
-
-infixr 6 -->
-
--- | Left-associative infix alternative for 'iff'. @(p '<->' q)@ represents the
--- equivalence \(p \leftrightarrow q\).
---
--- >>> var 'a' <-> var 'b' <-> var 'c'
--- iff (iff (var 'a') (var 'b')) (var 'c')
-(<->) :: Formula a -> Formula a -> Formula a
-(<->) = iff
-
-infixl 7 <->
-
--- | Left-associative infix alternative for 'or'. @(p '\/' q)@ represents the
--- disjunction \(p \lor q\).
---
--- >>> var 'a' \/ var 'b' \/ var 'c'
--- or (or (var 'a') (var 'b')) (var 'c')
-(\/) :: Formula a -> Formula a -> Formula a
-(\/) = or
-
-infixl 8 \/
-
--- | Left-associative infix alternative for 'and'. @(p '/\' q)@ represents the
--- conjunction \(p \land q\).
---
--- >>> var 'a' /\ var 'b' /\ var 'c'
--- and (and (var 'a') (var 'b')) (var 'c')
-(/\) :: Formula a -> Formula a -> Formula a
-(/\) = and
-
-infixl 9 /\
+  metadata (Lit_ m _) = m
+  metadata (Var_ m _) = m
+  metadata (Not_ m _) = m
+  metadata (Imp_ m _ _) = m
+  metadata (Or_ m _ _) = m
+  metadata (And_ m _ _) = m
+  metadata (Iff_ m _ _) = m
 
 -- Instance declarations
 
@@ -199,29 +126,29 @@ instance Show a => Show (Formula a) where
     where
       appPrec = 10
 
-      f _ a@(Lit _ _) = g a
+      f _ a@(Lit _) = g a
       f b a = showParen b $ g a
 
-      g (Lit _ False) = showString "false"
-      g (Lit _ True) = showString "true"
-      g (Var _ x) = showString "var " . showsPrec (appPrec + 1) x
-      g (Not _ p) = showString "not " . f True p
-      g (Imp _ p q) = h "imp " p q
-      g (Or _ p q) = h "or " p q
-      g (And _ p q) = h "and " p q
-      g (Iff _ p q) = h "iff " p q
+      g (Lit False) = showString "Lit False"
+      g (Lit True) = showString "Lit True"
+      g (Var x) = showString "Var " . showsPrec (appPrec + 1) x
+      g (Not p) = showString "Not " . f True p
+      g (Imp p q) = h "Imp " p q
+      g (Or p q) = h "Or " p q
+      g (And p q) = h "And " p q
+      g (Iff p q) = h "Iff " p q
 
       h c p q = showString c . f True p . showString " " . f True q
 
 -- | Syntactic equality.
 instance Eq a => Eq (Formula a) where
-  (Lit _ a) == (Lit _ b) = a == b
-  (Var _ a) == (Var _ b) = a == b
-  (Not _ a) == (Not _ b) = a == b
-  (Imp _ a c) == (Imp _ b d) = a == b && c == d
-  (Or _ a c) == (Or _ b d) = a == b && c == d
-  (And _ a c) == (And _ b d) = a == b && c == d
-  (Iff _ a c) == (Iff _ b d) = a == b && c == d
+  (Lit a) == (Lit b) = a == b
+  (Var a) == (Var b) = a == b
+  (Not a) == (Not b) = a == b
+  (Imp a c) == (Imp b d) = a == b && c == d
+  (Or a c) == (Or b d) = a == b && c == d
+  (And a c) == (And b d) = a == b && c == d
+  (Iff a c) == (Iff b d) = a == b && c == d
   _ == _ = False
 
 -- | First compare heights, then compare sizes, then resolve using the
@@ -230,41 +157,41 @@ instance Eq a => Eq (Formula a) where
 instance Ord a => Ord (Formula a) where
   compare a b = case compare (metadata a) (metadata b) of
     EQ -> case a of
-      Lit _ c -> case b of
-        Lit _ d -> compare c d
+      Lit c -> case b of
+        Lit d -> compare c d
         _ -> LT
-      Var _ c -> case b of
+      Var c -> case b of
         Lit {} -> GT
-        Var _ d -> compare c d
+        Var d -> compare c d
         _ -> LT
-      Not _ c -> case b of
+      Not c -> case b of
         Lit {} -> GT
         Var {} -> GT
-        Not _ d -> compare c d
+        Not d -> compare c d
         _ -> LT
-      Imp _ c e -> case b of
+      Imp c e -> case b of
         Iff {} -> LT
         And {} -> LT
         Or {} -> LT
-        Imp _ d f -> case compare c d of
+        Imp d f -> case compare c d of
           EQ -> compare e f
           y -> y
         _ -> GT
-      Or _ c e -> case b of
+      Or c e -> case b of
         Iff {} -> LT
         And {} -> LT
-        Or _ d f -> case compare c d of
+        Or d f -> case compare c d of
           EQ -> compare e f
           y -> y
         _ -> GT
-      And _ c e -> case b of
+      And c e -> case b of
         Iff {} -> LT
-        And _ d f -> case compare c d of
+        And d f -> case compare c d of
           EQ -> compare e f
           y -> y
         _ -> GT
-      Iff _ c e -> case b of
-        Iff _ d f -> case compare c d of
+      Iff c e -> case b of
+        Iff d f -> case compare c d of
           EQ -> compare e f
           y -> y
         _ -> GT
@@ -273,19 +200,19 @@ instance Ord a => Ord (Formula a) where
 instance PrettyPrintable a => PrettyPrintable (Formula a) where
   prettys = f False
     where
-      f _ p@(Lit _ _) = g p
-      f _ p@(Var _ _) = g p
+      f _ p@(Lit _) = g p
+      f _ p@(Var _) = g p
       f _ p@Not {} = g p
       f b p = showParen b $ g p
 
-      g (Lit _ False) = showString falseS
-      g (Lit _ True) = showString trueS
-      g (Var _ x) = prettys x
-      g (Not _ p) = showString notS . f True p
-      g (Imp _ p q) = f True p . padded impS . f True q
-      g (Or _ p q) = f True p . padded orS . f True q
-      g (And _ p q) = f True p . padded andS . f True q
-      g (Iff _ p q) = f True p . padded iffS . f True q
+      g (Lit False) = showString falseS
+      g (Lit True) = showString trueS
+      g (Var x) = prettys x
+      g (Not p) = showString notS . f True p
+      g (Imp p q) = f True p . padded impS . f True q
+      g (Or p q) = f True p . padded orS . f True q
+      g (And p q) = f True p . padded andS . f True q
+      g (Iff p q) = f True p . padded iffS . f True q
 
       -- Pad a symbol with one space character on each side
       padded :: String -> ShowS
@@ -295,7 +222,7 @@ instance PrettyPrintable a => PrettyPrintable (Formula a) where
 --
 -- ==== __Examples__
 --
--- >>> prettyFormula $ var 'a' --> var 'b' \/ false
+-- >>> prettyFormula $ Imp (Var 'a') (Or (Var 'b') (Lit False))
 -- "a → (b ∨ ⊥)"
 prettyFormula :: PrettyPrintable a => Formula a -> String
 prettyFormula = pretty

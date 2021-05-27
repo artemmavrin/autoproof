@@ -4,37 +4,29 @@
 module Main where
 
 import AutoProof
-  ( Formula,
+  ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
     Judgement,
     Proof,
-    and,
     andElimL,
     andElimR,
     andIntr,
     axiom,
     falseElim,
-    iff,
     iffElimL,
     iffElimR,
     iffIntr,
-    imp,
     impElim,
     impIntr,
-    lit,
-    not,
     notElim,
     notIntr,
-    or,
     orElim,
     orIntrL,
     orIntrR,
     trueIntr,
-    var,
     (|-),
   )
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
-import Prelude hiding (and, not, or)
 
 main :: IO ()
 main = H.hspec $ do
@@ -59,13 +51,13 @@ formula n
   | otherwise = QC.oneof formulas
   where
     formulas = [literal, variable, negation, implication, disjunction, conjunction, equivalence]
-    literal = lit <$> QC.arbitrary
-    variable = var <$> QC.chooseInt (0, 2)
-    negation = not <$> subformula
-    implication = imp <$> subformula <*> subformula
-    disjunction = or <$> subformula <*> subformula
-    conjunction = and <$> subformula <*> subformula
-    equivalence = iff <$> subformula <*> subformula
+    literal = Lit <$> QC.arbitrary
+    variable = Var <$> QC.chooseInt (0, 2)
+    negation = Not <$> subformula
+    implication = Imp <$> subformula <*> subformula
+    disjunction = Or <$> subformula <*> subformula
+    conjunction = And <$> subformula <*> subformula
+    equivalence = Iff <$> subformula <*> subformula
     subformula = formula $ n `div` 2
 
 instance QC.Arbitrary (Formula Int) where

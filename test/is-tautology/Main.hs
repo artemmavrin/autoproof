@@ -4,12 +4,10 @@
 module Main where
 
 import AutoProof
-  ( Formula,
-    imp,
+  ( Formula (Imp, Var),
     isTautology,
     prettyFormula,
     proveImp,
-    var,
     (|-),
   )
 import AutoProof.Parser (unsafeParseFormula)
@@ -20,7 +18,7 @@ import qualified Test.QuickCheck as QC
 
 main :: IO ()
 main = do
-  -- Load known provable and unprovable sequents
+  -- Load known provable and unprovable formulas
   provable <- loadFormulas "test/data/formulas/tautologies.txt"
   unprovable <- loadFormulas "test/data/formulas/not-tautologies.txt"
 
@@ -62,8 +60,8 @@ formula n
   | n == 0 = variable
   | otherwise = QC.oneof [variable, implication]
   where
-    variable = var <$> QC.chooseEnum ('a', 'd')
-    implication = imp <$> subformula <*> subformula
+    variable = Var <$> QC.chooseEnum ('a', 'd')
+    implication = Imp <$> subformula <*> subformula
     subformula = formula $ n `div` 2
 
 instance QC.Arbitrary (Formula Char) where

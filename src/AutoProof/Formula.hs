@@ -13,23 +13,6 @@ module AutoProof.Formula
   ( -- * Formula type
     Formula (Lit, Var, Not, Imp, Or, And, Iff),
 
-    -- * Formula constructors
-    lit,
-    true,
-    false,
-    var,
-    not,
-    imp,
-    or,
-    and,
-    iff,
-
-    -- * Infix formula constructors
-    (-->),
-    (\/),
-    (/\),
-    (<->),
-
     -- * Pretty-printing
     prettyFormula,
 
@@ -47,19 +30,5 @@ import AutoProof.Formula.Operations
   )
 import AutoProof.Formula.Types
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
-    and,
-    false,
-    iff,
-    imp,
-    lit,
-    not,
-    or,
     prettyFormula,
-    true,
-    var,
-    (-->),
-    (/\),
-    (<->),
-    (\/),
   )
-import Prelude hiding (and, not, or)

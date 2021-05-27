@@ -20,16 +20,7 @@ module AutoProof.Parser
   )
 where
 
-import AutoProof.Formula
-  ( Formula,
-    and,
-    iff,
-    imp,
-    lit,
-    not,
-    or,
-    var,
-  )
+import AutoProof.Formula (Formula (And, Iff, Imp, Lit, Not, Or, Var))
 import AutoProof.Judgement
   ( Judgement,
     (|-),
@@ -50,7 +41,6 @@ import AutoProof.Utils.Parser
   )
 import Control.Applicative (Alternative (empty, many, (<|>)))
 import Data.Maybe (fromMaybe)
-import Prelude hiding (and, not, or)
 
 -- | @('parseFormula' s)@ parses a string @s@ as a propositional formula,
 -- returning a @'Just' a@ on success, where @a@ is the parsed formula.
@@ -88,13 +78,13 @@ import Prelude hiding (and, not, or)
 -- ==== __Examples__
 --
 -- >>> parseFormula "a -> b -> c"
--- Just (imp (var "a") (imp (var "b") (var "c")))
+-- Just (Imp (Var "a") (Imp (Var "b") (Var "c")))
 --
 -- >>> parseFormula "~a | b -> c"
--- Just (imp (or (not (var "a")) (var "b")) (var "c"))
+-- Just (Imp (Or (Not (Var "a")) (Var "b")) (Var "c"))
 --
 -- >>> parseFormula "(a -> b) & ~c"
--- Just (and (imp (var "a") (var "b")) (not (var "c")))
+-- Just (And (Imp (Var "a") (Var "b")) (Not (Var "c")))
 parseFormula :: String -> Maybe (Formula String)
 parseFormula = parse (formula <* eof)
 
@@ -110,10 +100,10 @@ parseFormula = parse (formula <* eof)
 -- ==== __Examples__
 --
 -- >>> parseJudgement "a, a -> b |- b"
--- Just ([var "a",imp (var "a") (var "b")] |- var "b")
+-- Just ([Var "a",Imp (Var "a") (Var "b")] |- Var "b")
 --
 -- >>> parseJudgement "a |- a | b"
--- Just ([var "a"] |- or (var "a") (var "b"))
+-- Just ([Var "a"] |- Or (Var "a") (Var "b"))
 parseJudgement :: String -> Maybe (Judgement String)
 parseJudgement = parse (judgement <* eof)
 
@@ -125,7 +115,7 @@ parseJudgement = parse (judgement <* eof)
 -- ==== __Examples__
 --
 -- >>> unsafeParseFormula "(a => b) => c"
--- imp (imp (var "a") (var "b")) (var "c")
+-- Imp (Imp (Var "a") (Var "b")) (Var "c")
 unsafeParseFormula :: String -> Formula String
 unsafeParseFormula = fromMaybe (error "Parse error") . parseFormula
 
@@ -138,10 +128,10 @@ unsafeParseFormula = fromMaybe (error "Parse error") . parseFormula
 -- ==== __Examples__
 --
 -- >>> unsafeParseJudgement "a, b |- a -> b"
--- [var "a",var "b"] |- imp (var "a") (var "b")
+-- [Var "a",Var "b"] |- Imp (Var "a") (Var "b")
 --
 -- >>> unsafeParseJudgement "a & b |- a"
--- [and (var "a") (var "b")] |- var "a"
+-- [And (Var "a") (Var "b")] |- Var "a"
 unsafeParseJudgement :: String -> Judgement String
 unsafeParseJudgement = fromMaybe (error "Parse error") . parseJudgement
 
@@ -196,35 +186,35 @@ turnstileS = symbol ["|-", "⊢"]
 
 -- Right-associative nested implications
 implication :: Parser (Formula String)
-implication = chainr1 equivalence (padded (imp <$ impS))
+implication = chainr1 equivalence (padded (Imp <$ impS))
 
 -- Left-associative nested equivalences
 equivalence :: Parser (Formula String)
-equivalence = chainl1 disjunction (padded (iff <$ iffS))
+equivalence = chainl1 disjunction (padded (Iff <$ iffS))
 
 -- Left-associative nested disjunctions
 disjunction :: Parser (Formula String)
-disjunction = chainl1 conjunction (padded (or <$ orS))
+disjunction = chainl1 conjunction (padded (Or <$ orS))
 
 -- Left-associative nested conjunctions
 conjunction :: Parser (Formula String)
-conjunction = chainl1 negation (padded (and <$ andS))
+conjunction = chainl1 negation (padded (And <$ andS))
 
 -- Zero or more consecutive negations
 negation :: Parser (Formula String)
-negation = spaces *> (foldl (.) id <$> many (not <$ notS) <*> atom)
+negation = spaces *> (foldl (.) id <$> many (Not <$ notS) <*> atom)
 
 atom :: Parser (Formula String)
 atom = enclosed formula <|> false <|> true <|> variable
 
 false :: Parser (Formula String)
-false = lit False <$ falseS
+false = Lit False <$ falseS
 
 true :: Parser (Formula String)
-true = lit True <$ trueS
+true = Lit True <$ trueS
 
 variable :: Parser (Formula String)
-variable = var <$> name
+variable = Var <$> name
   where
     name = (:) <$> nameStart <*> many nameChar
     nameStart = oneOf $ '_' : ['a' .. 'z'] ++ ['A' .. 'Z']
