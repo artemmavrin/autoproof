@@ -95,8 +95,11 @@ handleProof :: Opts -> Formula String -> Proof String -> IO ()
 handleProof opts a p = do
   putStrLn "Found proof:"
   putStrLn $ pretty p
-  when (showCuts opts) (forM_ (findCut p) (handleCut opts))
-  unless (correct ([] |- a) p) (handleIncorrectProof opts p)
+  if correct ([] |- a) p
+    then do
+      when (showCuts opts) (forM_ (findCut p) (handleCut opts))
+    else do
+      handleIncorrectProof opts p
 
 handleIncorrectProof :: Opts -> Proof String -> IO ()
 handleIncorrectProof _ p = do
