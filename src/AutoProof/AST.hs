@@ -116,7 +116,7 @@ ternaryMetadata t u v =
 -- | @('subtrees' t)@ is the set of all subtrees of an AST @t@ (including @t@
 -- itself).
 subtrees :: (AST t, Ord t) => t -> Set t
-subtrees t = Set.insert t (properSubtrees t)
+subtrees t = foldr (Set.union . subtrees) (Set.singleton t) (children t)
 
 -- | @('properSubtrees' t)@ is the the set of all /proper/ subtrees of an AST
 -- @t@ (i.e., not including @t@ itself).

@@ -28,7 +28,7 @@ import AutoProof.Proof.Types
       ( AndElimL,
         AndElimR,
         AndIntr,
-        Ax,
+        Axiom,
         FalseElim,
         IffElimL,
         IffElimR,
@@ -42,44 +42,28 @@ import AutoProof.Proof.Types
         OrIntrR,
         TrueIntr
       ),
-    andElimL,
-    andElimR,
-    andIntr,
-    axiom,
-    falseElim,
-    iffElimL,
-    iffElimR,
-    iffIntr,
-    impElim,
-    impIntr,
-    notElim,
-    notIntr,
-    orElim,
-    orIntrL,
-    orIntrR,
-    trueIntr,
   )
 import qualified Data.Set as Set
 
 -- | The /weakening/ structural rule. @('weakenProof' p a)@ modifies the proof
 -- @p@ to include @a@ as an additional hypothesis.
 weakenProof :: Ord a => Proof a -> Formula a -> Proof a
-weakenProof (Ax _ j) a = weakenNullary axiom a j
-weakenProof x@(FalseElim _ j p) a = weakenUnary falseElim x a j p
-weakenProof (TrueIntr _ j) a = weakenNullary trueIntr a j
-weakenProof x@(NotElim _ j p q) a = weakenBinary notElim x a j p q
-weakenProof x@(NotIntr _ j p) a = weakenUnary notIntr x a j p
-weakenProof x@(ImpElim _ j p q) a = weakenBinary impElim x a j p q
-weakenProof x@(ImpIntr _ j p) a = weakenUnary impIntr x a j p
-weakenProof x@(OrElim _ j p q r) a = weakenTernary orElim x a j p q r
-weakenProof x@(OrIntrL _ j p) a = weakenUnary orIntrL x a j p
-weakenProof x@(OrIntrR _ j p) a = weakenUnary orIntrR x a j p
-weakenProof x@(AndElimL _ j p) a = weakenUnary andElimL x a j p
-weakenProof x@(AndElimR _ j p) a = weakenUnary andElimR x a j p
-weakenProof x@(AndIntr _ j p q) a = weakenBinary andIntr x a j p q
-weakenProof x@(IffElimL _ j p) a = weakenUnary iffElimL x a j p
-weakenProof x@(IffElimR _ j p) a = weakenUnary iffElimR x a j p
-weakenProof x@(IffIntr _ j p q) a = weakenBinary iffIntr x a j p q
+weakenProof (Axiom j) a = weakenNullary Axiom a j
+weakenProof x@(FalseElim j p) a = weakenUnary FalseElim x a j p
+weakenProof (TrueIntr j) a = weakenNullary TrueIntr a j
+weakenProof x@(NotElim j p q) a = weakenBinary NotElim x a j p q
+weakenProof x@(NotIntr j p) a = weakenUnary NotIntr x a j p
+weakenProof x@(ImpElim j p q) a = weakenBinary ImpElim x a j p q
+weakenProof x@(ImpIntr j p) a = weakenUnary ImpIntr x a j p
+weakenProof x@(OrElim j p q r) a = weakenTernary OrElim x a j p q r
+weakenProof x@(OrIntrL j p) a = weakenUnary OrIntrL x a j p
+weakenProof x@(OrIntrR j p) a = weakenUnary OrIntrR x a j p
+weakenProof x@(AndElimL j p) a = weakenUnary AndElimL x a j p
+weakenProof x@(AndElimR j p) a = weakenUnary AndElimR x a j p
+weakenProof x@(AndIntr j p q) a = weakenBinary AndIntr x a j p q
+weakenProof x@(IffElimL j p) a = weakenUnary IffElimL x a j p
+weakenProof x@(IffElimR j p) a = weakenUnary IffElimR x a j p
+weakenProof x@(IffIntr j p q) a = weakenBinary IffIntr x a j p q
 
 -- Helper functions for weakenProof
 
@@ -141,22 +125,22 @@ weakenTernary c x a j@(Judgement g _) p q r
 -- | Strengthen a proof by preserving its structure but removing redundant
 -- hypotheses where possible.
 strengthenProof :: Ord a => Proof a -> Proof a
-strengthenProof (Ax _ (Judgement _ a)) = axiom (Judgement (Set.singleton a) a)
-strengthenProof (FalseElim _ j p) = strengthenUnary falseElim j p
-strengthenProof (TrueIntr _ (Judgement _ a)) = trueIntr (Judgement Set.empty a)
-strengthenProof (NotElim _ j p q) = strengthenBinary notElim j p q
-strengthenProof (NotIntr _ (Judgement _ a@(Not b)) p) = strengthenUnaryImp notIntr a b p
-strengthenProof (ImpElim _ j p q) = strengthenBinary impElim j p q
-strengthenProof (ImpIntr _ (Judgement _ a@(Imp b _)) p) = strengthenUnaryImp impIntr a b p
-strengthenProof (OrElim _ j p q r) = strengthenOrElim j p q r
-strengthenProof (OrIntrL _ j p) = strengthenUnary orIntrL j p
-strengthenProof (OrIntrR _ j p) = strengthenUnary orIntrR j p
-strengthenProof (AndElimL _ j p) = strengthenUnary andElimL j p
-strengthenProof (AndElimR _ j p) = strengthenUnary andElimR j p
-strengthenProof (AndIntr _ j p q) = strengthenBinary andIntr j p q
-strengthenProof (IffElimL _ j p) = strengthenUnary iffElimL j p
-strengthenProof (IffElimR _ j p) = strengthenUnary iffElimR j p
-strengthenProof (IffIntr _ j p q) = strengthenBinary iffIntr j p q
+strengthenProof (Axiom (Judgement _ a)) = Axiom (Judgement (Set.singleton a) a)
+strengthenProof (FalseElim j p) = strengthenUnary FalseElim j p
+strengthenProof (TrueIntr (Judgement _ a)) = TrueIntr (Judgement Set.empty a)
+strengthenProof (NotElim j p q) = strengthenBinary NotElim j p q
+strengthenProof (NotIntr (Judgement _ a@(Not b)) p) = strengthenUnaryImp NotIntr a b p
+strengthenProof (ImpElim j p q) = strengthenBinary ImpElim j p q
+strengthenProof (ImpIntr (Judgement _ a@(Imp b _)) p) = strengthenUnaryImp ImpIntr a b p
+strengthenProof (OrElim j p q r) = strengthenOrElim j p q r
+strengthenProof (OrIntrL j p) = strengthenUnary OrIntrL j p
+strengthenProof (OrIntrR j p) = strengthenUnary OrIntrR j p
+strengthenProof (AndElimL j p) = strengthenUnary AndElimL j p
+strengthenProof (AndElimR j p) = strengthenUnary AndElimR j p
+strengthenProof (AndIntr j p q) = strengthenBinary AndIntr j p q
+strengthenProof (IffElimL j p) = strengthenUnary IffElimL j p
+strengthenProof (IffElimR j p) = strengthenUnary IffElimR j p
+strengthenProof (IffIntr j p q) = strengthenBinary IffIntr j p q
 -- If we're here, then there was a pattern match failure, and the proof is
 -- invalid! Note that there are some invalid proofs that will nevertheless slip
 -- through this function; its goal is not to check validity. However, a valid
@@ -225,5 +209,5 @@ strengthenOrElim j@(Judgement _ c) p q r = case succedent (root p) of
         g2 = Set.delete a (antecedents (root q''))
         g3 = Set.delete b (antecedents (root r''))
         g = Set.union (Set.union g1 g2) g3
-     in orElim (Judgement g c) p' q'' r''
-  _ -> orElim j p q r -- Wrong form of inference rule!
+     in OrElim (Judgement g c) p' q'' r''
+  _ -> OrElim j p q r -- Wrong form of inference rule!

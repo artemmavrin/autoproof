@@ -29,7 +29,7 @@ import AutoProof.Proof.Types
       ( AndElimL,
         AndElimR,
         AndIntr,
-        Ax,
+        Axiom,
         FalseElim,
         IffElimL,
         IffElimR,
@@ -43,22 +43,6 @@ import AutoProof.Proof.Types
         OrIntrR,
         TrueIntr
       ),
-    andElimL,
-    andElimR,
-    andIntr,
-    axiom,
-    falseElim,
-    iffElimL,
-    iffElimR,
-    iffIntr,
-    impElim,
-    impIntr,
-    notElim,
-    notIntr,
-    orElim,
-    orIntrL,
-    orIntrR,
-    trueIntr,
   )
 import AutoProof.Utils.DList (fromDList, toDList)
 import Control.Applicative (Alternative ((<|>)))
@@ -255,9 +239,9 @@ fromImpJudgement (Judgement g a) = map fromImpFormula (Set.toList g) |- fromImpF
 -- Convert a proof with extra variables x_a (as described in toImp) back to an
 -- ordinary proof
 fromImpProof :: Ord a => Proof (Formula a) -> Proof a
-fromImpProof (Ax _ j) = axiom (fromImpJudgement j)
-fromImpProof (ImpElim _ j p q) = impElim (fromImpJudgement j) (fromImpProof p) (fromImpProof q)
-fromImpProof (ImpIntr _ j p) = impIntr (fromImpJudgement j) (fromImpProof p)
+fromImpProof (Axiom j) = Axiom (fromImpJudgement j)
+fromImpProof (ImpElim j p q) = ImpElim (fromImpJudgement j) (fromImpProof p) (fromImpProof q)
+fromImpProof (ImpIntr j p) = ImpIntr (fromImpJudgement j) (fromImpProof p)
 -- This should be uncreachable! This function is intended to operate on proofs
 -- constructed using proveImp, which will only use the axiom, implication
 -- introduction, And implication elimination rules.
@@ -277,22 +261,22 @@ proveTautologyFromImp a = do
     proveImpAxiom p b = subAxiom p (proveToImpHypothesis b)
 
     -- Substitute a proof for an axiom
-    subAxiom p@(Ax _ (Judgement _ b)) q = if b == succedent (root q) then q else p
-    subAxiom (FalseElim _ j p) q = falseElim j (subAxiom p q)
-    subAxiom p@(TrueIntr _ _) _ = p
-    subAxiom (NotElim _ j p q) r = notElim j (subAxiom p r) (subAxiom q r)
-    subAxiom (NotIntr _ j p) q = notIntr j (subAxiom p q)
-    subAxiom (ImpElim _ j p q) r = impElim j (subAxiom p r) (subAxiom q r)
-    subAxiom (ImpIntr _ j p) q = impIntr j (subAxiom p q)
-    subAxiom (OrElim _ j p q r) s = orElim j (subAxiom p s) (subAxiom q s) (subAxiom r s)
-    subAxiom (OrIntrL _ j p) q = orIntrL j (subAxiom p q)
-    subAxiom (OrIntrR _ j p) q = orIntrR j (subAxiom p q)
-    subAxiom (AndElimL _ j p) q = andElimL j (subAxiom p q)
-    subAxiom (AndElimR _ j p) q = andElimR j (subAxiom p q)
-    subAxiom (AndIntr _ j p q) r = andIntr j (subAxiom p r) (subAxiom q r)
-    subAxiom (IffElimL _ j p) q = iffElimL j (subAxiom p q)
-    subAxiom (IffElimR _ j p) q = iffElimR j (subAxiom p q)
-    subAxiom (IffIntr _ j p q) r = iffIntr j (subAxiom p r) (subAxiom q r)
+    subAxiom p@(Axiom (Judgement _ b)) q = if b == succedent (root q) then q else p
+    subAxiom (FalseElim j p) q = FalseElim j (subAxiom p q)
+    subAxiom p@(TrueIntr _) _ = p
+    subAxiom (NotElim j p q) r = NotElim j (subAxiom p r) (subAxiom q r)
+    subAxiom (NotIntr j p) q = NotIntr j (subAxiom p q)
+    subAxiom (ImpElim j p q) r = ImpElim j (subAxiom p r) (subAxiom q r)
+    subAxiom (ImpIntr j p) q = ImpIntr j (subAxiom p q)
+    subAxiom (OrElim j p q r) s = OrElim j (subAxiom p s) (subAxiom q s) (subAxiom r s)
+    subAxiom (OrIntrL j p) q = OrIntrL j (subAxiom p q)
+    subAxiom (OrIntrR j p) q = OrIntrR j (subAxiom p q)
+    subAxiom (AndElimL j p) q = AndElimL j (subAxiom p q)
+    subAxiom (AndElimR j p) q = AndElimR j (subAxiom p q)
+    subAxiom (AndIntr j p q) r = AndIntr j (subAxiom p r) (subAxiom q r)
+    subAxiom (IffElimL j p) q = IffElimL j (subAxiom p q)
+    subAxiom (IffElimR j p) q = IffElimR j (subAxiom p q)
+    subAxiom (IffIntr j p q) r = IffIntr j (subAxiom p r) (subAxiom q r)
 
 -- toImp will produce a set of hypotheses, all of which are intuitionistic
 -- tautologies. This function performs a pattern-matching-based conversion of
@@ -305,104 +289,104 @@ proveToImpHypothesis :: Ord a => Formula (Formula a) -> Proof a
 -- Axiom
 proveToImpHypothesis (Imp (Var a) (Var a'))
   | a == a' =
-    impIntr
+    ImpIntr
       ([] |- Imp a a)
-      (axiom ([a] |- a))
+      (Axiom ([a] |- a))
 -- Falsity elimination
 proveToImpHypothesis (Imp (Var (Lit False)) (Var b)) =
-  impIntr
+  ImpIntr
     ([] |- Imp (Lit False) b)
-    ( falseElim
-        ([(Lit False)] |- b)
-        ( axiom
-            ( [(Lit False)] |- (Lit False)
+    ( FalseElim
+        ([Lit False] |- b)
+        ( Axiom
+            ( [Lit False] |- Lit False
             )
         )
     )
 -- Vacuous truth introduction (special case)
-proveToImpHypothesis (Var (Lit True)) = trueIntr ([] |- (Lit True))
+proveToImpHypothesis (Var (Lit True)) = TrueIntr ([] |- Lit True)
 -- Truth introduction
 proveToImpHypothesis (Imp (Var b) (Var (Lit True))) =
-  impIntr
+  ImpIntr
     ([] |- Imp b (Lit True))
-    (trueIntr ([b] |- (Lit True)))
+    (TrueIntr ([b] |- Lit True))
 -- Negation elimination
 proveToImpHypothesis (Imp (Var (Not c)) (Imp (Var c') (Var (Lit False))))
   | c == c' =
-    impIntr
+    ImpIntr
       ([] |- Imp (Not c) (Imp c (Lit False)))
-      ( impIntr
+      ( ImpIntr
           ([Not c] |- Imp c (Lit False))
-          ( notElim
-              ([Not c, c] |- (Lit False))
-              (axiom ([Not c] |- Not c))
-              (axiom ([c] |- c))
+          ( NotElim
+              ([Not c, c] |- Lit False)
+              (Axiom ([Not c] |- Not c))
+              (Axiom ([c] |- c))
           )
       )
 -- Negation introduction
 proveToImpHypothesis (Imp (Imp (Var c) (Var (Lit False))) (Var (Not c')))
   | c == c' =
-    impIntr
+    ImpIntr
       ([] |- Imp (Imp c (Lit False)) (Not c))
-      ( notIntr
+      ( NotIntr
           ([Imp c (Lit False)] |- Not c)
-          ( impElim
-              ([c, Imp c (Lit False)] |- (Lit False))
-              (axiom ([Imp c (Lit False)] |- Imp c (Lit False)))
-              (axiom ([c] |- c))
+          ( ImpElim
+              ([c, Imp c (Lit False)] |- Lit False)
+              (Axiom ([Imp c (Lit False)] |- Imp c (Lit False)))
+              (Axiom ([c] |- c))
           )
       )
 -- Implication elimination
 proveToImpHypothesis (Imp (Var (Imp c d)) (Imp (Var c') (Var d')))
   | c == c' && d == d' =
-    impIntr
+    ImpIntr
       ([] |- Imp (Imp c d) (Imp c d))
-      (axiom ([Imp c d] |- Imp c d))
+      (Axiom ([Imp c d] |- Imp c d))
 -- Implication introduction
 proveToImpHypothesis (Imp (Imp (Var c) (Var d)) (Var (Imp c' d')))
   | c == c' && d == d' =
-    impIntr
+    ImpIntr
       ([] |- Imp (Imp c d) (Imp c d))
-      (axiom ([Imp c d] |- Imp c d))
+      (Axiom ([Imp c d] |- Imp c d))
 -- Left disjunction introduction
 proveToImpHypothesis (Imp (Var c) (Var (Or c' d)))
   | c == c' =
-    impIntr
+    ImpIntr
       ([] |- Imp c (Or c d))
-      ( orIntrL
+      ( OrIntrL
           ([c] |- Or c d)
-          (axiom ([c] |- c))
+          (Axiom ([c] |- c))
       )
 -- Right disjunction introduction
 proveToImpHypothesis (Imp (Var d) (Var (Or c d')))
   | d == d' =
-    impIntr
+    ImpIntr
       ([] |- Imp d (Or c d))
-      ( orIntrR
+      ( OrIntrR
           ([d] |- Or c d)
-          (axiom ([d] |- d))
+          (Axiom ([d] |- d))
       )
 -- Disjunction elimination
 proveToImpHypothesis (Imp (Var (Or c d)) (Imp (Imp (Var c') (Var e)) (Imp (Imp (Var d') (Var e')) (Var e''))))
   | c == c' && d == d' && e == e' && e == e'' =
-    impIntr
+    ImpIntr
       ([] |- Imp (Or c d) (Imp (Imp c e) (Imp (Imp d e) e)))
-      ( impIntr
+      ( ImpIntr
           ([Or c d] |- Imp (Imp c e) (Imp (Imp d e) e))
-          ( impIntr
+          ( ImpIntr
               ([Or c d, Imp c e] |- Imp (Imp d e) e)
-              ( orElim
+              ( OrElim
                   ([Or c d, Imp c e, Imp d e] |- e)
-                  (axiom ([Or c d] |- Or c d))
-                  ( impElim
+                  (Axiom ([Or c d] |- Or c d))
+                  ( ImpElim
                       ([c, Imp c e] |- e)
-                      (axiom ([Imp c e] |- Imp c e))
-                      (axiom ([c] |- c))
+                      (Axiom ([Imp c e] |- Imp c e))
+                      (Axiom ([c] |- c))
                   )
-                  ( impElim
+                  ( ImpElim
                       ([d, Imp d e] |- e)
-                      (axiom ([Imp d e] |- Imp d e))
-                      (axiom ([d] |- d))
+                      (Axiom ([Imp d e] |- Imp d e))
+                      (Axiom ([d] |- d))
                   )
               )
           )
@@ -410,64 +394,64 @@ proveToImpHypothesis (Imp (Var (Or c d)) (Imp (Imp (Var c') (Var e)) (Imp (Imp (
 -- Conjunction introduction
 proveToImpHypothesis (Imp (Var c) (Imp (Var d) (Var (And c' d'))))
   | c == c' && d == d' =
-    impIntr
+    ImpIntr
       ([] |- Imp c (Imp d (And c d)))
-      ( impIntr
+      ( ImpIntr
           ([c] |- Imp d (And c d))
-          ( andIntr
+          ( AndIntr
               ([c, d] |- And c d)
-              (axiom ([c] |- c))
-              (axiom ([d] |- d))
+              (Axiom ([c] |- c))
+              (Axiom ([d] |- d))
           )
       )
 -- Left conjunction elimination
 proveToImpHypothesis (Imp (Var (And c d)) (Var c'))
   | c == c' =
-    impIntr
+    ImpIntr
       ([] |- Imp (And c d) c)
-      ( andElimL
+      ( AndElimL
           ([And c d] |- c)
-          (axiom ([And c d] |- And c d))
+          (Axiom ([And c d] |- And c d))
       )
 -- Right conjunction elimination
 proveToImpHypothesis (Imp (Var (And c d)) (Var d'))
   | d == d' =
-    impIntr
+    ImpIntr
       ([] |- Imp (And c d) d)
-      ( andElimR
+      ( AndElimR
           ([And c d] |- d)
-          (axiom ([And c d] |- And c d))
+          (Axiom ([And c d] |- And c d))
       )
 -- Equivalence introduction
 proveToImpHypothesis (Imp (Imp (Var c) (Var d)) (Imp (Imp (Var d') (Var c')) (Var (Iff c'' d''))))
   | c == c' && c == c'' && d == d' && d == d'' =
-    impIntr
+    ImpIntr
       ([] |- Imp (Imp c d) (Imp (Imp d c) (Iff c d)))
-      ( impIntr
+      ( ImpIntr
           ([Imp c d] |- Imp (Imp d c) (Iff c d))
-          ( iffIntr
+          ( IffIntr
               ([Imp c d, Imp d c] |- Iff c d)
-              (axiom ([Imp c d] |- Imp c d))
-              (axiom ([Imp d c] |- Imp d c))
+              (Axiom ([Imp c d] |- Imp c d))
+              (Axiom ([Imp d c] |- Imp d c))
           )
       )
 -- Left equivalence elimination
 proveToImpHypothesis (Imp (Var (Iff c d)) (Imp (Var c') (Var d')))
   | c == c' && d == d' =
-    impIntr
+    ImpIntr
       ([] |- Imp (Iff c d) (Imp c d))
-      ( iffElimL
+      ( IffElimL
           ([Iff c d] |- Imp c d)
-          (axiom ([Iff c d] |- Iff c d))
+          (Axiom ([Iff c d] |- Iff c d))
       )
 -- Right equivalence elimination
 proveToImpHypothesis (Imp (Var (Iff c d)) (Imp (Var d') (Var c')))
   | c == c' && d == d' =
-    impIntr
+    ImpIntr
       ([] |- Imp (Iff c d) (Imp d c))
-      ( iffElimR
+      ( IffElimR
           ([Iff c d] |- Imp d c)
-          (axiom ([Iff c d] |- Iff c d))
+          (Axiom ([Iff c d] |- Iff c d))
       )
 -- This should never be reached! If it is, that means we're mishandling one of
 -- the cases in the toImp translation
@@ -477,9 +461,9 @@ proveToImpHypothesis _ = undefined
 -- proves the judgment proved by the original proof. For example, suppose we're
 -- proving ⊢ (a ∧ a) → a. The following proof works:
 --
---                                         ------------- (Ax)
+--                                         ------------- (Axiom)
 --                                         a ∧ a ⊢ a ∧ a
---    ------------------------- (Ax)       ------------- (∧EL)
+--    ------------------------- (Axiom)       ------------- (∧EL)
 --    (a ∧ a) → a ⊢ (a ∧ a) → a              a ∧ a ⊢ a
 -- ------------------------------- (→I)    ------------- (→I)
 -- ⊢ ((a ∧ a) → a) → ((a ∧ a) → a)         ⊢ (a ∧ a) → a

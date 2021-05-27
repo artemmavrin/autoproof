@@ -6,23 +6,24 @@ module Main where
 import AutoProof
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
     Judgement,
-    Proof,
-    andElimL,
-    andElimR,
-    andIntr,
-    axiom,
-    falseElim,
-    iffElimL,
-    iffElimR,
-    iffIntr,
-    impElim,
-    impIntr,
-    notElim,
-    notIntr,
-    orElim,
-    orIntrL,
-    orIntrR,
-    trueIntr,
+    Proof
+      ( AndElimL,
+        AndElimR,
+        AndIntr,
+        Axiom,
+        FalseElim,
+        IffElimL,
+        IffElimR,
+        IffIntr,
+        ImpElim,
+        ImpIntr,
+        NotElim,
+        NotIntr,
+        OrElim,
+        OrIntrL,
+        OrIntrR,
+        TrueIntr
+      ),
     (|-),
   )
 import qualified Test.Hspec as H
@@ -70,43 +71,43 @@ instance QC.Arbitrary (Judgement Int) where
 
 proof :: Int -> QC.Gen (Proof Int)
 proof n
-  | n == 0 = QC.oneof [ax, tIntr]
+  | n == 0 = QC.oneof [axiom, trueIntr]
   | otherwise = QC.oneof proofs
   where
-    ax = axiom <$> QC.arbitrary
-    fElim = falseElim <$> QC.arbitrary <*> subproof
-    tIntr = trueIntr <$> QC.arbitrary
-    nElim = notElim <$> QC.arbitrary <*> subproof <*> subproof
-    nIntr = notIntr <$> QC.arbitrary <*> subproof
-    iElim = impElim <$> QC.arbitrary <*> subproof <*> subproof
-    iIntr = impIntr <$> QC.arbitrary <*> subproof
-    oElim = orElim <$> QC.arbitrary <*> subproof <*> subproof <*> subproof
-    oIntrL = orIntrL <$> QC.arbitrary <*> subproof
-    oIntrR = orIntrR <$> QC.arbitrary <*> subproof
-    aElimL = andElimL <$> QC.arbitrary <*> subproof
-    aElimR = andElimR <$> QC.arbitrary <*> subproof
-    aIntr = andIntr <$> QC.arbitrary <*> subproof <*> subproof
-    eElimL = iffElimL <$> QC.arbitrary <*> subproof
-    eElimR = iffElimR <$> QC.arbitrary <*> subproof
-    eIntr = iffIntr <$> QC.arbitrary <*> subproof <*> subproof
+    axiom = Axiom <$> QC.arbitrary
+    falseElim = FalseElim <$> QC.arbitrary <*> subproof
+    trueIntr = TrueIntr <$> QC.arbitrary
+    notElim = NotElim <$> QC.arbitrary <*> subproof <*> subproof
+    notIntr = NotIntr <$> QC.arbitrary <*> subproof
+    impElim = ImpElim <$> QC.arbitrary <*> subproof <*> subproof
+    impIntr = ImpIntr <$> QC.arbitrary <*> subproof
+    orElim = OrElim <$> QC.arbitrary <*> subproof <*> subproof <*> subproof
+    orIntrL = OrIntrL <$> QC.arbitrary <*> subproof
+    orIntrR = OrIntrR <$> QC.arbitrary <*> subproof
+    andElimL = AndElimL <$> QC.arbitrary <*> subproof
+    andElimR = AndElimR <$> QC.arbitrary <*> subproof
+    andIntr = AndIntr <$> QC.arbitrary <*> subproof <*> subproof
+    iffElimL = IffElimL <$> QC.arbitrary <*> subproof
+    iffElimR = IffElimR <$> QC.arbitrary <*> subproof
+    iffIntr = IffIntr <$> QC.arbitrary <*> subproof <*> subproof
     subproof = proof $ n `div` 2
     proofs =
-      [ ax,
-        tIntr,
-        fElim,
-        nElim,
-        nIntr,
-        iElim,
-        iIntr,
-        oElim,
-        oIntrL,
-        oIntrR,
-        aElimL,
-        aElimR,
-        aIntr,
-        eElimL,
-        eElimR,
-        eIntr
+      [ axiom,
+        trueIntr,
+        falseElim,
+        notElim,
+        notIntr,
+        impElim,
+        impIntr,
+        orElim,
+        orIntrL,
+        orIntrR,
+        andElimL,
+        andElimR,
+        andIntr,
+        iffElimL,
+        iffElimR,
+        iffIntr
       ]
 
 instance QC.Arbitrary (Proof Int) where

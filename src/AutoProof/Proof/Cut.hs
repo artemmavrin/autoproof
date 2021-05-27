@@ -30,14 +30,14 @@ import Data.Maybe (isJust)
 
 -- | Find the cut nearest the root of a proof, if any.
 findCut :: Proof a -> Maybe (Proof a)
-findCut p@(ImpElim _ _ ImpIntr {} _) = Just p
-findCut p@(NotElim _ _ NotIntr {} _) = Just p
-findCut p@(OrElim _ _ OrIntrL {} _ _) = Just p
-findCut p@(OrElim _ _ OrIntrR {} _ _) = Just p
-findCut p@(AndElimL _ _ AndIntr {}) = Just p
-findCut p@(AndElimR _ _ AndIntr {}) = Just p
-findCut p@(IffElimL _ _ IffIntr {}) = Just p
-findCut p@(IffElimR _ _ IffIntr {}) = Just p
+findCut p@(ImpElim _ ImpIntr {} _) = Just p
+findCut p@(NotElim _ NotIntr {} _) = Just p
+findCut p@(OrElim _ OrIntrL {} _ _) = Just p
+findCut p@(OrElim _ OrIntrR {} _ _) = Just p
+findCut p@(AndElimL _ AndIntr {}) = Just p
+findCut p@(AndElimR _ AndIntr {}) = Just p
+findCut p@(IffElimL _ IffIntr {}) = Just p
+findCut p@(IffElimR _ IffIntr {}) = Just p
 findCut _ = Nothing
 
 -- | Check if a proof has a cut.

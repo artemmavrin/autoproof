@@ -27,25 +27,24 @@ module AutoProof
     weakenJudgement,
 
     -- * Proofs
-    Proof,
-
-    -- ** Proof constructors
-    axiom,
-    falseElim,
-    trueIntr,
-    notElim,
-    notIntr,
-    impElim,
-    impIntr,
-    orElim,
-    orIntrL,
-    orIntrR,
-    andElimL,
-    andElimR,
-    andIntr,
-    iffElimL,
-    iffElimR,
-    iffIntr,
+    Proof
+      ( Axiom,
+        FalseElim,
+        TrueIntr,
+        NotElim,
+        NotIntr,
+        ImpElim,
+        ImpIntr,
+        OrElim,
+        OrIntrL,
+        OrIntrR,
+        AndElimL,
+        AndElimR,
+        AndIntr,
+        IffElimL,
+        IffElimR,
+        IffIntr
+      ),
 
     -- ** Provability testing and proof search
     isTautology,
@@ -64,6 +63,8 @@ module AutoProof
 
     -- * Abstract syntax trees
     AST (Root, root, children, height, size),
+    subtrees,
+    properSubtrees,
 
     -- * Parsing
     parseFormula,
@@ -77,7 +78,11 @@ module AutoProof
   )
 where
 
-import AutoProof.AST (AST (Root, children, height, root, size))
+import AutoProof.AST
+  ( AST (Root, children, height, root, size),
+    properSubtrees,
+    subtrees,
+  )
 import AutoProof.Formula
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
     atoms,
@@ -97,32 +102,33 @@ import AutoProof.Parser
     parseJudgement,
   )
 import AutoProof.Proof
-  ( Proof,
-    andElimL,
-    andElimR,
-    andIntr,
-    axiom,
+  ( Proof
+      ( AndElimL,
+        AndElimR,
+        AndIntr,
+        Axiom,
+        FalseElim,
+        IffElimL,
+        IffElimR,
+        IffIntr,
+        ImpElim,
+        ImpIntr,
+        NotElim,
+        NotIntr,
+        OrElim,
+        OrIntrL,
+        OrIntrR,
+        TrueIntr
+      ),
     correct,
     debug,
-    falseElim,
     findCut,
     hasCut,
-    iffElimL,
-    iffElimR,
-    iffIntr,
-    impElim,
-    impIntr,
     isTautology,
-    notElim,
-    notIntr,
-    orElim,
-    orIntrL,
-    orIntrR,
     prettyProof,
     proveImp,
     proveTautology,
     toImp,
-    trueIntr,
     valid,
   )
 import AutoProof.Utils.PrettyPrintable (PrettyPrintable (pretty))

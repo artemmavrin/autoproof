@@ -10,7 +10,7 @@
 module AutoProof.Proof
   ( -- * Proof type
     Proof
-      ( Ax,
+      ( Axiom,
         FalseElim,
         TrueIntr,
         NotElim,
@@ -27,24 +27,6 @@ module AutoProof.Proof
         IffElimR,
         IffIntr
       ),
-
-    -- ** Proof constructors
-    axiom,
-    falseElim,
-    trueIntr,
-    notElim,
-    notIntr,
-    impElim,
-    impIntr,
-    orElim,
-    orIntrL,
-    orIntrR,
-    andElimL,
-    andElimR,
-    andIntr,
-    iffElimL,
-    iffElimR,
-    iffIntr,
 
     -- * Operations on proofs
     weakenProof,
@@ -80,7 +62,7 @@ import AutoProof.Proof.Types
       ( AndElimL,
         AndElimR,
         AndIntr,
-        Ax,
+        Axiom,
         FalseElim,
         IffElimL,
         IffElimR,
@@ -94,21 +76,5 @@ import AutoProof.Proof.Types
         OrIntrR,
         TrueIntr
       ),
-    andElimL,
-    andElimR,
-    andIntr,
-    axiom,
-    falseElim,
-    iffElimL,
-    iffElimR,
-    iffIntr,
-    impElim,
-    impIntr,
-    notElim,
-    notIntr,
-    orElim,
-    orIntrL,
-    orIntrR,
     prettyProof,
-    trueIntr,
   )

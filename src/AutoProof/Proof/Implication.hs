@@ -14,7 +14,7 @@ where
 
 import AutoProof.Formula (Formula (Imp, Var))
 import AutoProof.Judgement (Judgement (Judgement))
-import AutoProof.Proof.Types (Proof, axiom, impElim, impIntr)
+import AutoProof.Proof.Types (Proof (Axiom, ImpElim, ImpIntr))
 import Control.Applicative ((<|>))
 import qualified Data.Set as Set
 
@@ -30,7 +30,7 @@ import qualified Data.Set as Set
 -- ==== __Examples__
 --
 -- >>> proveImp $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
--- Just (impElim ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'b') (axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Imp (Var 'a') (Var 'b'))) (axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'a')))
+-- Just (ImpElim ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'b') (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Imp (Var 'a') (Var 'b'))) (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'a')))
 --
 -- >>> proveImp $ [Imp (Var 'a') (Var 'b'), Imp (Var 'b') (Var 'a')] |- Var 'a'
 -- Nothing
@@ -50,14 +50,14 @@ proveImp = prove Set.empty
     -- so it suffices to look for a proof of g,a ⊢ b
     prove s j@(Judgement g i@(Imp a b)) =
       if Set.member i g
-        then Just $ axiom j
-        else impIntr j <$> prove s (Judgement (Set.insert a g) b)
+        then Just $ Axiom j
+        else ImpIntr j <$> prove s (Judgement (Set.insert a g) b)
     -- Trickier case: if there is a proof of g ⊢ x, where x is a variable, then
     -- either
     --
     -- (1) x belongs to g, so g ⊢ x is proved via
     --
-    -- ----- (Ax)
+    -- ----- (Axiom)
     -- g ⊢ x
     --
     -- or
@@ -67,7 +67,7 @@ proveImp = prove Set.empty
     -- In this case, one proof of g ⊢ x is
     --
     --                                         p1
-    -- ------------------------------- (Ax)  ------
+    -- ------------------------------- (Axiom)  ------
     -- g ⊢ a1 → (a2 → (... an → x)...)       g ⊢ a1         p2
     -- -------------------------------------------- (→E)  ------
     --        g ⊢ a2 → (... an → x)                       g ⊢ a2
@@ -109,11 +109,11 @@ proveImp = prove Set.empty
         -- form a1 → (a2 → (... an → x)...), try to prove the ai's, and use the
         -- resulting proofs to construct a proof of x using nested implication
         -- eliminations
-        construct [] b = Just $ axiom (Judgement g b)
+        construct [] b = Just $ Axiom (Judgement g b)
         construct (a : as) b = do
           q <- prove s' (Judgement g a)
           p <- construct as (Imp a b)
-          return $ impElim (Judgement g b) p q
+          return $ ImpElim (Judgement g b) p q
 
     -- Non-implicational case
     prove _ _ = Nothing
