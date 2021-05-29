@@ -18,7 +18,7 @@ fromList :: [a] -> DList a
 fromList = (++)
 
 toList :: DList a -> [a]
-toList d = d []
+toList = ($ [])
 
 cons :: a -> DList a -> DList a
-cons a d = (a :) . d
+cons = (.) . (:)
