@@ -37,6 +37,7 @@ module AutoProof.Proof
     toImp,
     isTautology,
     proveTautology,
+    prove,
 
     -- * Cuts
     findCut,
@@ -55,7 +56,7 @@ where
 import AutoProof.Proof.Correctness (correct, debug, valid)
 import AutoProof.Proof.Cut (findCut, hasCut)
 import AutoProof.Proof.Implication (proveImp)
-import AutoProof.Proof.Provability (isTautology, proveTautology, toImp)
+import AutoProof.Proof.Provability (isTautology, prove, proveTautology, toImp)
 import AutoProof.Proof.Transform (strengthenProof, weakenProof)
 import AutoProof.Proof.Types
   ( Proof

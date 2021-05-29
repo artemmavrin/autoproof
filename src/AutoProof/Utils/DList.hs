@@ -10,12 +10,15 @@
 --
 -- Simple difference list implementation. Difference lists are an abstraction
 -- that enables constant-time concatenation of lists using function composition.
-module AutoProof.Utils.DList (DList, toDList, fromDList) where
+module AutoProof.Utils.DList (DList, fromList, toList, cons) where
 
 type DList a = [a] -> [a]
 
-toDList :: [a] -> DList a
-toDList = (++)
+fromList :: [a] -> DList a
+fromList = (++)
 
-fromDList :: DList a -> [a]
-fromDList d = d []
+toList :: DList a -> [a]
+toList d = d []
+
+cons :: a -> DList a -> DList a
+cons a d = (a :) . d

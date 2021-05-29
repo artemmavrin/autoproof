@@ -49,6 +49,7 @@ module AutoProof
     -- ** Provability testing and proof search
     isTautology,
     proveTautology,
+    prove,
     proveImp,
     toImp,
 
@@ -126,6 +127,7 @@ import AutoProof.Proof
     hasCut,
     isTautology,
     prettyProof,
+    prove,
     proveImp,
     proveTautology,
     toImp,

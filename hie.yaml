@@ -7,6 +7,8 @@ cradle:
       component: "autoproof:exe:proveImp"
     - path: "./app/proveTautology/Main.hs"
       component: "autoproof:exe:proveTautology"
+    - path: "./app/autoproof/Main.hs"
+      component: "autoproof:exe:autoproof"
     - path: "./test/formula/Main.hs"
       component: "autoproof:test:formula-test"
     - path: "./test/proof/Main.hs"

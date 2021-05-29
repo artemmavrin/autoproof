@@ -7,7 +7,13 @@
 -- Portability : POSIX
 --
 -- Check provability of general propositional formulas
-module AutoProof.Proof.Provability (toImp, isTautology, proveTautology) where
+module AutoProof.Proof.Provability
+  ( toImp,
+    isTautology,
+    proveTautology,
+    prove,
+  )
+where
 
 import AutoProof.AST (AST (children, root))
 import AutoProof.Formula
@@ -44,14 +50,15 @@ import AutoProof.Proof.Types
         TrueIntr
       ),
   )
-import AutoProof.Utils.DList (fromDList, toDList)
+import qualified AutoProof.Utils.DList as DList (fromList, toList, cons)
 import Control.Applicative (Alternative ((<|>)))
 import Data.List (sort)
 import Data.Maybe (fromMaybe, isJust)
 import qualified Data.Set as Set
 
--- | Convert a propositional formula into an implicational judgement which is
--- provable if And only if the original formula is an intuitionistic tautology.
+-- | Convert a general propositional judgement into an implicational judgement
+-- which is intuitionistically provable if And only if the original judgement is
+-- intuitionistically provable.
 --
 -- This construction is due to
 --
@@ -120,16 +127,20 @@ import qualified Data.Set as Set
 --          x_b \rightarrow (x_c \rightarrow x_d), \qquad
 --          x_b \rightarrow (x_d \rightarrow x_c)
 --        \]
-toImp :: Ord a => Formula a -> Judgement (Formula a)
-toImp a = Judgement g (Var a)
+toImp :: Ord a => Judgement a -> Judgement (Formula a)
+toImp (Judgement gg a) = Judgement g (Var a)
   where
     bs = subformulas a
 
     -- Final context, created by recursing over subformulas of a
-    g = Set.fromList $ fromDList $ f g0 a
+    g = Set.fromList $ DList.toList $ foldl f' (f g0 a) gg
 
     -- Add common formulas into the growing context g'
     f g' b = h (g' . common b) b
+
+    -- Add formulas derived from a given into a growing context g' as in f, but
+    -- including the original formula itself too
+    f' g' b = DList.cons (Var b) (f g' b)
 
     -- Add unique formulas into the growing context g'
     h g' b@(Lit _) = g' . unique b
@@ -141,17 +152,17 @@ toImp a = Judgement g (Var a)
     h g' b@(Iff c d) = f (f (g' . unique b) c) d
 
     -- Initial context (vacuous truth introduction)
-    g0 = toDList [Var (Lit True)]
+    g0 = DList.fromList [Var (Lit True)]
 
     -- Formulas that get created for every subformula b of a
     common b =
-      toDList
+      DList.fromList
         [ Imp (Var (Lit False)) (Var b), -- falsity elimination
           Imp (Var b) (Var (Lit True)) -- truth introduction
         ]
 
     -- Formulas that get created depending on the shape of a subformula b of a
-    unique = toDList . unique'
+    unique = DList.fromList . unique'
     unique' (Lit _) = []
     unique' (Var _) = []
     unique' b@(Not c) =
@@ -201,7 +212,7 @@ toImp a = Judgement g (Var a)
 -- >>> isTautology $ Not (Not (Or (Var 'a') (Not (Var 'a'))))
 -- True
 isTautology :: Ord a => Formula a -> Bool
-isTautology = isJust . proveImp . toImp
+isTautology = isJust . proveImp . toImp . ([] |-)
 
 -- | Find an intuitionistic proof of a formula, if a proof exists.
 --
@@ -218,7 +229,16 @@ proveTautology a =
   (strengthenProof <$> proveImp ([] |- a))
     -- Next, try converting a into an implicational judgement And proving that.
     -- If this fails, then a is Not a tautology.
-    <|> (findSufficientSubproof <$> proveTautologyFromImp a)
+    <|> (findSufficientSubproof <$> proveTautologyFromImp ([] |- a))
+
+prove :: Ord a => Judgement a -> Maybe (Proof a)
+prove j =
+  -- Try proving a as an implicational formula first (this will obviously fail
+  -- if a is Not an implicational formula)
+  (strengthenProof <$> proveImp j)
+    -- Next, try converting a into an implicational judgement And proving that.
+    -- If this fails, then a is Not a tautology.
+    <|> (findSufficientSubproof <$> proveTautologyFromImp j)
 
 -- The stuff below is a tedious conversion from an implicational proof
 -- (obtained from proveImp . toImp) to a "regular" proof of the original formula
@@ -250,16 +270,16 @@ fromImpProof _ = undefined
 -- Convert the formula to be proved to an implicational judgement as described
 -- in toImp, And try proving the judgement. The resulting proof (if it exists)
 -- will then be transformed into a proof of the original formula.
-proveTautologyFromImp :: Ord a => Formula a -> Maybe (Proof a)
-proveTautologyFromImp a = do
+proveTautologyFromImp :: Ord a => Judgement a -> Maybe (Proof a)
+proveTautologyFromImp j'@(Judgement g _) = do
   -- Strengthening the proof here lets us remove some redundant hypotheses
   -- created by toImp.
-  p <- strengthenProof <$> proveImp (toImp a)
-  let g = antecedents (root p)
-  return $ strengthenProof (foldl proveImpAxiom (fromImpProof p) g)
+  p <- strengthenProof <$> proveImp (toImp j')
+  let g' = antecedents (root p)
+  let proveImpAxiom q (Var c) | c `Set.member` g = q
+      proveImpAxiom q b = subAxiom q (proveToImpHypothesis b)
+  return $ strengthenProof (foldl proveImpAxiom (fromImpProof p) g')
   where
-    proveImpAxiom p b = subAxiom p (proveToImpHypothesis b)
-
     -- Substitute a proof for an axiom
     subAxiom p@(Axiom (Judgement _ b)) q = if b == succedent (root q) then q else p
     subAxiom (FalseElim j p) q = FalseElim j (subAxiom p q)
