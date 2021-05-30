@@ -26,7 +26,6 @@ main = do
   provableJudgements <- loadJudgements "test/data/judgements/provable.txt"
   unprovableJudgements <- loadJudgements "test/data/judgements/unprovable.txt"
 
-
   -- Run tests
   H.hspec $
     H.describe "prove" $ do

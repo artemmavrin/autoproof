@@ -38,4 +38,3 @@ a -> b | c |- (a -> b) | (a -> c)
 # Miscellaneous
 a -> b |- (b -> a) -> a
 (a | b) -> a |- a
-~a <-> a

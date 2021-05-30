@@ -21,3 +21,7 @@ cradle:
       component: "autoproof:test:is-tautology-test"
     - path: "./test/prove-tautology/Main.hs"
       component: "autoproof:test:prove-tautology-test"
+    - path: "./test/dlist/Main.hs"
+      component: "autoproof:test:dlist-test"
+    - path: "./test/prove/Main.hs"
+      component: "autoproof:test:prove-test"

@@ -1,228 +1,248 @@
-name:                autoproof
-version:             0.0.0.0
-license:             BSD3
-author:              "Artem Mavrin"
-maintainer:          "artemvmavrin@gmail.com"
-copyright:           "2021 Artem Mavrin"
-github:              "artemmavrin/autoproof"
-category:            Logic
-synopsis:            Automated theorem-proving in intuitionistic propositional logic
+name: autoproof
+version: 0.0.0.0
+license: BSD3
+author: "Artem Mavrin"
+maintainer: "artemvmavrin@gmail.com"
+copyright: "2021 Artem Mavrin"
+github: "artemmavrin/autoproof"
+category: Logic
+synopsis: Automated theorem-proving in intuitionistic propositional logic
 
 extra-source-files:
-- README.md
+  - README.md
 
-description:         Please see the README on GitHub at <https://github.com/artemmavrin/autoproof#readme>
+description: Please see the README on GitHub at <https://github.com/artemmavrin/autoproof#readme>
 
 dependencies:
-- base >= 4.7 && < 5
-- containers >= 0.6.4.1
+  - base >= 4.7 && < 5
+  - containers >= 0.6.4.1
 
 library:
   source-dirs: src
   ghc-options:
-  - -Werror
-  - -Wall
-  - -Wcompat
-  - -Wincomplete-record-updates
-  - -Wincomplete-uni-patterns
-  - -Wredundant-constraints
+    - -Werror
+    - -Wall
+    - -Wcompat
+    - -Wincomplete-record-updates
+    - -Wincomplete-uni-patterns
+    - -Wredundant-constraints
 
 executables:
   proveImp:
-    main:                Main.hs
-    source-dirs:         app/proveImp
+    main: Main.hs
+    source-dirs: app/proveImp
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Werror
-    - -Wall
-    - -Wcompat
-    - -Wincomplete-record-updates
-    - -Wincomplete-uni-patterns
-    - -Wredundant-constraints
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
     dependencies:
-    - autoproof
+      - autoproof
     when:
-    - condition: false
-      other-modules: Paths_autoproof
+      - condition: false
+        other-modules: Paths_autoproof
   proveTautology:
-    main:                Main.hs
-    source-dirs:         app/proveTautology
+    main: Main.hs
+    source-dirs: app/proveTautology
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Werror
-    - -Wall
-    - -Wcompat
-    - -Wincomplete-record-updates
-    - -Wincomplete-uni-patterns
-    - -Wredundant-constraints
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
     dependencies:
-    - autoproof
+      - autoproof
     when:
-    - condition: false
-      other-modules: Paths_autoproof
+      - condition: false
+        other-modules: Paths_autoproof
   autoproof:
-    main:                Main.hs
-    source-dirs:         app/autoproof
+    main: Main.hs
+    source-dirs: app/autoproof
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Werror
-    - -Wall
-    - -Wcompat
-    - -Wincomplete-record-updates
-    - -Wincomplete-uni-patterns
-    - -Wredundant-constraints
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
     dependencies:
-    - autoproof
+      - autoproof
     when:
-    - condition: false
-      other-modules: Paths_autoproof
+      - condition: false
+        other-modules: Paths_autoproof
 
 tests:
   formula-test:
-    main:                Main.hs
-    source-dirs:         test/formula
+    main: Main.hs
+    source-dirs: test/formula
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Werror
-    - -Wall
-    - -Wcompat
-    - -Wincomplete-record-updates
-    - -Wincomplete-uni-patterns
-    - -Wredundant-constraints
-    - -O0
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
+      - -O0
     dependencies:
-    - autoproof
-    - hspec >= 0.8.2
-    - QuickCheck >= 2.14.2
+      - autoproof
+      - hspec >= 0.8.2
+      - QuickCheck >= 2.14.2
     when:
-    - condition: false
-      other-modules: Paths_autoproof
+      - condition: false
+        other-modules: Paths_autoproof
   proof-test:
-    main:                Main.hs
-    source-dirs:         test/proof
+    main: Main.hs
+    source-dirs: test/proof
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Werror
-    - -Wall
-    - -Wcompat
-    - -Wincomplete-record-updates
-    - -Wincomplete-uni-patterns
-    - -Wredundant-constraints
-    - -O0
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
+      - -O0
     dependencies:
-    - autoproof
-    - hspec >= 0.8.2
-    - QuickCheck >= 2.14.2
+      - autoproof
+      - hspec >= 0.8.2
+      - QuickCheck >= 2.14.2
     when:
-    - condition: false
-      other-modules: Paths_autoproof
+      - condition: false
+        other-modules: Paths_autoproof
   parser-test:
-    main:                Main.hs
-    source-dirs:         test/parser
+    main: Main.hs
+    source-dirs: test/parser
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Werror
-    - -Wall
-    - -Wcompat
-    - -Wincomplete-record-updates
-    - -Wincomplete-uni-patterns
-    - -Wredundant-constraints
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
     dependencies:
-    - autoproof
-    - hspec >= 0.8.2
-    - QuickCheck >= 2.14.2
+      - autoproof
+      - hspec >= 0.8.2
+      - QuickCheck >= 2.14.2
     when:
-    - condition: false
-      other-modules: Paths_autoproof
+      - condition: false
+        other-modules: Paths_autoproof
   prove-imp-test:
-    main:                Main.hs
-    source-dirs:         test/prove-imp
+    main: Main.hs
+    source-dirs: test/prove-imp
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Werror
-    - -Wall
-    - -Wcompat
-    - -Wincomplete-record-updates
-    - -Wincomplete-uni-patterns
-    - -Wredundant-constraints
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
     dependencies:
-    - autoproof
-    - hspec >= 0.8.2
-    - QuickCheck >= 2.14.2
+      - autoproof
+      - hspec >= 0.8.2
+      - QuickCheck >= 2.14.2
     when:
-    - condition: false
-      other-modules: Paths_autoproof
+      - condition: false
+        other-modules: Paths_autoproof
   is-tautology-test:
-    main:                Main.hs
-    source-dirs:         test/is-tautology
+    main: Main.hs
+    source-dirs: test/is-tautology
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Werror
-    - -Wall
-    - -Wcompat
-    - -Wincomplete-record-updates
-    - -Wincomplete-uni-patterns
-    - -Wredundant-constraints
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
     dependencies:
-    - autoproof
-    - hspec >= 0.8.2
-    - QuickCheck >= 2.14.2
+      - autoproof
+      - hspec >= 0.8.2
+      - QuickCheck >= 2.14.2
     when:
-    - condition: false
-      other-modules: Paths_autoproof
+      - condition: false
+        other-modules: Paths_autoproof
   prove-tautology-test:
-    main:                Main.hs
-    source-dirs:         test/prove-tautology
+    main: Main.hs
+    source-dirs: test/prove-tautology
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Werror
-    - -Wall
-    - -Wcompat
-    - -Wincomplete-record-updates
-    - -Wincomplete-uni-patterns
-    - -Wredundant-constraints
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
     dependencies:
-    - autoproof
-    - hspec >= 0.8.2
-    - QuickCheck >= 2.14.2
+      - autoproof
+      - hspec >= 0.8.2
+      - QuickCheck >= 2.14.2
     when:
-    - condition: false
-      other-modules: Paths_autoproof
+      - condition: false
+        other-modules: Paths_autoproof
   dlist-test:
-    main:                Main.hs
-    source-dirs:         test/dlist
+    main: Main.hs
+    source-dirs: test/dlist
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Werror
-    - -Wall
-    - -Wcompat
-    - -Wincomplete-record-updates
-    - -Wincomplete-uni-patterns
-    - -Wredundant-constraints
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
     dependencies:
-    - autoproof
-    - hspec >= 0.8.2
-    - QuickCheck >= 2.14.2
+      - autoproof
+      - hspec >= 0.8.2
+      - QuickCheck >= 2.14.2
     when:
-    - condition: false
-      other-modules: Paths_autoproof
+      - condition: false
+        other-modules: Paths_autoproof
+  prove-test:
+    main: Main.hs
+    source-dirs: test/prove
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
+    dependencies:
+      - autoproof
+      - hspec >= 0.8.2
+      - QuickCheck >= 2.14.2
+    when:
+      - condition: false
+        other-modules: Paths_autoproof
