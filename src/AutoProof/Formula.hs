@@ -17,17 +17,11 @@ module AutoProof.Formula
     prettyFormula,
 
     -- * Operations on formulas
-    substitute,
     subformulas,
-    atoms,
   )
 where
 
-import AutoProof.Formula.Operations
-  ( atoms,
-    subformulas,
-    substitute,
-  )
+import AutoProof.Formula.Operations (subformulas)
 import AutoProof.Formula.Types
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
     prettyFormula,

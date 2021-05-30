@@ -13,8 +13,6 @@ module AutoProof
 
     -- ** Operations on formulas
     subformulas,
-    substitute,
-    atoms,
 
     -- * Judgements
     Context,
@@ -91,10 +89,8 @@ import AutoProof.AST
   )
 import AutoProof.Formula
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
-    atoms,
     prettyFormula,
     subformulas,
-    substitute,
   )
 import AutoProof.Judgement
   ( Context,
