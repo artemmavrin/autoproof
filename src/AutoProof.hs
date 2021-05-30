@@ -13,8 +13,6 @@ module AutoProof
 
     -- ** Operations on formulas
     subformulas,
-    substitute,
-    atoms,
 
     -- * Judgements
     Context,
@@ -46,11 +44,17 @@ module AutoProof
         IffIntr
       ),
 
-    -- ** Provability testing and proof search
-    isTautology,
+    -- ** Proof search for judgements and formulas
+    prove,
     proveTautology,
+
+    -- ** Specific proof search algorithms
+    proveStatman,
     proveImp,
-    toImp,
+
+    -- ** Provability checking
+    isValid,
+    isTautology,
 
     -- ** Cuts
     findCut,
@@ -85,10 +89,8 @@ import AutoProof.AST
   )
 import AutoProof.Formula
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
-    atoms,
     prettyFormula,
     subformulas,
-    substitute,
   )
 import AutoProof.Judgement
   ( Context,
@@ -125,10 +127,12 @@ import AutoProof.Proof
     findCut,
     hasCut,
     isTautology,
+    isValid,
     prettyProof,
+    prove,
     proveImp,
+    proveStatman,
     proveTautology,
-    toImp,
     valid,
   )
 import AutoProof.Utils.PrettyPrintable (PrettyPrintable (pretty))

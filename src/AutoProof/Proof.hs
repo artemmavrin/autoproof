@@ -32,11 +32,17 @@ module AutoProof.Proof
     weakenProof,
     strengthenProof,
 
-    -- * Proof search and provability checking
-    proveImp,
-    toImp,
-    isTautology,
+    -- * Proof search for judgements and formulas
+    prove,
     proveTautology,
+
+    -- * Specific proof search algorithms
+    proveImp,
+    proveStatman,
+
+    -- * Provability checking
+    isValid,
+    isTautology,
 
     -- * Cuts
     findCut,
@@ -54,8 +60,14 @@ where
 
 import AutoProof.Proof.Correctness (correct, debug, valid)
 import AutoProof.Proof.Cut (findCut, hasCut)
-import AutoProof.Proof.Implication (proveImp)
-import AutoProof.Proof.Provability (isTautology, proveTautology, toImp)
+import AutoProof.Proof.Search
+  ( isTautology,
+    isValid,
+    prove,
+    proveImp,
+    proveStatman,
+    proveTautology,
+  )
 import AutoProof.Proof.Transform (strengthenProof, weakenProof)
 import AutoProof.Proof.Types
   ( Proof

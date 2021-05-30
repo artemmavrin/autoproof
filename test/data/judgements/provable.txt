@@ -1,0 +1,91 @@
+# Propositional literals
+|- true
+|- ~false
+|- ~~true
+a |- true
+false |- a
+false |- true
+
+# Single variable
+a |- a
+a |- ~~a
+|- ~(a & ~a)
+~~~a |- ~a
+~a |- ~~~a
+
+# Negation
+a -> false |- ~a
+~a |- a -> false
+a, ~a |- false
+
+# Implication
+a, a -> b |- b
+a |- b -> a
+a -> b |- a -> b
+a, a -> b, b -> c |- c
+
+# Disjunction
+a |- a | b
+a |- b | a
+a | b |- (a -> c) -> (b -> c) -> c
+a | b, a -> c |- (b -> c) -> c
+a | b, a -> c, b -> c |- c
+a | b, a -> c, b -> d, c -> e, d -> e |- e
+
+# Conjunction
+a |- (b -> a & b)
+a, b |- a & b
+a & b |- a
+a & b |- b
+c, c -> a, c -> b |- a & b
+
+# Equivalence
+a -> b, b -> a |- a <-> b
+a <-> b |- a -> b
+a <-> b |- b -> a
+
+# "Commutativity"
+a | b |- b | a
+a & b |- b & a
+a <-> b |- b <-> a
+
+# Functoriality
+a -> b, a & c |- b & c
+a -> b, a | c |- b | c
+a -> b, b -> c |- a -> c
+
+# Diagnonal/codiagonal
+a |- a & a
+a | a |- a
+
+# Currying/exponentiation
+a & b -> c |- a -> (b -> c)
+a & b -> c, a |- b -> c
+a -> (b -> c) |- a & b -> c
+
+# Modus ponens
+a & (a -> b) |- b
+
+# Material implication
+~a | b |- a -> b
+a | b |- ~a -> b
+
+# deMorgan's laws
+~a, ~b |- ~(a | b)
+~a & ~b |- ~(a | b)
+~(a | b) |- (~a & ~b)
+~a | ~b |- ~(a & b)
+
+# Contraposition
+a -> b |- ~b -> ~a
+a -> b, ~b |- ~a
+a -> ~b |- b -> ~a
+a -> ~b, b |- ~a
+
+# Miscellaneous
+a & b |- a | b
+~~a -> a, (a -> b) -> a |- a
+~~a -> b, (a -> b) -> a |- a
+a <-> b, a |- a & b
+a, a -> b | c, b -> d, c -> e |- d | e
+a, a -> b | c, b -> d, c -> d |- d

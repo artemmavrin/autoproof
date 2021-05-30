@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ced74d8f525a6531db4bb37c1e1a32809f6bc3abc2f70342d0f4c02890e2b871
+-- hash: 204e570bee00d5b9835112f1de0c61757c26ce6eb43d97ba1190f0a430b2d652
 
 name:           autoproof
 version:        0.0.0.0
@@ -38,8 +38,10 @@ library
       AutoProof.Proof
       AutoProof.Proof.Correctness
       AutoProof.Proof.Cut
-      AutoProof.Proof.Implication
-      AutoProof.Proof.Provability
+      AutoProof.Proof.Search
+      AutoProof.Proof.Search.General
+      AutoProof.Proof.Search.Implication
+      AutoProof.Proof.Search.Statman
       AutoProof.Proof.Transform
       AutoProof.Proof.Types
       AutoProof.Utils.DList
@@ -60,10 +62,10 @@ library
     , containers >=0.6.4.1
   default-language: Haskell2010
 
-executable proveImp
+executable autoproof
   main-is: Main.hs
   hs-source-dirs:
-      app/proveImp
+      app/autoproof
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       autoproof
@@ -74,15 +76,18 @@ executable proveImp
         Paths_autoproof
   default-language: Haskell2010
 
-executable proveTautology
+test-suite dlist-test
+  type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
-      app/proveTautology
+      test/dlist
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
-      autoproof
+      QuickCheck >=2.14.2
+    , autoproof
     , base >=4.7 && <5
     , containers >=0.6.4.1
+    , hspec >=0.8.2
   if false
     other-modules:
         Paths_autoproof
@@ -173,11 +178,45 @@ test-suite prove-imp-test
         Paths_autoproof
   default-language: Haskell2010
 
+test-suite prove-statman-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      test/prove-statman
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  build-depends:
+      QuickCheck >=2.14.2
+    , autoproof
+    , base >=4.7 && <5
+    , containers >=0.6.4.1
+    , hspec >=0.8.2
+  if false
+    other-modules:
+        Paths_autoproof
+  default-language: Haskell2010
+
 test-suite prove-tautology-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
       test/prove-tautology
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  build-depends:
+      QuickCheck >=2.14.2
+    , autoproof
+    , base >=4.7 && <5
+    , containers >=0.6.4.1
+    , hspec >=0.8.2
+  if false
+    other-modules:
+        Paths_autoproof
+  default-language: Haskell2010
+
+test-suite prove-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      test/prove
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       QuickCheck >=2.14.2

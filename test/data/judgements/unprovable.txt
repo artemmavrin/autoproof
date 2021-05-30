@@ -1,0 +1,40 @@
+# Pierce's law
+(a -> b) -> a |- a
+
+# Double negation elimination
+~~a |- a
+
+# Material implication
+a -> b |- ~a | b
+
+# Counterexample
+~(a -> b) |- a & ~b
+
+# Contraposition
+~b -> ~a |- a -> b
+
+# Consequentia mirabilis
+~a -> a |- a
+~~a | a |- a
+
+# Distributivity of implication and disjunction
+a -> (b | c) |- (a -> b) | choice
+
+# DeMorgan's laws
+~(a & b) |- ~a | ~b
+
+# Kreisel-Putnam axiom
+~a -> b | c |- (~a -> b) | (~a -> c)
+
+# Scott’s axiom
+(~~a -> a) -> (a | ~a) |- ~~a | ~a
+
+# Smetanich's axiom
+~b -> a, (a -> b) -> a |- a
+
+# Global choice for disjunctions
+a -> b | c |- (a -> b) | (a -> c)
+
+# Miscellaneous
+a -> b |- (b -> a) -> a
+(a | b) -> a |- a

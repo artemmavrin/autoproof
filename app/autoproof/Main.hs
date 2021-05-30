@@ -1,22 +1,23 @@
--- Simple REPL for trying out the proveTautology function.
+-- Simple proof search REPL.
 --
--- At the prompt, enter any propositional logic formula (e.g., "a & b -> b"),
--- subject to the grammar specification of 'AutoProof.Parser.parseFormula'.
+-- At the prompt, enter any propositional logic formula (e.g., "a & b -> b") or
+-- judgement (e.g., "a, b |- a & b"), subject to the grammar specification of
+-- 'AutoProof.Parser.parseFormula' or 'AutoProof.Parser.parseJudgement'.
 
 module Main where
 
 import AutoProof
-  ( Formula,
+  ( Judgement,
     Proof,
     correct,
     debug,
     findCut,
+    parseJudgement,
     parseFormula,
     pretty,
-    proveTautology,
+    prove,
     (|-),
   )
-import AutoProof.Utils.Symbols (turnstileS)
 import Control.Monad (unless, when)
 import Data.Char (isSpace)
 import Data.Foldable (forM_)
@@ -32,20 +33,24 @@ import System.IO
 
 data Opts = Opts
   { showCuts :: Bool,
+    verbose :: Bool,
     unknownOpts :: [String]
   }
 
 header :: String
-header = "proveTautology REPL"
+header = "autoproof REPL"
 
 prompt :: String
-prompt = turnstileS ++ " "
+prompt = ">>> "
 
 findCutsArg :: String
 findCutsArg = "--find-cuts"
 
+verboseArg :: String
+verboseArg = "--verbose"
+
 allowedArgs :: [String]
-allowedArgs = [findCutsArg]
+allowedArgs = [findCutsArg, verboseArg]
 
 main :: IO ()
 main = do
@@ -61,6 +66,7 @@ getOpts = do
   return
     Opts
       { showCuts = findCutsArg `elem` args,
+        verbose = verboseArg `elem` args,
         unknownOpts = filter (`notElem` allowedArgs) args
       }
 
@@ -81,21 +87,23 @@ loop opts = do
 handleLine :: Opts -> String -> IO ()
 handleLine _ "" = return ()
 handleLine opts line = case parseFormula line of
-  Nothing -> hPutStrLn stderr "Parse error"
-  Just a -> handleFormula opts a
+  Just a -> handleJudgement opts ([] |- a)
+  Nothing -> case parseJudgement line of
+    Just j -> handleJudgement opts j
+    Nothing -> hPutStrLn stderr "Parse error"
 
-handleFormula :: Opts -> Formula String -> IO ()
-handleFormula opts a = do
-  putStrLn $ "Trying to prove " ++ pretty a
-  case proveTautology a of
-    Nothing -> putStrLn "No proof found"
-    Just p -> handleProof opts a p
+handleJudgement :: Opts -> Judgement String -> IO ()
+handleJudgement opts j = do
+  when (verbose opts) (putStrLn $ "Trying to prove " ++ pretty j)
+  case prove j of
+    Nothing -> hPutStrLn stderr ("No proof found for " ++ pretty j)
+    Just p -> handleProof opts j p
 
-handleProof :: Opts -> Formula String -> Proof String -> IO ()
-handleProof opts a p = do
-  putStrLn "Found proof:"
+handleProof :: Opts -> Judgement String -> Proof String -> IO ()
+handleProof opts j p = do
+  when (verbose opts) (putStrLn "Found proof:")
   putStrLn $ pretty p
-  if correct ([] |- a) p
+  if correct j p
     then do
       when (showCuts opts) (forM_ (findCut p) (handleCut opts))
     else do

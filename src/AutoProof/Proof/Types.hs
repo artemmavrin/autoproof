@@ -29,7 +29,6 @@ module AutoProof.Proof.Types
         IffElimR,
         IffIntr
       ),
-    axioms,
     prettyProof,
   )
 where
@@ -42,8 +41,7 @@ import AutoProof.AST
     ternaryRootedASTConstructor,
     unaryRootedASTConstructor,
   )
-import AutoProof.Formula (Formula)
-import AutoProof.Judgement (Judgement (Judgement))
+import AutoProof.Judgement (Judgement)
 import AutoProof.Utils.PrettyPrintable (PrettyPrintable (pretty))
 import AutoProof.Utils.Symbols
   ( andElimLS,
@@ -66,8 +64,6 @@ import AutoProof.Utils.Symbols
     trueIntrS,
     vertS,
   )
-import Data.Set (Set)
-import qualified Data.Set as Set
 
 -- | A proof tree for intuitionistic propositional logic.
 data Proof a
@@ -553,29 +549,6 @@ pattern IffIntr j p q <-
   IffElimR,
   IffIntr
   #-}
-
--- Miscellaneous proof operations
-
--- | Get the set of axioms used in a proof.
-axioms :: Ord a => Proof a -> Set (Formula a)
-axioms = go Set.empty
-  where
-    go s (Axiom (Judgement _ a)) = Set.insert a s
-    go s (FalseElim _ p) = go s p
-    go s (TrueIntr _) = s
-    go s (NotElim _ p q) = go (go s p) q
-    go s (NotIntr _ p) = go s p
-    go s (ImpElim _ p q) = go (go s p) q
-    go s (ImpIntr _ p) = go s p
-    go s (OrElim _ p q r) = go (go (go s p) q) r
-    go s (OrIntrL _ p) = go s p
-    go s (OrIntrR _ p) = go s p
-    go s (AndElimL _ p) = go s p
-    go s (AndElimR _ p) = go s p
-    go s (AndIntr _ p q) = go (go s p) q
-    go s (IffElimL _ p) = go s p
-    go s (IffElimR _ p) = go s p
-    go s (IffIntr _ p q) = go (go s p) q
 
 -- Instance declarations
 
