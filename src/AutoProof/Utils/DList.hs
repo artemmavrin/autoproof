@@ -10,7 +10,18 @@
 --
 -- Simple difference list implementation. Difference lists are an abstraction
 -- that enables constant-time concatenation of lists using function composition.
-module AutoProof.Utils.DList (DList, fromList, toList, cons) where
+module AutoProof.Utils.DList
+  ( DList,
+    fromList,
+    toList,
+    toSet,
+    cons,
+    empty,
+  )
+where
+
+import Data.Set (Set)
+import qualified Data.Set as Set (fromList)
 
 type DList a = [a] -> [a]
 
@@ -20,5 +31,11 @@ fromList = (++)
 toList :: DList a -> [a]
 toList = ($ [])
 
+toSet :: Ord a => DList a -> Set a
+toSet = Set.fromList . toList
+
 cons :: a -> DList a -> DList a
 cons = (.) . (:)
+
+empty :: DList a
+empty = id

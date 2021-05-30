@@ -1,7 +1,8 @@
--- Simple REPL for trying out the proveTautology function.
+-- Simple proof search REPL.
 --
--- At the prompt, enter any propositional logic formula (e.g., "a & b -> b"),
--- subject to the grammar specification of 'AutoProof.Parser.parseFormula'.
+-- At the prompt, enter any propositional logic formula (e.g., "a & b -> b") or
+-- judgement (e.g., "a, b |- a & b"), subject to the grammar specification of
+-- 'AutoProof.Parser.parseFormula' or 'AutoProof.Parser.parseJudgement'.
 
 module Main where
 
@@ -40,7 +41,7 @@ header :: String
 header = "autoproof REPL"
 
 prompt :: String
-prompt = ">>>> "
+prompt = ">>> "
 
 findCutsArg :: String
 findCutsArg = "--find-cuts"

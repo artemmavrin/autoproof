@@ -46,12 +46,17 @@ module AutoProof
         IffIntr
       ),
 
-    -- ** Provability testing and proof search
-    isTautology,
-    proveTautology,
+    -- ** Proof search for judgements and formulas
     prove,
+    proveTautology,
+
+    -- ** Specific proof search algorithms
+    proveStatman,
     proveImp,
-    toImp,
+
+    -- ** Provability checking
+    isValid,
+    isTautology,
 
     -- ** Cuts
     findCut,
@@ -126,11 +131,12 @@ import AutoProof.Proof
     findCut,
     hasCut,
     isTautology,
+    isValid,
     prettyProof,
     prove,
     proveImp,
+    proveStatman,
     proveTautology,
-    toImp,
     valid,
   )
 import AutoProof.Utils.PrettyPrintable (PrettyPrintable (pretty))

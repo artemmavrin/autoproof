@@ -3,10 +3,6 @@ cradle:
     components:
     - path: "./src"
       component: "autoproof:lib"
-    - path: "./app/proveImp/Main.hs"
-      component: "autoproof:exe:proveImp"
-    - path: "./app/proveTautology/Main.hs"
-      component: "autoproof:exe:proveTautology"
     - path: "./app/autoproof/Main.hs"
       component: "autoproof:exe:autoproof"
     - path: "./test/formula/Main.hs"
@@ -23,5 +19,7 @@ cradle:
       component: "autoproof:test:prove-tautology-test"
     - path: "./test/dlist/Main.hs"
       component: "autoproof:test:dlist-test"
+    - path: "./test/prove-statman/Main.hs"
+      component: "autoproof:test:prove-statman-test"
     - path: "./test/prove/Main.hs"
       component: "autoproof:test:prove-test"
