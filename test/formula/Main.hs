@@ -3,7 +3,11 @@
 
 module Main where
 
-import AutoProof (Formula (And, Iff, Imp, Lit, Not, Or, Var), subformulas)
+import AutoProof
+  ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
+    children,
+    subformulas,
+  )
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
 
@@ -21,6 +25,7 @@ main = H.hspec $ do
     assertOrdConsistentStrict
     assertOrdEquality
     assertOrdStrictness
+    assertChildrenSmallerThanParents
   H.describe "instance Show (Formula a), Read (Formula a)" $ do
     assertReadShow
   H.describe "subformulas" $ do
@@ -82,7 +87,10 @@ subformulasLTE :: Formula Int -> Bool
 subformulasLTE p = all (<= p) $ subformulas p
 
 readShow :: Int -> Formula Int -> Bool
-readShow d x = (x,"") `elem` readsPrec d (showsPrec d x "")
+readShow d x = (x, "") `elem` readsPrec d (showsPrec d x "")
+
+childrenSmallerThanParents :: Formula Int -> Bool
+childrenSmallerThanParents a = all (< a) (children a)
 
 -- Testable assertions
 
@@ -172,3 +180,10 @@ assertReadShow =
     "(x,\"\") is an element of (readsPrec d (showsPrec d x \"\"))"
     10000
     readShow
+
+assertChildrenSmallerThanParents :: H.SpecWith ()
+assertChildrenSmallerThanParents =
+  makeAssertion
+    "children of a formula should be ordered less than the formula itself"
+    1000
+    childrenSmallerThanParents

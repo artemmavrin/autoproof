@@ -24,6 +24,7 @@ import AutoProof
         OrIntrR,
         TrueIntr
       ),
+    children,
     (|-),
   )
 import qualified Test.Hspec as H
@@ -43,6 +44,7 @@ main = H.hspec $ do
     assertOrdConsistentStrict
     assertOrdEquality
     assertOrdStrictness
+    assertChildrenSmallerThanParents
   H.describe "instance Show (Proof a), Read (Proof a)" $ do
     assertReadShow
 
@@ -150,6 +152,9 @@ ordStrictness x y = (x < y) == (x <= y && x /= y)
 readShow :: Int -> Proof Int -> Bool
 readShow d x = (x, "") `elem` readsPrec d (showsPrec d x "")
 
+childrenSmallerThanParents :: Proof Int -> Bool
+childrenSmallerThanParents p = all (< p) (children p)
+
 -- Testable assertions
 
 makeAssertion :: QC.Testable p => String -> Int -> p -> H.SpecWith ()
@@ -232,3 +237,9 @@ assertReadShow =
     1000
     readShow
 
+assertChildrenSmallerThanParents :: H.SpecWith ()
+assertChildrenSmallerThanParents =
+  makeAssertion
+    "children of a proof should be ordered less than the proof itself"
+    1000
+    childrenSmallerThanParents
