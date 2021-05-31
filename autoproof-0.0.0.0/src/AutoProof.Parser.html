@@ -1,0 +1,510 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- Module      : AutoProof.Parser</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- Copyright   : (c) Artem Mavrin, 2021</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- License     : BSD3</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- Maintainer  : artemvmavrin@gmail.com</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Stability   : experimental</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- Portability : POSIX</span><span>
+</span><span id="line-10"></span><span class="hs-comment">--</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- Parser for propositional logic formulas</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">AutoProof.Parser</span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Safe parsing</span></span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="AutoProof.Parser.html#parseFormula"><span class="hs-identifier">parseFormula</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="AutoProof.Parser.html#parseJudgement"><span class="hs-identifier">parseJudgement</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Unsafe parsing</span></span><span>
+</span><span id="line-18"></span><span>    </span><span class="annot"><a href="AutoProof.Parser.html#unsafeParseFormula"><span class="hs-identifier">unsafeParseFormula</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><a href="AutoProof.Parser.html#unsafeParseJudgement"><span class="hs-identifier">unsafeParseJudgement</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="AutoProof.Formula.html"><span class="hs-identifier">AutoProof.Formula</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier">Formula</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#And"><span class="hs-identifier">And</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.Formula.Types.html#Iff"><span class="hs-identifier">Iff</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.Formula.Types.html#Imp"><span class="hs-identifier">Imp</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.Formula.Types.html#Lit"><span class="hs-identifier">Lit</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.Formula.Types.html#Not"><span class="hs-identifier">Not</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.Formula.Types.html#Or"><span class="hs-identifier">Or</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.Formula.Types.html#Var"><span class="hs-identifier">Var</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="AutoProof.Judgement.html"><span class="hs-identifier">AutoProof.Judgement</span></a></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="AutoProof.Judgement.html#Judgement"><span class="hs-identifier">Judgement</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span class="annot"><a href="AutoProof.Judgement.html#%7C-"><span class="hs-operator">(|-)</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.html"><span class="hs-identifier">AutoProof.Utils.Parser</span></a></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier">Parser</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span class="annot"><a href="AutoProof.Utils.Parser.Combinator.html#between"><span class="hs-identifier">between</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span class="annot"><a href="AutoProof.Utils.Parser.Combinator.html#chainl1"><span class="hs-identifier">chainl1</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>    </span><span class="annot"><a href="AutoProof.Utils.Parser.Combinator.html#chainr1"><span class="hs-identifier">chainr1</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span class="annot"><a href="AutoProof.Utils.Parser.Char.html#char"><span class="hs-identifier">char</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span class="annot"><a href="AutoProof.Utils.Parser.Combinator.html#eof"><span class="hs-identifier">eof</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span class="annot"><a href="AutoProof.Utils.Parser.Combinator.html#notFollowedBy"><span class="hs-identifier">notFollowedBy</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-36"></span><span>    </span><span class="annot"><a href="AutoProof.Utils.Parser.Char.html#oneOf"><span class="hs-identifier">oneOf</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-37"></span><span>    </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#parse"><span class="hs-identifier">parse</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-38"></span><span>    </span><span class="annot"><a href="AutoProof.Utils.Parser.Combinator.html#sepBy"><span class="hs-identifier">sepBy</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-39"></span><span>    </span><span class="annot"><a href="AutoProof.Utils.Parser.Char.html#spaces"><span class="hs-identifier">spaces</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-40"></span><span>    </span><span class="annot"><a href="AutoProof.Utils.Parser.Char.html#string"><span class="hs-identifier">string</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Applicative</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Alternative</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">empty</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">many</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-operator">(&lt;|&gt;)</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">fromMaybe</span></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="hs-comment">-- | @('parseFormula' s)@ parses a string @s@ as a propositional formula,</span><span>
+</span><span id="line-46"></span><span class="hs-comment">-- returning a @'Just' a@ on success, where @a@ is the parsed formula.</span><span>
+</span><span id="line-47"></span><span class="hs-comment">--</span><span>
+</span><span id="line-48"></span><span class="hs-comment">-- For a version of 'parseFormula' that does not return a wrapped formula but</span><span>
+</span><span id="line-49"></span><span class="hs-comment">-- also throws an error when it cannot parse, see 'unsafeParseFormula'.</span><span>
+</span><span id="line-50"></span><span class="hs-comment">--</span><span>
+</span><span id="line-51"></span><span class="hs-comment">-- ==== __Conventions__</span><span>
+</span><span id="line-52"></span><span class="hs-comment">--</span><span>
+</span><span id="line-53"></span><span class="hs-comment">-- * Supported connective symbols:</span><span>
+</span><span id="line-54"></span><span class="hs-comment">--</span><span>
+</span><span id="line-55"></span><span class="hs-comment">--     * Negation: @&quot;~&quot;@, @&quot;&#172;&quot;@.</span><span>
+</span><span id="line-56"></span><span class="hs-comment">--     * Implication: @&quot;-&gt;&quot;@, @&quot;=&gt;&quot;@, @&quot;&#8594;&quot;@, @&quot;&#8702;&quot;@, @&quot;&#8658;&quot;@ @&quot;&#8835;&quot;@.</span><span>
+</span><span id="line-57"></span><span class="hs-comment">--     * Disjunction: @&quot;|&quot;@, @&quot;\\/&quot;@, @&quot;&#8744;&quot;@, @&quot;+&quot;@</span><span>
+</span><span id="line-58"></span><span class="hs-comment">--     * Conjunction: @&quot;&amp;&quot;@, @&quot;/\\&quot;@, @&quot;&#8743;&quot;@, @&quot;^&quot;@, @&quot;*&quot;@</span><span>
+</span><span id="line-59"></span><span class="hs-comment">--     * Equivalence: @&quot;\&lt;-\&gt;&quot;@, @&quot;&#8596;&quot;@, @&quot;&#8703;&quot;@, @&quot;&#8660;&quot;@</span><span>
+</span><span id="line-60"></span><span class="hs-comment">--</span><span>
+</span><span id="line-61"></span><span class="hs-comment">-- * Implication is right-associative and has lower precedence than the other</span><span>
+</span><span id="line-62"></span><span class="hs-comment">--   connectives.</span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- * Equivalence is left-associative and has higher precedence than implication</span><span>
+</span><span id="line-64"></span><span class="hs-comment">--   but lower precedence than conjunction and disjunction.</span><span>
+</span><span id="line-65"></span><span class="hs-comment">-- * Disjunction is left-associative and has higher precedence than equivalence</span><span>
+</span><span id="line-66"></span><span class="hs-comment">--   but lower precedence than conjunction.</span><span>
+</span><span id="line-67"></span><span class="hs-comment">-- * Conjunction is left-associative and has highest precedence out of the</span><span>
+</span><span id="line-68"></span><span class="hs-comment">--   binary connectives.</span><span>
+</span><span id="line-69"></span><span class="hs-comment">-- * Negation binds most tightly, and must immediately precede its argument</span><span>
+</span><span id="line-70"></span><span class="hs-comment">--   (i.e., there should not be a space between a negation symbol and the</span><span>
+</span><span id="line-71"></span><span class="hs-comment">--   proposition that follows).</span><span>
+</span><span id="line-72"></span><span class="hs-comment">-- * Valid variable names begin with a letter (uppercase or lowercase) or an</span><span>
+</span><span id="line-73"></span><span class="hs-comment">--   underscore, and may be followed by a letter, underscore, digit, or single</span><span>
+</span><span id="line-74"></span><span class="hs-comment">--   quote (a &quot;prime&quot; symbol). The exceptions are the strings @&quot;false&quot;@ and</span><span>
+</span><span id="line-75"></span><span class="hs-comment">--   @&quot;true&quot;@, which are parsed as the propositional literals \(\bot\) and</span><span>
+</span><span id="line-76"></span><span class="hs-comment">--   \(\top\), respectively.</span><span>
+</span><span id="line-77"></span><span class="hs-comment">--</span><span>
+</span><span id="line-78"></span><span class="hs-comment">-- ==== __Examples__</span><span>
+</span><span id="line-79"></span><span class="hs-comment">--</span><span>
+</span><span id="line-80"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFormula &quot;a -&gt; b -&gt; c&quot;</span><span>
+</span><span id="line-81"></span><span class="hs-comment">-- Just (Imp (Var &quot;a&quot;) (Imp (Var &quot;b&quot;) (Var &quot;c&quot;)))</span><span>
+</span><span id="line-82"></span><span class="hs-comment">--</span><span>
+</span><span id="line-83"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFormula &quot;~a | b -&gt; c&quot;</span><span>
+</span><span id="line-84"></span><span class="hs-comment">-- Just (Imp (Or (Not (Var &quot;a&quot;)) (Var &quot;b&quot;)) (Var &quot;c&quot;))</span><span>
+</span><span id="line-85"></span><span class="hs-comment">--</span><span>
+</span><span id="line-86"></span><span class="hs-comment">-- &gt;&gt;&gt; parseFormula &quot;(a -&gt; b) &amp; ~c&quot;</span><span>
+</span><span id="line-87"></span><span class="hs-comment">-- Just (And (Imp (Var &quot;a&quot;) (Var &quot;b&quot;)) (Not (Var &quot;c&quot;)))</span><span>
+</span><span id="line-88"></span><span class="annot"><a href="AutoProof.Parser.html#parseFormula"><span class="hs-identifier hs-type">parseFormula</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-89"></span><span id="parseFormula"><span class="annot"><span class="annottext">parseFormula :: String -&gt; Maybe (Formula String)
+</span><a href="AutoProof.Parser.html#parseFormula"><span class="hs-identifier hs-var hs-var">parseFormula</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser (Formula String) -&gt; String -&gt; Maybe (Formula String)
+forall a. Parser a -&gt; String -&gt; Maybe a
+</span><a href="AutoProof.Utils.Parser.Types.html#parse"><span class="hs-identifier hs-var">parse</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#formula"><span class="hs-identifier hs-var">formula</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String) -&gt; Parser () -&gt; Parser (Formula String)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b -&gt; f a
+</span><span class="hs-operator hs-var">&lt;*</span></span><span> </span><span class="annot"><span class="annottext">Parser ()
+</span><a href="AutoProof.Utils.Parser.Combinator.html#eof"><span class="hs-identifier hs-var">eof</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-90"></span><span>
+</span><span id="line-91"></span><span class="hs-comment">-- | @(parseJudgement s)@ parses a string @s@ as a propositional judgement.</span><span>
+</span><span id="line-92"></span><span class="hs-comment">--</span><span>
+</span><span id="line-93"></span><span class="hs-comment">-- A valid judgement is made up of an antecedent, a turnstile symbol, and a</span><span>
+</span><span id="line-94"></span><span class="hs-comment">-- consequent (in that order). The antecedents are a (potentially empty)</span><span>
+</span><span id="line-95"></span><span class="hs-comment">-- comma-separated list of formulas, the turnstile symbol is either @&quot;|-&quot;@ or</span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- @&quot;&#8866;&quot;@, and the consequent is another formula.</span><span>
+</span><span id="line-97"></span><span class="hs-comment">--</span><span>
+</span><span id="line-98"></span><span class="hs-comment">-- See 'parseFormula' for the specification of valid formulas.</span><span>
+</span><span id="line-99"></span><span class="hs-comment">--</span><span>
+</span><span id="line-100"></span><span class="hs-comment">-- ==== __Examples__</span><span>
+</span><span id="line-101"></span><span class="hs-comment">--</span><span>
+</span><span id="line-102"></span><span class="hs-comment">-- &gt;&gt;&gt; parseJudgement &quot;a, a -&gt; b |- b&quot;</span><span>
+</span><span id="line-103"></span><span class="hs-comment">-- Just ([Var &quot;a&quot;,Imp (Var &quot;a&quot;) (Var &quot;b&quot;)] |- Var &quot;b&quot;)</span><span>
+</span><span id="line-104"></span><span class="hs-comment">--</span><span>
+</span><span id="line-105"></span><span class="hs-comment">-- &gt;&gt;&gt; parseJudgement &quot;a |- a | b&quot;</span><span>
+</span><span id="line-106"></span><span class="hs-comment">-- Just ([Var &quot;a&quot;] |- Or (Var &quot;a&quot;) (Var &quot;b&quot;))</span><span>
+</span><span id="line-107"></span><span class="annot"><a href="AutoProof.Parser.html#parseJudgement"><span class="hs-identifier hs-type">parseJudgement</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Judgement.html#Judgement"><span class="hs-identifier hs-type">Judgement</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-108"></span><span id="parseJudgement"><span class="annot"><span class="annottext">parseJudgement :: String -&gt; Maybe (Judgement String)
+</span><a href="AutoProof.Parser.html#parseJudgement"><span class="hs-identifier hs-var hs-var">parseJudgement</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser (Judgement String) -&gt; String -&gt; Maybe (Judgement String)
+forall a. Parser a -&gt; String -&gt; Maybe a
+</span><a href="AutoProof.Utils.Parser.Types.html#parse"><span class="hs-identifier hs-var">parse</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser (Judgement String)
+</span><a href="AutoProof.Parser.html#judgement"><span class="hs-identifier hs-var">judgement</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Judgement String) -&gt; Parser () -&gt; Parser (Judgement String)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b -&gt; f a
+</span><span class="hs-operator hs-var">&lt;*</span></span><span> </span><span class="annot"><span class="annottext">Parser ()
+</span><a href="AutoProof.Utils.Parser.Combinator.html#eof"><span class="hs-identifier hs-var">eof</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-109"></span><span>
+</span><span id="line-110"></span><span class="hs-comment">-- | @(unsafeParseFormula s)@ parses a string @s@ as a propositional formula,</span><span>
+</span><span id="line-111"></span><span class="hs-comment">-- returning the parsed formula on success, and throwing an error on failure.</span><span>
+</span><span id="line-112"></span><span class="hs-comment">--</span><span>
+</span><span id="line-113"></span><span class="hs-comment">-- See 'parseFormula' for grammar spcecifications.</span><span>
+</span><span id="line-114"></span><span class="hs-comment">--</span><span>
+</span><span id="line-115"></span><span class="hs-comment">-- ==== __Examples__</span><span>
+</span><span id="line-116"></span><span class="hs-comment">--</span><span>
+</span><span id="line-117"></span><span class="hs-comment">-- &gt;&gt;&gt; unsafeParseFormula &quot;(a =&gt; b) =&gt; c&quot;</span><span>
+</span><span id="line-118"></span><span class="hs-comment">-- Imp (Imp (Var &quot;a&quot;) (Var &quot;b&quot;)) (Var &quot;c&quot;)</span><span>
+</span><span id="line-119"></span><span class="annot"><a href="AutoProof.Parser.html#unsafeParseFormula"><span class="hs-identifier hs-type">unsafeParseFormula</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-120"></span><span id="unsafeParseFormula"><span class="annot"><span class="annottext">unsafeParseFormula :: String -&gt; Formula String
+</span><a href="AutoProof.Parser.html#unsafeParseFormula"><span class="hs-identifier hs-var hs-var">unsafeParseFormula</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Formula String -&gt; Maybe (Formula String) -&gt; Formula String
+forall a. a -&gt; Maybe a -&gt; a
+</span><span class="hs-identifier hs-var">fromMaybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Formula String
+forall a. HasCallStack =&gt; String -&gt; a
+</span><span class="hs-identifier hs-var">error</span></span><span> </span><span class="annot"><span class="hs-string">&quot;Parse error&quot;</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Maybe (Formula String) -&gt; Formula String)
+-&gt; (String -&gt; Maybe (Formula String)) -&gt; String -&gt; Formula String
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe (Formula String)
+</span><a href="AutoProof.Parser.html#parseFormula"><span class="hs-identifier hs-var">parseFormula</span></a></span><span>
+</span><span id="line-121"></span><span>
+</span><span id="line-122"></span><span class="hs-comment">-- | @(unsafeParseJudgement s)@ parses a string @s@ as a propositional</span><span>
+</span><span id="line-123"></span><span class="hs-comment">-- judgement, returning the parsed judgement on success, and throwing an error</span><span>
+</span><span id="line-124"></span><span class="hs-comment">-- on failure.</span><span>
+</span><span id="line-125"></span><span class="hs-comment">--</span><span>
+</span><span id="line-126"></span><span class="hs-comment">-- See 'parseJudgement' for the specification of valid judgements.</span><span>
+</span><span id="line-127"></span><span class="hs-comment">--</span><span>
+</span><span id="line-128"></span><span class="hs-comment">-- ==== __Examples__</span><span>
+</span><span id="line-129"></span><span class="hs-comment">--</span><span>
+</span><span id="line-130"></span><span class="hs-comment">-- &gt;&gt;&gt; unsafeParseJudgement &quot;a, b |- a -&gt; b&quot;</span><span>
+</span><span id="line-131"></span><span class="hs-comment">-- [Var &quot;a&quot;,Var &quot;b&quot;] |- Imp (Var &quot;a&quot;) (Var &quot;b&quot;)</span><span>
+</span><span id="line-132"></span><span class="hs-comment">--</span><span>
+</span><span id="line-133"></span><span class="hs-comment">-- &gt;&gt;&gt; unsafeParseJudgement &quot;a &amp; b |- a&quot;</span><span>
+</span><span id="line-134"></span><span class="hs-comment">-- [And (Var &quot;a&quot;) (Var &quot;b&quot;)] |- Var &quot;a&quot;</span><span>
+</span><span id="line-135"></span><span class="annot"><a href="AutoProof.Parser.html#unsafeParseJudgement"><span class="hs-identifier hs-type">unsafeParseJudgement</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.Judgement.html#Judgement"><span class="hs-identifier hs-type">Judgement</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-136"></span><span id="unsafeParseJudgement"><span class="annot"><span class="annottext">unsafeParseJudgement :: String -&gt; Judgement String
+</span><a href="AutoProof.Parser.html#unsafeParseJudgement"><span class="hs-identifier hs-var hs-var">unsafeParseJudgement</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Judgement String -&gt; Maybe (Judgement String) -&gt; Judgement String
+forall a. a -&gt; Maybe a -&gt; a
+</span><span class="hs-identifier hs-var">fromMaybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Judgement String
+forall a. HasCallStack =&gt; String -&gt; a
+</span><span class="hs-identifier hs-var">error</span></span><span> </span><span class="annot"><span class="hs-string">&quot;Parse error&quot;</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Maybe (Judgement String) -&gt; Judgement String)
+-&gt; (String -&gt; Maybe (Judgement String))
+-&gt; String
+-&gt; Judgement String
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe (Judgement String)
+</span><a href="AutoProof.Parser.html#parseJudgement"><span class="hs-identifier hs-var">parseJudgement</span></a></span><span>
+</span><span id="line-137"></span><span>
+</span><span id="line-138"></span><span class="hs-comment">-- Top-level parsers</span><span>
+</span><span id="line-139"></span><span>
+</span><span id="line-140"></span><span class="annot"><a href="AutoProof.Parser.html#formula"><span class="hs-identifier hs-type">formula</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-141"></span><span id="formula"><span class="annot"><span class="annottext">formula :: Parser (Formula String)
+</span><a href="AutoProof.Parser.html#formula"><span class="hs-identifier hs-var hs-var">formula</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser (Formula String) -&gt; Parser (Formula String)
+forall a. Parser a -&gt; Parser a
+</span><a href="AutoProof.Parser.html#padded"><span class="hs-identifier hs-var">padded</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#implication"><span class="hs-identifier hs-var">implication</span></a></span><span>
+</span><span id="line-142"></span><span>
+</span><span id="line-143"></span><span class="annot"><a href="AutoProof.Parser.html#context"><span class="hs-identifier hs-type">context</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">]</span><span>
+</span><span id="line-144"></span><span id="context"><span class="annot"><span class="annottext">context :: Parser [Formula String]
+</span><a href="AutoProof.Parser.html#context"><span class="hs-identifier hs-var hs-var">context</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#formula"><span class="hs-identifier hs-var">formula</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String) -&gt; Parser Char -&gt; Parser [Formula String]
+forall a b. Parser a -&gt; Parser b -&gt; Parser [a]
+</span><a href="AutoProof.Utils.Parser.Combinator.html#sepBy"><span class="hs-operator hs-var">`sepBy`</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Parser Char
+</span><a href="AutoProof.Utils.Parser.Char.html#char"><span class="hs-identifier hs-var">char</span></a></span><span> </span><span class="annot"><span class="hs-char">','</span></span><span>
+</span><span id="line-145"></span><span>
+</span><span id="line-146"></span><span class="annot"><a href="AutoProof.Parser.html#judgement"><span class="hs-identifier hs-type">judgement</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Judgement.html#Judgement"><span class="hs-identifier hs-type">Judgement</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-147"></span><span id="judgement"><span class="annot"><span class="annottext">judgement :: Parser (Judgement String)
+</span><a href="AutoProof.Parser.html#judgement"><span class="hs-identifier hs-var hs-var">judgement</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Formula String] -&gt; Formula String -&gt; Judgement String
+forall a (f :: * -&gt; *).
+(Ord a, Foldable f) =&gt;
+f (Formula a) -&gt; Formula a -&gt; Judgement a
+</span><a href="AutoProof.Judgement.html#%7C-"><span class="hs-operator hs-var">(|-)</span></a></span><span> </span><span class="annot"><span class="annottext">([Formula String] -&gt; Formula String -&gt; Judgement String)
+-&gt; Parser [Formula String]
+-&gt; Parser (Formula String -&gt; Judgement String)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser [Formula String]
+</span><a href="AutoProof.Parser.html#context"><span class="hs-identifier hs-var">context</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String -&gt; Judgement String)
+-&gt; Parser (Formula String) -&gt; Parser (Judgement String)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser String
+</span><a href="AutoProof.Utils.Parser.Char.html#spaces"><span class="hs-identifier hs-var">spaces</span></a></span><span> </span><span class="annot"><span class="annottext">Parser String -&gt; Parser String -&gt; Parser String
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b -&gt; f b
+</span><span class="hs-operator hs-var">*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser String
+</span><a href="AutoProof.Parser.html#turnstileS"><span class="hs-identifier hs-var">turnstileS</span></a></span><span> </span><span class="annot"><span class="annottext">Parser String -&gt; Parser (Formula String) -&gt; Parser (Formula String)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b -&gt; f b
+</span><span class="hs-operator hs-var">*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#formula"><span class="hs-identifier hs-var">formula</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-148"></span><span>
+</span><span id="line-149"></span><span class="hs-comment">-- Special symbols</span><span>
+</span><span id="line-150"></span><span>
+</span><span id="line-151"></span><span class="hs-comment">-- Generate a parser out of a collection of strings. The parser will parse any</span><span>
+</span><span id="line-152"></span><span class="hs-comment">-- one of the given strings.</span><span>
+</span><span id="line-153"></span><span class="annot"><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-type">symbol</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-154"></span><span id="symbol"><span class="annot"><span class="annottext">symbol :: [String] -&gt; Parser String
+</span><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-var hs-var">symbol</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser String
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a
+</span><span class="hs-identifier hs-var">empty</span></span><span>
+</span><span id="line-155"></span><span class="annot"><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-var">symbol</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679063901"><span class="annot"><span class="annottext">c :: String
+</span><a href="#local-6989586621679063901"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679063900"><span class="annot"><span class="annottext">cs :: [String]
+</span><a href="#local-6989586621679063900"><span class="hs-identifier hs-var">cs</span></a></span></span><span class="hs-special">)</span><span>
+</span><span id="line-156"></span><span>  </span><span class="hs-comment">-- Special case needed to handle the turnstile symbol &quot;|-&quot; separately from the</span><span>
+</span><span id="line-157"></span><span>  </span><span class="hs-comment">-- disjunction symbol &quot;|&quot;.</span><span>
+</span><span id="line-158"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679063901"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="hs-string">&quot;|&quot;</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Parser String
+</span><a href="AutoProof.Utils.Parser.Char.html#string"><span class="hs-identifier hs-var">string</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;|&quot;</span></span><span> </span><span class="annot"><span class="annottext">Parser String -&gt; Parser () -&gt; Parser String
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b -&gt; f a
+</span><span class="hs-operator hs-var">&lt;*</span></span><span> </span><span class="annot"><span class="annottext">Parser Char -&gt; Parser ()
+forall a. Parser a -&gt; Parser ()
+</span><a href="AutoProof.Utils.Parser.Combinator.html#notFollowedBy"><span class="hs-identifier hs-var">notFollowedBy</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Parser Char
+</span><a href="AutoProof.Utils.Parser.Char.html#char"><span class="hs-identifier hs-var">char</span></a></span><span> </span><span class="annot"><span class="hs-char">'-'</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Parser String -&gt; Parser String -&gt; Parser String
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">[String] -&gt; Parser String
+</span><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-var">symbol</span></a></span><span> </span><span class="annot"><span class="annottext">[String]
+</span><a href="#local-6989586621679063900"><span class="hs-identifier hs-var">cs</span></a></span><span>
+</span><span id="line-159"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Parser String
+</span><a href="AutoProof.Utils.Parser.Char.html#string"><span class="hs-identifier hs-var">string</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679063901"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Parser String -&gt; Parser String -&gt; Parser String
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">[String] -&gt; Parser String
+</span><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-var">symbol</span></a></span><span> </span><span class="annot"><span class="annottext">[String]
+</span><a href="#local-6989586621679063900"><span class="hs-identifier hs-var">cs</span></a></span><span>
+</span><span id="line-160"></span><span>
+</span><span id="line-161"></span><span class="annot"><a href="AutoProof.Parser.html#impS"><span class="hs-identifier hs-type">impS</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-162"></span><span id="impS"><span class="annot"><span class="annottext">impS :: Parser String
+</span><a href="AutoProof.Parser.html#impS"><span class="hs-identifier hs-var hs-var">impS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String] -&gt; Parser String
+</span><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-var">symbol</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-string">&quot;-&gt;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;=&gt;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;&#8594;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;&#8702;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;&#8658;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;&#8835;&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-163"></span><span>
+</span><span id="line-164"></span><span class="annot"><a href="AutoProof.Parser.html#iffS"><span class="hs-identifier hs-type">iffS</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-165"></span><span id="iffS"><span class="annot"><span class="annottext">iffS :: Parser String
+</span><a href="AutoProof.Parser.html#iffS"><span class="hs-identifier hs-var hs-var">iffS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String] -&gt; Parser String
+</span><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-var">symbol</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-string">&quot;&lt;-&gt;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;&#8596;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;&#8703;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;&#8660;&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-166"></span><span>
+</span><span id="line-167"></span><span class="annot"><a href="AutoProof.Parser.html#andS"><span class="hs-identifier hs-type">andS</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-168"></span><span id="andS"><span class="annot"><span class="annottext">andS :: Parser String
+</span><a href="AutoProof.Parser.html#andS"><span class="hs-identifier hs-var hs-var">andS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String] -&gt; Parser String
+</span><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-var">symbol</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-string">&quot;&amp;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;^&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;&#8743;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;/\\&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;*&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-169"></span><span>
+</span><span id="line-170"></span><span class="annot"><a href="AutoProof.Parser.html#orS"><span class="hs-identifier hs-type">orS</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-171"></span><span id="orS"><span class="annot"><span class="annottext">orS :: Parser String
+</span><a href="AutoProof.Parser.html#orS"><span class="hs-identifier hs-var hs-var">orS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String] -&gt; Parser String
+</span><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-var">symbol</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-string">&quot;|&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;&#8744;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;\\/&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;+&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-172"></span><span>
+</span><span id="line-173"></span><span class="annot"><a href="AutoProof.Parser.html#notS"><span class="hs-identifier hs-type">notS</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-174"></span><span id="notS"><span class="annot"><span class="annottext">notS :: Parser String
+</span><a href="AutoProof.Parser.html#notS"><span class="hs-identifier hs-var hs-var">notS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String] -&gt; Parser String
+</span><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-var">symbol</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-string">&quot;~&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;&#172;&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-175"></span><span>
+</span><span id="line-176"></span><span class="annot"><a href="AutoProof.Parser.html#falseS"><span class="hs-identifier hs-type">falseS</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-177"></span><span id="falseS"><span class="annot"><span class="annottext">falseS :: Parser String
+</span><a href="AutoProof.Parser.html#falseS"><span class="hs-identifier hs-var hs-var">falseS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String] -&gt; Parser String
+</span><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-var">symbol</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-string">&quot;&#8869;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;false&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-178"></span><span>
+</span><span id="line-179"></span><span class="annot"><a href="AutoProof.Parser.html#trueS"><span class="hs-identifier hs-type">trueS</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-180"></span><span id="trueS"><span class="annot"><span class="annottext">trueS :: Parser String
+</span><a href="AutoProof.Parser.html#trueS"><span class="hs-identifier hs-var hs-var">trueS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String] -&gt; Parser String
+</span><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-var">symbol</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-string">&quot;&#8868;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;true&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-181"></span><span>
+</span><span id="line-182"></span><span class="annot"><a href="AutoProof.Parser.html#turnstileS"><span class="hs-identifier hs-type">turnstileS</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-183"></span><span id="turnstileS"><span class="annot"><span class="annottext">turnstileS :: Parser String
+</span><a href="AutoProof.Parser.html#turnstileS"><span class="hs-identifier hs-var hs-var">turnstileS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String] -&gt; Parser String
+</span><a href="AutoProof.Parser.html#symbol"><span class="hs-identifier hs-var">symbol</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-string">&quot;|-&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-string">&quot;&#8866;&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-184"></span><span>
+</span><span id="line-185"></span><span class="hs-comment">-- Propositional formula components</span><span>
+</span><span id="line-186"></span><span>
+</span><span id="line-187"></span><span class="hs-comment">-- Right-associative nested implications</span><span>
+</span><span id="line-188"></span><span class="annot"><a href="AutoProof.Parser.html#implication"><span class="hs-identifier hs-type">implication</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-189"></span><span id="implication"><span class="annot"><span class="annottext">implication :: Parser (Formula String)
+</span><a href="AutoProof.Parser.html#implication"><span class="hs-identifier hs-var hs-var">implication</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+-&gt; Parser (Formula String -&gt; Formula String -&gt; Formula String)
+-&gt; Parser (Formula String)
+forall a. Parser a -&gt; Parser (a -&gt; a -&gt; a) -&gt; Parser a
+</span><a href="AutoProof.Utils.Parser.Combinator.html#chainr1"><span class="hs-identifier hs-var">chainr1</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#equivalence"><span class="hs-identifier hs-var">equivalence</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser (Formula String -&gt; Formula String -&gt; Formula String)
+-&gt; Parser (Formula String -&gt; Formula String -&gt; Formula String)
+forall a. Parser a -&gt; Parser a
+</span><a href="AutoProof.Parser.html#padded"><span class="hs-identifier hs-var">padded</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula String -&gt; Formula String -&gt; Formula String
+forall a. Formula a -&gt; Formula a -&gt; Formula a
+</span><a href="AutoProof.Formula.Types.html#Imp"><span class="hs-identifier hs-var">Imp</span></a></span><span> </span><span class="annot"><span class="annottext">(Formula String -&gt; Formula String -&gt; Formula String)
+-&gt; Parser String
+-&gt; Parser (Formula String -&gt; Formula String -&gt; Formula String)
+forall (f :: * -&gt; *) a b. Functor f =&gt; a -&gt; f b -&gt; f a
+</span><span class="hs-operator hs-var">&lt;$</span></span><span> </span><span class="annot"><span class="annottext">Parser String
+</span><a href="AutoProof.Parser.html#impS"><span class="hs-identifier hs-var">impS</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-190"></span><span>
+</span><span id="line-191"></span><span class="hs-comment">-- Left-associative nested equivalences</span><span>
+</span><span id="line-192"></span><span class="annot"><a href="AutoProof.Parser.html#equivalence"><span class="hs-identifier hs-type">equivalence</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-193"></span><span id="equivalence"><span class="annot"><span class="annottext">equivalence :: Parser (Formula String)
+</span><a href="AutoProof.Parser.html#equivalence"><span class="hs-identifier hs-var hs-var">equivalence</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+-&gt; Parser (Formula String -&gt; Formula String -&gt; Formula String)
+-&gt; Parser (Formula String)
+forall a. Parser a -&gt; Parser (a -&gt; a -&gt; a) -&gt; Parser a
+</span><a href="AutoProof.Utils.Parser.Combinator.html#chainl1"><span class="hs-identifier hs-var">chainl1</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#disjunction"><span class="hs-identifier hs-var">disjunction</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser (Formula String -&gt; Formula String -&gt; Formula String)
+-&gt; Parser (Formula String -&gt; Formula String -&gt; Formula String)
+forall a. Parser a -&gt; Parser a
+</span><a href="AutoProof.Parser.html#padded"><span class="hs-identifier hs-var">padded</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula String -&gt; Formula String -&gt; Formula String
+forall a. Formula a -&gt; Formula a -&gt; Formula a
+</span><a href="AutoProof.Formula.Types.html#Iff"><span class="hs-identifier hs-var">Iff</span></a></span><span> </span><span class="annot"><span class="annottext">(Formula String -&gt; Formula String -&gt; Formula String)
+-&gt; Parser String
+-&gt; Parser (Formula String -&gt; Formula String -&gt; Formula String)
+forall (f :: * -&gt; *) a b. Functor f =&gt; a -&gt; f b -&gt; f a
+</span><span class="hs-operator hs-var">&lt;$</span></span><span> </span><span class="annot"><span class="annottext">Parser String
+</span><a href="AutoProof.Parser.html#iffS"><span class="hs-identifier hs-var">iffS</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-194"></span><span>
+</span><span id="line-195"></span><span class="hs-comment">-- Left-associative nested disjunctions</span><span>
+</span><span id="line-196"></span><span class="annot"><a href="AutoProof.Parser.html#disjunction"><span class="hs-identifier hs-type">disjunction</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-197"></span><span id="disjunction"><span class="annot"><span class="annottext">disjunction :: Parser (Formula String)
+</span><a href="AutoProof.Parser.html#disjunction"><span class="hs-identifier hs-var hs-var">disjunction</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+-&gt; Parser (Formula String -&gt; Formula String -&gt; Formula String)
+-&gt; Parser (Formula String)
+forall a. Parser a -&gt; Parser (a -&gt; a -&gt; a) -&gt; Parser a
+</span><a href="AutoProof.Utils.Parser.Combinator.html#chainl1"><span class="hs-identifier hs-var">chainl1</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#conjunction"><span class="hs-identifier hs-var">conjunction</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser (Formula String -&gt; Formula String -&gt; Formula String)
+-&gt; Parser (Formula String -&gt; Formula String -&gt; Formula String)
+forall a. Parser a -&gt; Parser a
+</span><a href="AutoProof.Parser.html#padded"><span class="hs-identifier hs-var">padded</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula String -&gt; Formula String -&gt; Formula String
+forall a. Formula a -&gt; Formula a -&gt; Formula a
+</span><a href="AutoProof.Formula.Types.html#Or"><span class="hs-identifier hs-var">Or</span></a></span><span> </span><span class="annot"><span class="annottext">(Formula String -&gt; Formula String -&gt; Formula String)
+-&gt; Parser String
+-&gt; Parser (Formula String -&gt; Formula String -&gt; Formula String)
+forall (f :: * -&gt; *) a b. Functor f =&gt; a -&gt; f b -&gt; f a
+</span><span class="hs-operator hs-var">&lt;$</span></span><span> </span><span class="annot"><span class="annottext">Parser String
+</span><a href="AutoProof.Parser.html#orS"><span class="hs-identifier hs-var">orS</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-198"></span><span>
+</span><span id="line-199"></span><span class="hs-comment">-- Left-associative nested conjunctions</span><span>
+</span><span id="line-200"></span><span class="annot"><a href="AutoProof.Parser.html#conjunction"><span class="hs-identifier hs-type">conjunction</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-201"></span><span id="conjunction"><span class="annot"><span class="annottext">conjunction :: Parser (Formula String)
+</span><a href="AutoProof.Parser.html#conjunction"><span class="hs-identifier hs-var hs-var">conjunction</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+-&gt; Parser (Formula String -&gt; Formula String -&gt; Formula String)
+-&gt; Parser (Formula String)
+forall a. Parser a -&gt; Parser (a -&gt; a -&gt; a) -&gt; Parser a
+</span><a href="AutoProof.Utils.Parser.Combinator.html#chainl1"><span class="hs-identifier hs-var">chainl1</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#negation"><span class="hs-identifier hs-var">negation</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser (Formula String -&gt; Formula String -&gt; Formula String)
+-&gt; Parser (Formula String -&gt; Formula String -&gt; Formula String)
+forall a. Parser a -&gt; Parser a
+</span><a href="AutoProof.Parser.html#padded"><span class="hs-identifier hs-var">padded</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula String -&gt; Formula String -&gt; Formula String
+forall a. Formula a -&gt; Formula a -&gt; Formula a
+</span><a href="AutoProof.Formula.Types.html#And"><span class="hs-identifier hs-var">And</span></a></span><span> </span><span class="annot"><span class="annottext">(Formula String -&gt; Formula String -&gt; Formula String)
+-&gt; Parser String
+-&gt; Parser (Formula String -&gt; Formula String -&gt; Formula String)
+forall (f :: * -&gt; *) a b. Functor f =&gt; a -&gt; f b -&gt; f a
+</span><span class="hs-operator hs-var">&lt;$</span></span><span> </span><span class="annot"><span class="annottext">Parser String
+</span><a href="AutoProof.Parser.html#andS"><span class="hs-identifier hs-var">andS</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-202"></span><span>
+</span><span id="line-203"></span><span class="hs-comment">-- Zero or more consecutive negations</span><span>
+</span><span id="line-204"></span><span class="annot"><a href="AutoProof.Parser.html#negation"><span class="hs-identifier hs-type">negation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-205"></span><span id="negation"><span class="annot"><span class="annottext">negation :: Parser (Formula String)
+</span><a href="AutoProof.Parser.html#negation"><span class="hs-identifier hs-var hs-var">negation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser String
+</span><a href="AutoProof.Utils.Parser.Char.html#spaces"><span class="hs-identifier hs-var">spaces</span></a></span><span> </span><span class="annot"><span class="annottext">Parser String -&gt; Parser (Formula String) -&gt; Parser (Formula String)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b -&gt; f b
+</span><span class="hs-operator hs-var">*&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">((Formula String -&gt; Formula String)
+ -&gt; (Formula String -&gt; Formula String)
+ -&gt; Formula String
+ -&gt; Formula String)
+-&gt; (Formula String -&gt; Formula String)
+-&gt; [Formula String -&gt; Formula String]
+-&gt; Formula String
+-&gt; Formula String
+forall (t :: * -&gt; *) b a.
+Foldable t =&gt;
+(b -&gt; a -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><span class="hs-identifier hs-var">foldl</span></span><span> </span><span class="annot"><span class="annottext">(Formula String -&gt; Formula String)
+-&gt; (Formula String -&gt; Formula String)
+-&gt; Formula String
+-&gt; Formula String
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">(.)</span></span><span> </span><span class="annot"><span class="annottext">Formula String -&gt; Formula String
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span> </span><span class="annot"><span class="annottext">([Formula String -&gt; Formula String]
+ -&gt; Formula String -&gt; Formula String)
+-&gt; Parser [Formula String -&gt; Formula String]
+-&gt; Parser (Formula String -&gt; Formula String)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String -&gt; Formula String)
+-&gt; Parser [Formula String -&gt; Formula String]
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f [a]
+</span><span class="hs-identifier hs-var">many</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula String -&gt; Formula String
+forall a. Formula a -&gt; Formula a
+</span><a href="AutoProof.Formula.Types.html#Not"><span class="hs-identifier hs-var">Not</span></a></span><span> </span><span class="annot"><span class="annottext">(Formula String -&gt; Formula String)
+-&gt; Parser String -&gt; Parser (Formula String -&gt; Formula String)
+forall (f :: * -&gt; *) a b. Functor f =&gt; a -&gt; f b -&gt; f a
+</span><span class="hs-operator hs-var">&lt;$</span></span><span> </span><span class="annot"><span class="annottext">Parser String
+</span><a href="AutoProof.Parser.html#notS"><span class="hs-identifier hs-var">notS</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Parser (Formula String -&gt; Formula String)
+-&gt; Parser (Formula String) -&gt; Parser (Formula String)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#atom"><span class="hs-identifier hs-var">atom</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-206"></span><span>
+</span><span id="line-207"></span><span class="annot"><a href="AutoProof.Parser.html#atom"><span class="hs-identifier hs-type">atom</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-208"></span><span id="atom"><span class="annot"><span class="annottext">atom :: Parser (Formula String)
+</span><a href="AutoProof.Parser.html#atom"><span class="hs-identifier hs-var hs-var">atom</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser (Formula String) -&gt; Parser (Formula String)
+forall a. Parser a -&gt; Parser a
+</span><a href="AutoProof.Parser.html#enclosed"><span class="hs-identifier hs-var">enclosed</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#formula"><span class="hs-identifier hs-var">formula</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+-&gt; Parser (Formula String) -&gt; Parser (Formula String)
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#false"><span class="hs-identifier hs-var">false</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+-&gt; Parser (Formula String) -&gt; Parser (Formula String)
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#true"><span class="hs-identifier hs-var">true</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+-&gt; Parser (Formula String) -&gt; Parser (Formula String)
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser (Formula String)
+</span><a href="AutoProof.Parser.html#variable"><span class="hs-identifier hs-var">variable</span></a></span><span>
+</span><span id="line-209"></span><span>
+</span><span id="line-210"></span><span class="annot"><a href="AutoProof.Parser.html#false"><span class="hs-identifier hs-type">false</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-211"></span><span id="false"><span class="annot"><span class="annottext">false :: Parser (Formula String)
+</span><a href="AutoProof.Parser.html#false"><span class="hs-identifier hs-var hs-var">false</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Formula String
+forall a. Bool -&gt; Formula a
+</span><a href="AutoProof.Formula.Types.html#Lit"><span class="hs-identifier hs-var">Lit</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">Formula String -&gt; Parser String -&gt; Parser (Formula String)
+forall (f :: * -&gt; *) a b. Functor f =&gt; a -&gt; f b -&gt; f a
+</span><span class="hs-operator hs-var">&lt;$</span></span><span> </span><span class="annot"><span class="annottext">Parser String
+</span><a href="AutoProof.Parser.html#falseS"><span class="hs-identifier hs-var">falseS</span></a></span><span>
+</span><span id="line-212"></span><span>
+</span><span id="line-213"></span><span class="annot"><a href="AutoProof.Parser.html#true"><span class="hs-identifier hs-type">true</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-214"></span><span id="true"><span class="annot"><span class="annottext">true :: Parser (Formula String)
+</span><a href="AutoProof.Parser.html#true"><span class="hs-identifier hs-var hs-var">true</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Formula String
+forall a. Bool -&gt; Formula a
+</span><a href="AutoProof.Formula.Types.html#Lit"><span class="hs-identifier hs-var">Lit</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">Formula String -&gt; Parser String -&gt; Parser (Formula String)
+forall (f :: * -&gt; *) a b. Functor f =&gt; a -&gt; f b -&gt; f a
+</span><span class="hs-operator hs-var">&lt;$</span></span><span> </span><span class="annot"><span class="annottext">Parser String
+</span><a href="AutoProof.Parser.html#trueS"><span class="hs-identifier hs-var">trueS</span></a></span><span>
+</span><span id="line-215"></span><span>
+</span><span id="line-216"></span><span class="annot"><a href="AutoProof.Parser.html#variable"><span class="hs-identifier hs-type">variable</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-217"></span><span id="variable"><span class="annot"><span class="annottext">variable :: Parser (Formula String)
+</span><a href="AutoProof.Parser.html#variable"><span class="hs-identifier hs-var hs-var">variable</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Formula String
+forall a. a -&gt; Formula a
+</span><a href="AutoProof.Formula.Types.html#Var"><span class="hs-identifier hs-var">Var</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Formula String)
+-&gt; Parser String -&gt; Parser (Formula String)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser String
+</span><a href="#local-6989586621679063880"><span class="hs-identifier hs-var">name</span></a></span><span>
+</span><span id="line-218"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-219"></span><span>    </span><span id="local-6989586621679063880"><span class="annot"><span class="annottext">name :: Parser String
+</span><a href="#local-6989586621679063880"><span class="hs-identifier hs-var hs-var">name</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-glyph">:</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; String -&gt; String)
+-&gt; Parser Char -&gt; Parser (String -&gt; String)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser Char
+</span><a href="#local-6989586621679063879"><span class="hs-identifier hs-var">nameStart</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (String -&gt; String) -&gt; Parser String -&gt; Parser String
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser Char -&gt; Parser String
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f [a]
+</span><span class="hs-identifier hs-var">many</span></span><span> </span><span class="annot"><span class="annottext">Parser Char
+</span><a href="#local-6989586621679063878"><span class="hs-identifier hs-var">nameChar</span></a></span><span>
+</span><span id="line-220"></span><span>    </span><span id="local-6989586621679063879"><span class="annot"><span class="annottext">nameStart :: Parser Char
+</span><a href="#local-6989586621679063879"><span class="hs-identifier hs-var hs-var">nameStart</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Parser Char
+</span><a href="AutoProof.Utils.Parser.Char.html#oneOf"><span class="hs-identifier hs-var">oneOf</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Parser Char) -&gt; String -&gt; Parser Char
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; String -&gt; String
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-char">'a'</span></span><span> </span><span class="hs-glyph">..</span><span> </span><span class="annot"><span class="hs-char">'z'</span></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-char">'A'</span></span><span> </span><span class="hs-glyph">..</span><span> </span><span class="annot"><span class="hs-char">'Z'</span></span><span class="hs-special">]</span><span>
+</span><span id="line-221"></span><span>    </span><span id="local-6989586621679063878"><span class="annot"><span class="annottext">nameChar :: Parser Char
+</span><a href="#local-6989586621679063878"><span class="hs-identifier hs-var hs-var">nameChar</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser Char
+</span><a href="#local-6989586621679063879"><span class="hs-identifier hs-var">nameStart</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Char -&gt; Parser Char -&gt; Parser Char
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Parser Char
+</span><a href="AutoProof.Utils.Parser.Char.html#oneOf"><span class="hs-identifier hs-var">oneOf</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-char">'\''</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; String -&gt; String
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-char">'0'</span></span><span> </span><span class="hs-glyph">..</span><span> </span><span class="annot"><span class="hs-char">'9'</span></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-222"></span><span>
+</span><span id="line-223"></span><span class="hs-comment">-- Helper functions</span><span>
+</span><span id="line-224"></span><span>
+</span><span id="line-225"></span><span id="local-6989586621679063980"><span class="annot"><a href="AutoProof.Parser.html#padded"><span class="hs-identifier hs-type">padded</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679063980"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679063980"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-226"></span><span id="padded"><span class="annot"><span class="annottext">padded :: Parser a -&gt; Parser a
+</span><a href="AutoProof.Parser.html#padded"><span class="hs-identifier hs-var hs-var">padded</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser String -&gt; Parser String -&gt; Parser a -&gt; Parser a
+forall b c a. Parser b -&gt; Parser c -&gt; Parser a -&gt; Parser a
+</span><a href="AutoProof.Utils.Parser.Combinator.html#between"><span class="hs-identifier hs-var">between</span></a></span><span> </span><span class="annot"><span class="annottext">Parser String
+</span><a href="AutoProof.Utils.Parser.Char.html#spaces"><span class="hs-identifier hs-var">spaces</span></a></span><span> </span><span class="annot"><span class="annottext">Parser String
+</span><a href="AutoProof.Utils.Parser.Char.html#spaces"><span class="hs-identifier hs-var">spaces</span></a></span><span>
+</span><span id="line-227"></span><span>
+</span><span id="line-228"></span><span id="local-6989586621679063877"><span class="annot"><a href="AutoProof.Parser.html#enclosed"><span class="hs-identifier hs-type">enclosed</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679063877"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679063877"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-229"></span><span id="enclosed"><span class="annot"><span class="annottext">enclosed :: Parser a -&gt; Parser a
+</span><a href="AutoProof.Parser.html#enclosed"><span class="hs-identifier hs-var hs-var">enclosed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser Char -&gt; Parser Char -&gt; Parser a -&gt; Parser a
+forall b c a. Parser b -&gt; Parser c -&gt; Parser a -&gt; Parser a
+</span><a href="AutoProof.Utils.Parser.Combinator.html#between"><span class="hs-identifier hs-var">between</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Parser Char
+</span><a href="AutoProof.Utils.Parser.Char.html#char"><span class="hs-identifier hs-var">char</span></a></span><span> </span><span class="annot"><span class="hs-char">'('</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Parser Char
+</span><a href="AutoProof.Utils.Parser.Char.html#char"><span class="hs-identifier hs-var">char</span></a></span><span> </span><span class="annot"><span class="hs-char">')'</span></span><span class="hs-special">)</span><span>
+</span><span id="line-230"></span></pre></body></html>

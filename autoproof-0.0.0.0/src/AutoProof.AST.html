@@ -1,0 +1,372 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- Module      : AutoProof.AST</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- Copyright   : (c) Artem Mavrin, 2021</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- License     : BSD3</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- Maintainer  : artemvmavrin@gmail.com</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Stability   : experimental</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- Portability : POSIX</span><span>
+</span><span id="line-10"></span><span class="hs-comment">--</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- Defines an abstract syntax tree class and related functions.</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">AutoProof.AST</span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Abstract syntax tree class and metadata type</span></span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="AutoProof.AST.html#AST"><span class="hs-identifier">AST</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.AST.html#Root"><span class="hs-identifier">Root</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.AST.html#root"><span class="hs-identifier">root</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.AST.html#children"><span class="hs-identifier">children</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.AST.html#height"><span class="hs-identifier">height</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.AST.html#size"><span class="hs-identifier">size</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.AST.html#metadata"><span class="hs-identifier">metadata</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier">ASTMetadata</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier">ASTMetadata</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.AST.html#getHeight"><span class="hs-identifier">getHeight</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.AST.html#getSize"><span class="hs-identifier">getSize</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><span class="hs-comment">-- * AST functions</span></span><span>
+</span><span id="line-18"></span><span>    </span><span class="annot"><a href="AutoProof.AST.html#subtrees"><span class="hs-identifier">subtrees</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><a href="AutoProof.AST.html#properSubtrees"><span class="hs-identifier">properSubtrees</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span>    </span><span class="annot"><span class="hs-comment">-- *  Helper functions for creating AST constructors</span></span><span>
+</span><span id="line-22"></span><span>    </span><span class="annot"><a href="AutoProof.AST.html#atomicASTConstructor"><span class="hs-identifier">atomicASTConstructor</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span class="annot"><a href="AutoProof.AST.html#unaryASTConstructor"><span class="hs-identifier">unaryASTConstructor</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span class="annot"><a href="AutoProof.AST.html#binaryASTConstructor"><span class="hs-identifier">binaryASTConstructor</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span class="annot"><a href="AutoProof.AST.html#unaryRootedASTConstructor"><span class="hs-identifier">unaryRootedASTConstructor</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span class="annot"><a href="AutoProof.AST.html#binaryRootedASTConstructor"><span class="hs-identifier">binaryRootedASTConstructor</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span class="annot"><a href="AutoProof.AST.html#ternaryRootedASTConstructor"><span class="hs-identifier">ternaryRootedASTConstructor</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Set</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Set</span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Set</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Set</span></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- | Container type for AST properties, intended for constant-time access.</span><span>
+</span><span id="line-35"></span><span class="hs-keyword">data</span><span> </span><span id="ASTMetadata"><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-var">ASTMetadata</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ASTMetadata"><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-var">ASTMetadata</span></a></span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="hs-comment">-- | Get an AST's height (see also 'height')</span><span>
+</span><span id="line-37"></span><span>    </span><span id="getHeight"><span class="annot"><span class="annottext">ASTMetadata -&gt; Int
+</span><a href="AutoProof.AST.html#getHeight"><span class="hs-identifier hs-var hs-var">getHeight</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-comment">-- | Get an AST's size (see also 'size')</span><span>
+</span><span id="line-39"></span><span>    </span><span id="getSize"><span class="annot"><span class="annottext">ASTMetadata -&gt; Int
+</span><a href="AutoProof.AST.html#getSize"><span class="hs-identifier hs-var hs-var">getSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679061238"><span id="local-6989586621679061240"><span class="annot"><span class="annottext">ASTMetadata -&gt; ASTMetadata -&gt; Bool
+(ASTMetadata -&gt; ASTMetadata -&gt; Bool)
+-&gt; (ASTMetadata -&gt; ASTMetadata -&gt; Bool) -&gt; Eq ASTMetadata
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: ASTMetadata -&gt; ASTMetadata -&gt; Bool
+$c/= :: ASTMetadata -&gt; ASTMetadata -&gt; Bool
+== :: ASTMetadata -&gt; ASTMetadata -&gt; Bool
+$c== :: ASTMetadata -&gt; ASTMetadata -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679061222"><span id="local-6989586621679061224"><span id="local-6989586621679061226"><span id="local-6989586621679061228"><span id="local-6989586621679061230"><span id="local-6989586621679061232"><span id="local-6989586621679061234"><span class="annot"><span class="annottext">Eq ASTMetadata
+Eq ASTMetadata =&gt;
+(ASTMetadata -&gt; ASTMetadata -&gt; Ordering)
+-&gt; (ASTMetadata -&gt; ASTMetadata -&gt; Bool)
+-&gt; (ASTMetadata -&gt; ASTMetadata -&gt; Bool)
+-&gt; (ASTMetadata -&gt; ASTMetadata -&gt; Bool)
+-&gt; (ASTMetadata -&gt; ASTMetadata -&gt; Bool)
+-&gt; (ASTMetadata -&gt; ASTMetadata -&gt; ASTMetadata)
+-&gt; (ASTMetadata -&gt; ASTMetadata -&gt; ASTMetadata)
+-&gt; Ord ASTMetadata
+ASTMetadata -&gt; ASTMetadata -&gt; Bool
+ASTMetadata -&gt; ASTMetadata -&gt; Ordering
+ASTMetadata -&gt; ASTMetadata -&gt; ASTMetadata
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+min :: ASTMetadata -&gt; ASTMetadata -&gt; ASTMetadata
+$cmin :: ASTMetadata -&gt; ASTMetadata -&gt; ASTMetadata
+max :: ASTMetadata -&gt; ASTMetadata -&gt; ASTMetadata
+$cmax :: ASTMetadata -&gt; ASTMetadata -&gt; ASTMetadata
+&gt;= :: ASTMetadata -&gt; ASTMetadata -&gt; Bool
+$c&gt;= :: ASTMetadata -&gt; ASTMetadata -&gt; Bool
+&gt; :: ASTMetadata -&gt; ASTMetadata -&gt; Bool
+$c&gt; :: ASTMetadata -&gt; ASTMetadata -&gt; Bool
+&lt;= :: ASTMetadata -&gt; ASTMetadata -&gt; Bool
+$c&lt;= :: ASTMetadata -&gt; ASTMetadata -&gt; Bool
+&lt; :: ASTMetadata -&gt; ASTMetadata -&gt; Bool
+$c&lt; :: ASTMetadata -&gt; ASTMetadata -&gt; Bool
+compare :: ASTMetadata -&gt; ASTMetadata -&gt; Ordering
+$ccompare :: ASTMetadata -&gt; ASTMetadata -&gt; Ordering
+$cp1Ord :: Eq ASTMetadata
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-comment">-- | Abstract syntax tree class.</span><span>
+</span><span id="line-44"></span><span class="hs-keyword">class</span><span> </span><span id="AST"><span class="annot"><a href="AutoProof.AST.html#AST"><span class="hs-identifier hs-var">AST</span></a></span></span><span> </span><span id="local-6989586621679061289"><span class="annot"><a href="#local-6989586621679061289"><span class="hs-identifier hs-type">t</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-comment">-- | The type of the values annotating AST nodes.</span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">type</span><span> </span><span id="Root"><span class="annot"><a href="AutoProof.AST.html#Root"><span class="hs-identifier hs-var">Root</span></a></span></span><span> </span><span id="local-6989586621679061289"><span class="annot"><a href="#local-6989586621679061289"><span class="hs-identifier hs-type">t</span></a></span></span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-comment">-- | The value at the AST's root node.</span><span>
+</span><span id="line-49"></span><span>  </span><span id="root"><span class="annot"><a href="AutoProof.AST.html#root"><span class="hs-identifier hs-type">root</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679061289"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.AST.html#Root"><span class="hs-identifier hs-type">Root</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679061289"><span class="hs-identifier hs-type">t</span></a></span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-comment">-- | The AST's child ASTs.</span><span>
+</span><span id="line-52"></span><span>  </span><span id="children"><span class="annot"><a href="AutoProof.AST.html#children"><span class="hs-identifier hs-type">children</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679061289"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679061289"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-comment">-- | Number of edges on the longest path from the root of the AST to a leaf.</span><span>
+</span><span id="line-55"></span><span>  </span><span id="height"><span class="annot"><a href="AutoProof.AST.html#height"><span class="hs-identifier hs-type">height</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679061289"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-56"></span><span>  </span><span id="local-6989586621679061220"><span class="annot"><a href="AutoProof.AST.html#height"><span class="hs-identifier hs-var hs-var">height</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ASTMetadata -&gt; Int
+</span><a href="AutoProof.AST.html#getHeight"><span class="hs-identifier hs-var hs-var">getHeight</span></a></span><span> </span><span class="annot"><span class="annottext">(ASTMetadata -&gt; Int) -&gt; (t -&gt; ASTMetadata) -&gt; t -&gt; Int
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; ASTMetadata
+forall t. AST t =&gt; t -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#metadata"><span class="hs-identifier hs-var">metadata</span></a></span></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-comment">-- | Number of nodes in the AST.</span><span>
+</span><span id="line-59"></span><span>  </span><span id="size"><span class="annot"><a href="AutoProof.AST.html#size"><span class="hs-identifier hs-type">size</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679061289"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-60"></span><span>  </span><span id="local-6989586621679061218"><span class="annot"><a href="AutoProof.AST.html#size"><span class="hs-identifier hs-var hs-var">size</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ASTMetadata -&gt; Int
+</span><a href="AutoProof.AST.html#getSize"><span class="hs-identifier hs-var hs-var">getSize</span></a></span><span> </span><span class="annot"><span class="annottext">(ASTMetadata -&gt; Int) -&gt; (t -&gt; ASTMetadata) -&gt; t -&gt; Int
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; ASTMetadata
+forall t. AST t =&gt; t -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#metadata"><span class="hs-identifier hs-var">metadata</span></a></span></span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-comment">-- | The AST's metadata</span><span>
+</span><span id="line-63"></span><span>  </span><span id="metadata"><span class="annot"><a href="AutoProof.AST.html#metadata"><span class="hs-identifier hs-type">metadata</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679061289"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type">ASTMetadata</span></a></span><span>
+</span><span id="line-64"></span><span>  </span><span id="local-6989586621679061217"><span class="annot"><a href="AutoProof.AST.html#metadata"><span class="hs-identifier hs-var hs-var">metadata</span></a></span><span> </span><span id="local-6989586621679061216"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679061216"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ASTMetadata :: Int -&gt; Int -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type hs-type">ASTMetadata</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="annottext">getHeight :: Int
+</span><a href="AutoProof.AST.html#getHeight"><span class="hs-identifier hs-var">getHeight</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#height"><span class="hs-identifier hs-var">height</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061216"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">getSize :: Int
+</span><a href="AutoProof.AST.html#getSize"><span class="hs-identifier hs-var">getSize</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#size"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061216"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">}</span></span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-pragma">{-# MINIMAL</span><span> </span><span class="annot"><a href="AutoProof.AST.html#root"><span class="hs-pragma hs-type">root</span></a></span><span class="hs-pragma">,</span><span> </span><span class="annot"><a href="AutoProof.AST.html#children"><span class="hs-pragma hs-type">children</span></a></span><span class="hs-pragma">,</span><span> </span><span class="hs-pragma">(</span><span class="annot"><a href="AutoProof.AST.html#metadata"><span class="hs-pragma hs-type">metadata</span></a></span><span> </span><span class="hs-pragma">|</span><span> </span><span class="annot"><a href="AutoProof.AST.html#height"><span class="hs-pragma hs-type">height</span></a></span><span class="hs-pragma">,</span><span> </span><span class="annot"><a href="AutoProof.AST.html#size"><span class="hs-pragma hs-type">size</span></a></span><span class="hs-pragma">)</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span class="hs-comment">-- Helper functions for constructing ASTs</span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="hs-comment">-- | Helper function for creating metadata-aware ASTs.</span><span>
+</span><span id="line-71"></span><span id="local-6989586621679061213"><span id="local-6989586621679061214"><span class="annot"><a href="AutoProof.AST.html#atomicASTConstructor"><span class="hs-identifier hs-type">atomicASTConstructor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type">ASTMetadata</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061214"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061213"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061214"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061213"><span class="hs-identifier hs-type">t</span></a></span></span></span><span>
+</span><span id="line-72"></span><span id="atomicASTConstructor"><span class="annot"><span class="annottext">atomicASTConstructor :: (ASTMetadata -&gt; a -&gt; t) -&gt; a -&gt; t
+</span><a href="AutoProof.AST.html#atomicASTConstructor"><span class="hs-identifier hs-var hs-var">atomicASTConstructor</span></a></span></span><span> </span><span id="local-6989586621679061212"><span class="annot"><span class="annottext">g :: ASTMetadata -&gt; a -&gt; t
+</span><a href="#local-6989586621679061212"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ASTMetadata -&gt; a -&gt; t
+</span><a href="#local-6989586621679061212"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">ASTMetadata
+</span><a href="AutoProof.AST.html#atomicMetadata"><span class="hs-identifier hs-var">atomicMetadata</span></a></span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span class="hs-comment">-- | Helper function for creating metadata-aware ASTs.</span><span>
+</span><span id="line-75"></span><span id="local-6989586621679061210"><span class="annot"><a href="AutoProof.AST.html#unaryASTConstructor"><span class="hs-identifier hs-type">unaryASTConstructor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.AST.html#AST"><span class="hs-identifier hs-type">AST</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679061210"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type">ASTMetadata</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061210"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061210"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061210"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061210"><span class="hs-identifier hs-type">t</span></a></span></span><span>
+</span><span id="line-76"></span><span id="unaryASTConstructor"><span class="annot"><span class="annottext">unaryASTConstructor :: (ASTMetadata -&gt; t -&gt; t) -&gt; t -&gt; t
+</span><a href="AutoProof.AST.html#unaryASTConstructor"><span class="hs-identifier hs-var hs-var">unaryASTConstructor</span></a></span></span><span> </span><span id="local-6989586621679061209"><span class="annot"><span class="annottext">g :: ASTMetadata -&gt; t -&gt; t
+</span><a href="#local-6989586621679061209"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679061208"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679061208"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ASTMetadata -&gt; t -&gt; t
+</span><a href="#local-6989586621679061209"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; ASTMetadata
+forall t. AST t =&gt; t -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#unaryMetadata"><span class="hs-identifier hs-var">unaryMetadata</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061208"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061208"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="hs-comment">-- | Helper function for creating metadata-aware ASTs.</span><span>
+</span><span id="line-79"></span><span id="local-6989586621679061206"><span class="annot"><a href="AutoProof.AST.html#binaryASTConstructor"><span class="hs-identifier hs-type">binaryASTConstructor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.AST.html#AST"><span class="hs-identifier hs-type">AST</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679061206"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type">ASTMetadata</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061206"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061206"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061206"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061206"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061206"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061206"><span class="hs-identifier hs-type">t</span></a></span></span><span>
+</span><span id="line-80"></span><span id="binaryASTConstructor"><span class="annot"><span class="annottext">binaryASTConstructor :: (ASTMetadata -&gt; t -&gt; t -&gt; t) -&gt; t -&gt; t -&gt; t
+</span><a href="AutoProof.AST.html#binaryASTConstructor"><span class="hs-identifier hs-var hs-var">binaryASTConstructor</span></a></span></span><span> </span><span id="local-6989586621679061205"><span class="annot"><span class="annottext">g :: ASTMetadata -&gt; t -&gt; t -&gt; t
+</span><a href="#local-6989586621679061205"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679061204"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679061204"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span id="local-6989586621679061203"><span class="annot"><span class="annottext">u :: t
+</span><a href="#local-6989586621679061203"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ASTMetadata -&gt; t -&gt; t -&gt; t
+</span><a href="#local-6989586621679061205"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; t -&gt; ASTMetadata
+forall t. AST t =&gt; t -&gt; t -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#binaryMetadata"><span class="hs-identifier hs-var">binaryMetadata</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061204"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061203"><span class="hs-identifier hs-var">u</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061204"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061203"><span class="hs-identifier hs-var">u</span></a></span><span>
+</span><span id="line-81"></span><span>
+</span><span id="line-82"></span><span class="hs-comment">-- | Helper function for creating metadata-aware rooted ASTs.</span><span>
+</span><span id="line-83"></span><span id="local-6989586621679061200"><span id="local-6989586621679061201"><span class="annot"><a href="AutoProof.AST.html#unaryRootedASTConstructor"><span class="hs-identifier hs-type">unaryRootedASTConstructor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.AST.html#AST"><span class="hs-identifier hs-type">AST</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679061201"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type">ASTMetadata</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061200"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061201"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061201"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061200"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061201"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061201"><span class="hs-identifier hs-type">t</span></a></span></span></span><span>
+</span><span id="line-84"></span><span id="unaryRootedASTConstructor"><span class="annot"><span class="annottext">unaryRootedASTConstructor :: (ASTMetadata -&gt; a -&gt; t -&gt; t) -&gt; a -&gt; t -&gt; t
+</span><a href="AutoProof.AST.html#unaryRootedASTConstructor"><span class="hs-identifier hs-var hs-var">unaryRootedASTConstructor</span></a></span></span><span> </span><span id="local-6989586621679061199"><span class="annot"><span class="annottext">g :: ASTMetadata -&gt; a -&gt; t -&gt; t
+</span><a href="#local-6989586621679061199"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679061198"><span class="annot"><span class="annottext">a :: a
+</span><a href="#local-6989586621679061198"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679061197"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679061197"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ASTMetadata -&gt; a -&gt; t -&gt; t
+</span><a href="#local-6989586621679061199"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; ASTMetadata
+forall t. AST t =&gt; t -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#unaryMetadata"><span class="hs-identifier hs-var">unaryMetadata</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061197"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679061198"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061197"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span class="hs-comment">-- | Helper function for creating metadata-aware rooted ASTs.</span><span>
+</span><span id="line-87"></span><span id="local-6989586621679061195"><span id="local-6989586621679061196"><span class="annot"><a href="AutoProof.AST.html#binaryRootedASTConstructor"><span class="hs-identifier hs-type">binaryRootedASTConstructor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.AST.html#AST"><span class="hs-identifier hs-type">AST</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679061196"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type">ASTMetadata</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061195"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061196"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061196"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061196"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061195"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061196"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061196"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061196"><span class="hs-identifier hs-type">t</span></a></span></span></span><span>
+</span><span id="line-88"></span><span id="binaryRootedASTConstructor"><span class="annot"><span class="annottext">binaryRootedASTConstructor :: (ASTMetadata -&gt; a -&gt; t -&gt; t -&gt; t) -&gt; a -&gt; t -&gt; t -&gt; t
+</span><a href="AutoProof.AST.html#binaryRootedASTConstructor"><span class="hs-identifier hs-var hs-var">binaryRootedASTConstructor</span></a></span></span><span> </span><span id="local-6989586621679061194"><span class="annot"><span class="annottext">g :: ASTMetadata -&gt; a -&gt; t -&gt; t -&gt; t
+</span><a href="#local-6989586621679061194"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679061193"><span class="annot"><span class="annottext">a :: a
+</span><a href="#local-6989586621679061193"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679061192"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679061192"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span id="local-6989586621679061191"><span class="annot"><span class="annottext">u :: t
+</span><a href="#local-6989586621679061191"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ASTMetadata -&gt; a -&gt; t -&gt; t -&gt; t
+</span><a href="#local-6989586621679061194"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; t -&gt; ASTMetadata
+forall t. AST t =&gt; t -&gt; t -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#binaryMetadata"><span class="hs-identifier hs-var">binaryMetadata</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061192"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061191"><span class="hs-identifier hs-var">u</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679061193"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061192"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061191"><span class="hs-identifier hs-var">u</span></a></span><span>
+</span><span id="line-89"></span><span>
+</span><span id="line-90"></span><span class="hs-comment">-- | Helper function for creating metadata-aware rooted ASTs.</span><span>
+</span><span id="line-91"></span><span id="local-6989586621679061189"><span id="local-6989586621679061190"><span class="annot"><a href="AutoProof.AST.html#ternaryRootedASTConstructor"><span class="hs-identifier hs-type">ternaryRootedASTConstructor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.AST.html#AST"><span class="hs-identifier hs-type">AST</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679061190"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type">ASTMetadata</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061189"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061190"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061190"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061190"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061190"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061189"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061190"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061190"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061190"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061190"><span class="hs-identifier hs-type">t</span></a></span></span></span><span>
+</span><span id="line-92"></span><span id="ternaryRootedASTConstructor"><span class="annot"><span class="annottext">ternaryRootedASTConstructor :: (ASTMetadata -&gt; a -&gt; t -&gt; t -&gt; t -&gt; t) -&gt; a -&gt; t -&gt; t -&gt; t -&gt; t
+</span><a href="AutoProof.AST.html#ternaryRootedASTConstructor"><span class="hs-identifier hs-var hs-var">ternaryRootedASTConstructor</span></a></span></span><span> </span><span id="local-6989586621679061188"><span class="annot"><span class="annottext">g :: ASTMetadata -&gt; a -&gt; t -&gt; t -&gt; t -&gt; t
+</span><a href="#local-6989586621679061188"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679061187"><span class="annot"><span class="annottext">a :: a
+</span><a href="#local-6989586621679061187"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679061186"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679061186"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span id="local-6989586621679061185"><span class="annot"><span class="annottext">u :: t
+</span><a href="#local-6989586621679061185"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span id="local-6989586621679061184"><span class="annot"><span class="annottext">v :: t
+</span><a href="#local-6989586621679061184"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ASTMetadata -&gt; a -&gt; t -&gt; t -&gt; t -&gt; t
+</span><a href="#local-6989586621679061188"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; t -&gt; t -&gt; ASTMetadata
+forall t. AST t =&gt; t -&gt; t -&gt; t -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#ternaryMetadata"><span class="hs-identifier hs-var">ternaryMetadata</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061186"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061185"><span class="hs-identifier hs-var">u</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061184"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679061187"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061186"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061185"><span class="hs-identifier hs-var">u</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061184"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="hs-comment">-- Internal helper functions for computing metadata for new ASTs</span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span class="annot"><a href="AutoProof.AST.html#atomicMetadata"><span class="hs-identifier hs-type">atomicMetadata</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type">ASTMetadata</span></a></span><span>
+</span><span id="line-97"></span><span id="atomicMetadata"><span class="annot"><span class="annottext">atomicMetadata :: ASTMetadata
+</span><a href="AutoProof.AST.html#atomicMetadata"><span class="hs-identifier hs-var hs-var">atomicMetadata</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ASTMetadata :: Int -&gt; Int -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type hs-type">ASTMetadata</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="annottext">getHeight :: Int
+</span><a href="AutoProof.AST.html#getHeight"><span class="hs-identifier hs-var">getHeight</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">getSize :: Int
+</span><a href="AutoProof.AST.html#getSize"><span class="hs-identifier hs-var">getSize</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">}</span><span>
+</span><span id="line-98"></span><span>
+</span><span id="line-99"></span><span id="local-6989586621679061182"><span class="annot"><a href="AutoProof.AST.html#unaryMetadata"><span class="hs-identifier hs-type">unaryMetadata</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.AST.html#AST"><span class="hs-identifier hs-type">AST</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679061182"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061182"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type">ASTMetadata</span></a></span></span><span>
+</span><span id="line-100"></span><span id="unaryMetadata"><span class="annot"><span class="annottext">unaryMetadata :: t -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#unaryMetadata"><span class="hs-identifier hs-var hs-var">unaryMetadata</span></a></span></span><span> </span><span id="local-6989586621679061181"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679061181"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ASTMetadata :: Int -&gt; Int -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type hs-type">ASTMetadata</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="annottext">getHeight :: Int
+</span><a href="AutoProof.AST.html#getHeight"><span class="hs-identifier hs-var">getHeight</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#height"><span class="hs-identifier hs-var">height</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061181"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">getSize :: Int
+</span><a href="AutoProof.AST.html#getSize"><span class="hs-identifier hs-var">getSize</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#size"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061181"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-101"></span><span>
+</span><span id="line-102"></span><span id="local-6989586621679061280"><span class="annot"><a href="AutoProof.AST.html#binaryMetadata"><span class="hs-identifier hs-type">binaryMetadata</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.AST.html#AST"><span class="hs-identifier hs-type">AST</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679061280"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061280"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061280"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type">ASTMetadata</span></a></span></span><span>
+</span><span id="line-103"></span><span id="binaryMetadata"><span class="annot"><span class="annottext">binaryMetadata :: t -&gt; t -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#binaryMetadata"><span class="hs-identifier hs-var hs-var">binaryMetadata</span></a></span></span><span> </span><span id="local-6989586621679061179"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679061179"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span id="local-6989586621679061178"><span class="annot"><span class="annottext">u :: t
+</span><a href="#local-6989586621679061178"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-104"></span><span>  </span><span class="annot"><span class="annottext">ASTMetadata :: Int -&gt; Int -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type hs-type">ASTMetadata</span></a></span><span>
+</span><span id="line-105"></span><span>    </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">getHeight :: Int
+</span><a href="AutoProof.AST.html#getHeight"><span class="hs-identifier hs-var">getHeight</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">max</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#height"><span class="hs-identifier hs-var">height</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061179"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#height"><span class="hs-identifier hs-var">height</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061178"><span class="hs-identifier hs-var">u</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-106"></span><span>      </span><span class="annot"><span class="annottext">getSize :: Int
+</span><a href="AutoProof.AST.html#getSize"><span class="hs-identifier hs-var">getSize</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#size"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061179"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#size"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061178"><span class="hs-identifier hs-var">u</span></a></span><span>
+</span><span id="line-107"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-108"></span><span>
+</span><span id="line-109"></span><span id="local-6989586621679061273"><span class="annot"><a href="AutoProof.AST.html#ternaryMetadata"><span class="hs-identifier hs-type">ternaryMetadata</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.AST.html#AST"><span class="hs-identifier hs-type">AST</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679061273"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061273"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061273"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061273"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type">ASTMetadata</span></a></span></span><span>
+</span><span id="line-110"></span><span id="ternaryMetadata"><span class="annot"><span class="annottext">ternaryMetadata :: t -&gt; t -&gt; t -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#ternaryMetadata"><span class="hs-identifier hs-var hs-var">ternaryMetadata</span></a></span></span><span> </span><span id="local-6989586621679061176"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679061176"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span id="local-6989586621679061175"><span class="annot"><span class="annottext">u :: t
+</span><a href="#local-6989586621679061175"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span id="local-6989586621679061174"><span class="annot"><span class="annottext">v :: t
+</span><a href="#local-6989586621679061174"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-111"></span><span>  </span><span class="annot"><span class="annottext">ASTMetadata :: Int -&gt; Int -&gt; ASTMetadata
+</span><a href="AutoProof.AST.html#ASTMetadata"><span class="hs-identifier hs-type hs-type">ASTMetadata</span></a></span><span>
+</span><span id="line-112"></span><span>    </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">getHeight :: Int
+</span><a href="AutoProof.AST.html#getHeight"><span class="hs-identifier hs-var">getHeight</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">max</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#height"><span class="hs-identifier hs-var">height</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061176"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">max</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#height"><span class="hs-identifier hs-var">height</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061175"><span class="hs-identifier hs-var">u</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#height"><span class="hs-identifier hs-var">height</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061174"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-113"></span><span>      </span><span class="annot"><span class="annottext">getSize :: Int
+</span><a href="AutoProof.AST.html#getSize"><span class="hs-identifier hs-var">getSize</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#size"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061176"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#size"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061175"><span class="hs-identifier hs-var">u</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Int
+forall t. AST t =&gt; t -&gt; Int
+</span><a href="AutoProof.AST.html#size"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061174"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-114"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-115"></span><span>
+</span><span id="line-116"></span><span class="hs-comment">-- | @('subtrees' t)@ is the set of all subtrees of an AST @t@ (including @t@</span><span>
+</span><span id="line-117"></span><span class="hs-comment">-- itself).</span><span>
+</span><span id="line-118"></span><span id="local-6989586621679061262"><span class="annot"><a href="AutoProof.AST.html#subtrees"><span class="hs-identifier hs-type">subtrees</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.AST.html#AST"><span class="hs-identifier hs-type">AST</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679061262"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679061262"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061262"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Set</span></span><span> </span><span class="annot"><a href="#local-6989586621679061262"><span class="hs-identifier hs-type">t</span></a></span></span><span>
+</span><span id="line-119"></span><span id="subtrees"><span class="annot"><span class="annottext">subtrees :: t -&gt; Set t
+</span><a href="AutoProof.AST.html#subtrees"><span class="hs-identifier hs-var hs-var">subtrees</span></a></span></span><span> </span><span id="local-6989586621679061173"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679061173"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(t -&gt; Set t -&gt; Set t) -&gt; Set t -&gt; [t] -&gt; Set t
+forall (t :: * -&gt; *) a b.
+Foldable t =&gt;
+(a -&gt; b -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><span class="hs-identifier hs-var">foldr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Set t -&gt; Set t -&gt; Set t
+forall a. Ord a =&gt; Set a -&gt; Set a -&gt; Set a
+</span><span class="hs-identifier hs-var">Set.union</span></span><span> </span><span class="annot"><span class="annottext">(Set t -&gt; Set t -&gt; Set t) -&gt; (t -&gt; Set t) -&gt; t -&gt; Set t -&gt; Set t
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Set t
+forall t. (AST t, Ord t) =&gt; t -&gt; Set t
+</span><a href="AutoProof.AST.html#subtrees"><span class="hs-identifier hs-var">subtrees</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; Set t
+forall a. a -&gt; Set a
+</span><span class="hs-identifier hs-var">Set.singleton</span></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061173"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; [t]
+forall t. AST t =&gt; t -&gt; [t]
+</span><a href="AutoProof.AST.html#children"><span class="hs-identifier hs-var">children</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061173"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-120"></span><span>
+</span><span id="line-121"></span><span class="hs-comment">-- | @('properSubtrees' t)@ is the the set of all /proper/ subtrees of an AST</span><span>
+</span><span id="line-122"></span><span class="hs-comment">-- @t@ (i.e., not including @t@ itself).</span><span>
+</span><span id="line-123"></span><span id="local-6989586621679061169"><span class="annot"><a href="AutoProof.AST.html#properSubtrees"><span class="hs-identifier hs-type">properSubtrees</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.AST.html#AST"><span class="hs-identifier hs-type">AST</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679061169"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679061169"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679061169"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Set</span></span><span> </span><span class="annot"><a href="#local-6989586621679061169"><span class="hs-identifier hs-type">t</span></a></span></span><span>
+</span><span id="line-124"></span><span id="properSubtrees"><span class="annot"><span class="annottext">properSubtrees :: t -&gt; Set t
+</span><a href="AutoProof.AST.html#properSubtrees"><span class="hs-identifier hs-var hs-var">properSubtrees</span></a></span></span><span> </span><span id="local-6989586621679061168"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679061168"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(t -&gt; Set t -&gt; Set t) -&gt; Set t -&gt; [t] -&gt; Set t
+forall (t :: * -&gt; *) a b.
+Foldable t =&gt;
+(a -&gt; b -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><span class="hs-identifier hs-var">foldr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Set t -&gt; Set t -&gt; Set t
+forall a. Ord a =&gt; Set a -&gt; Set a -&gt; Set a
+</span><span class="hs-identifier hs-var">Set.union</span></span><span> </span><span class="annot"><span class="annottext">(Set t -&gt; Set t -&gt; Set t) -&gt; (t -&gt; Set t) -&gt; t -&gt; Set t -&gt; Set t
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Set t
+forall t. (AST t, Ord t) =&gt; t -&gt; Set t
+</span><a href="AutoProof.AST.html#subtrees"><span class="hs-identifier hs-var">subtrees</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Set t
+forall a. Set a
+</span><span class="hs-identifier hs-var">Set.empty</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; [t]
+forall t. AST t =&gt; t -&gt; [t]
+</span><a href="AutoProof.AST.html#children"><span class="hs-identifier hs-var">children</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679061168"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-125"></span></pre></body></html>
