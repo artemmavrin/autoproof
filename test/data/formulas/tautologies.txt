@@ -50,6 +50,10 @@ a & b <-> b & a
 (a -> b) -> ((b -> c) -> (a -> c))
 (a -> b) -> ((c -> a) -> (c -> b))
 
+# Bifunctoriality
+a & b -> (a -> c) -> (b -> d) -> c & d
+a | b -> (a -> c) -> (b -> d) -> c | d
+
 # Diagnonal/codiagonal
 a -> a & a
 a | a -> a
@@ -92,3 +96,4 @@ a -> b -> c -> a | d
 (~~a -> a) -> (((a -> b) -> a) -> a)
 (~~a -> b) -> (((a -> b) -> a) -> a)
 a <-> b -> a -> a & b
+a | b -> (a -> c | d) -> (b -> c | e) -> (c -> f) -> (d -> f) -> (e -> f) -> f

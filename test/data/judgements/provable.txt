@@ -54,6 +54,10 @@ a -> b, a & c |- b & c
 a -> b, a | c |- b | c
 a -> b, b -> c |- a -> c
 
+# Bifunctoriality
+a & b, a -> c, b -> d |- c & d
+a | b, a -> c, b -> d |- c | d
+
 # Diagnonal/codiagonal
 a |- a & a
 a | a |- a
@@ -89,3 +93,4 @@ a & b |- a | b
 a <-> b, a |- a & b
 a, a -> b | c, b -> d, c -> e |- d | e
 a, a -> b | c, b -> d, c -> d |- d
+a | b, a -> c | d, b -> c | e, c -> f, d -> f, e -> f |- f
