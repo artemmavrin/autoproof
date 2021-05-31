@@ -735,6 +735,33 @@ unsafeParseFormula :: String -> Formula String
 unsafeParseJudgement :: String -> Judgement String
 
 
+-- | Functions and types related to conjunctive normal forms.
+module AutoProof.Classical.CNF
+
+-- | Conjunctive normal form: a conjunction of literals.
+type CNF a = [Clause a]
+
+-- | A disjunction of literals.
+type Clause a = [Literal a]
+
+-- | Either a propositional variable or its negation, depending on whether
+--   the first component is <a>True</a> or <a>False</a>, respectively.
+type Literal a = (Bool, a)
+
+-- | Convert a <a>Formula</a> into conjunctive normal form.
+--   
+--   Adapted from Figure 2.6 in
+--   
+--   <ul>
+--   <li>Samuel Mimram (2020) <i>PROGRAM = PROOF</i>.</li>
+--   </ul>
+fromFormula :: Formula a -> CNF a
+
+-- | Convert a conjunctive normal form representation of a formula into a
+--   formula.
+toFormula :: CNF a -> Formula a
+
+
 -- | Propositional logic library.
 module AutoProof
 

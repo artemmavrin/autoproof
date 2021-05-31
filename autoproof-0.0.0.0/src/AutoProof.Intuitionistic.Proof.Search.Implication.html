@@ -34,13 +34,13 @@
 </span><span id="line-34"></span><span class="hs-comment">--</span><span>
 </span><span id="line-35"></span><span class="hs-comment">-- &gt;&gt;&gt; proveImp $ [Imp (Var 'a') (Var 'b'), Imp (Var 'b') (Var 'a')] |- Var 'a'</span><span>
 </span><span id="line-36"></span><span class="hs-comment">-- Nothing</span><span>
-</span><span id="line-37"></span><span id="local-6989586621679063617"><span class="annot"><a href="AutoProof.Intuitionistic.Proof.Search.Implication.html#proveImp"><span class="hs-identifier hs-type">proveImp</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679063617"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Judgement.html#Judgement"><span class="hs-identifier hs-type">Judgement</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679063617"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Proof.Types.html#Proof"><span class="hs-identifier hs-type">Proof</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679063617"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-37"></span><span id="local-6989586621679063981"><span class="annot"><a href="AutoProof.Intuitionistic.Proof.Search.Implication.html#proveImp"><span class="hs-identifier hs-type">proveImp</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679063981"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Judgement.html#Judgement"><span class="hs-identifier hs-type">Judgement</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679063981"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Proof.Types.html#Proof"><span class="hs-identifier hs-type">Proof</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679063981"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
 </span><span id="line-38"></span><span id="proveImp"><span class="annot"><span class="annottext">proveImp :: Judgement a -&gt; Maybe (Proof a)
 </span><a href="AutoProof.Intuitionistic.Proof.Search.Implication.html#proveImp"><span class="hs-identifier hs-var hs-var">proveImp</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Set (Judgement a) -&gt; Judgement a -&gt; Maybe (Proof a)
 forall a.
 Ord a =&gt;
 Set (Judgement a) -&gt; Judgement a -&gt; Maybe (Proof a)
-</span><a href="#local-6989586621679063616"><span class="hs-identifier hs-var">search</span></a></span><span> </span><span class="annot"><span class="annottext">Set (Judgement a)
+</span><a href="#local-6989586621679063980"><span class="hs-identifier hs-var">search</span></a></span><span> </span><span class="annot"><span class="annottext">Set (Judgement a)
 forall a. Set a
 </span><span class="hs-identifier hs-var">Set.empty</span></span><span>
 </span><span id="line-39"></span><span>  </span><span class="hs-keyword">where</span><span>
@@ -55,40 +55,40 @@ forall a. Set a
 </span><span id="line-48"></span><span>    </span><span class="hs-comment">-- g &#8866; a &#8594; b</span><span>
 </span><span id="line-49"></span><span>    </span><span class="hs-comment">--</span><span>
 </span><span id="line-50"></span><span>    </span><span class="hs-comment">-- so it suffices to look for a proof of g,a &#8866; b</span><span>
-</span><span id="line-51"></span><span>    </span><span id="local-6989586621679063616"><span class="annot"><span class="annottext">search :: Set (Judgement a) -&gt; Judgement a -&gt; Maybe (Proof a)
-</span><a href="#local-6989586621679063616"><span class="hs-identifier hs-var hs-var">search</span></a></span></span><span> </span><span id="local-6989586621679063614"><span class="annot"><span class="annottext">s :: Set (Judgement a)
-</span><a href="#local-6989586621679063614"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621679063613"><span class="annot"><span class="annottext">j :: Judgement a
-</span><a href="#local-6989586621679063613"><span class="hs-identifier hs-var">j</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Judgement.html#Judgement"><span class="hs-identifier hs-type">Judgement</span></a></span><span> </span><span id="local-6989586621679063612"><span class="annot"><span class="annottext">g :: Context a
-</span><a href="#local-6989586621679063612"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679063611"><span class="annot"><span class="annottext">i :: Formula a
-</span><a href="#local-6989586621679063611"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Imp"><span class="hs-identifier hs-type">Imp</span></a></span><span> </span><span id="local-6989586621679063610"><span class="annot"><span class="annottext">a :: Formula a
-</span><a href="#local-6989586621679063610"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679063609"><span class="annot"><span class="annottext">b :: Formula a
-</span><a href="#local-6989586621679063609"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-51"></span><span>    </span><span id="local-6989586621679063980"><span class="annot"><span class="annottext">search :: Set (Judgement a) -&gt; Judgement a -&gt; Maybe (Proof a)
+</span><a href="#local-6989586621679063980"><span class="hs-identifier hs-var hs-var">search</span></a></span></span><span> </span><span id="local-6989586621679063978"><span class="annot"><span class="annottext">s :: Set (Judgement a)
+</span><a href="#local-6989586621679063978"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621679063977"><span class="annot"><span class="annottext">j :: Judgement a
+</span><a href="#local-6989586621679063977"><span class="hs-identifier hs-var">j</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Judgement.html#Judgement"><span class="hs-identifier hs-type">Judgement</span></a></span><span> </span><span id="local-6989586621679063976"><span class="annot"><span class="annottext">g :: Context a
+</span><a href="#local-6989586621679063976"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679063975"><span class="annot"><span class="annottext">i :: Formula a
+</span><a href="#local-6989586621679063975"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Imp"><span class="hs-identifier hs-type">Imp</span></a></span><span> </span><span id="local-6989586621679063974"><span class="annot"><span class="annottext">a :: Formula a
+</span><a href="#local-6989586621679063974"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679063973"><span class="annot"><span class="annottext">b :: Formula a
+</span><a href="#local-6989586621679063973"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-52"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Formula a -&gt; Context a -&gt; Bool
 forall a. Ord a =&gt; a -&gt; Set a -&gt; Bool
 </span><span class="hs-identifier hs-var">Set.member</span></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679063611"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Context a
-</span><a href="#local-6989586621679063612"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><a href="#local-6989586621679063975"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Context a
+</span><a href="#local-6989586621679063976"><span class="hs-identifier hs-var">g</span></a></span><span>
 </span><span id="line-53"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Proof a -&gt; Maybe (Proof a)
 forall a. a -&gt; Maybe a
 </span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Judgement a -&gt; Proof a
 forall a. Judgement a -&gt; Proof a
 </span><a href="AutoProof.Internal.Proof.Types.html#Axiom"><span class="hs-identifier hs-var">Axiom</span></a></span><span> </span><span class="annot"><span class="annottext">Judgement a
-</span><a href="#local-6989586621679063613"><span class="hs-identifier hs-var">j</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679063977"><span class="hs-identifier hs-var">j</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-54"></span><span>        </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Judgement a -&gt; Proof a -&gt; Proof a
 forall a. Judgement a -&gt; Proof a -&gt; Proof a
 </span><a href="AutoProof.Internal.Proof.Types.html#ImpIntr"><span class="hs-identifier hs-var">ImpIntr</span></a></span><span> </span><span class="annot"><span class="annottext">Judgement a
-</span><a href="#local-6989586621679063613"><span class="hs-identifier hs-var">j</span></a></span><span> </span><span class="annot"><span class="annottext">(Proof a -&gt; Proof a) -&gt; Maybe (Proof a) -&gt; Maybe (Proof a)
+</span><a href="#local-6989586621679063977"><span class="hs-identifier hs-var">j</span></a></span><span> </span><span class="annot"><span class="annottext">(Proof a -&gt; Proof a) -&gt; Maybe (Proof a) -&gt; Maybe (Proof a)
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Set (Judgement a) -&gt; Judgement a -&gt; Maybe (Proof a)
-</span><a href="#local-6989586621679063616"><span class="hs-identifier hs-var">search</span></a></span><span> </span><span class="annot"><span class="annottext">Set (Judgement a)
-</span><a href="#local-6989586621679063614"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Context a -&gt; Formula a -&gt; Judgement a
+</span><a href="#local-6989586621679063980"><span class="hs-identifier hs-var">search</span></a></span><span> </span><span class="annot"><span class="annottext">Set (Judgement a)
+</span><a href="#local-6989586621679063978"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Context a -&gt; Formula a -&gt; Judgement a
 forall a. Context a -&gt; Formula a -&gt; Judgement a
 </span><a href="AutoProof.Internal.Judgement.html#Judgement"><span class="hs-identifier hs-var">Judgement</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a -&gt; Context a -&gt; Context a
 forall a. Ord a =&gt; a -&gt; Set a -&gt; Set a
 </span><span class="hs-identifier hs-var">Set.insert</span></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679063610"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Context a
-</span><a href="#local-6989586621679063612"><span class="hs-identifier hs-var">g</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679063609"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679063974"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Context a
+</span><a href="#local-6989586621679063976"><span class="hs-identifier hs-var">g</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679063973"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-55"></span><span>    </span><span class="hs-comment">-- Trickier case: if there is a proof of g &#8866; x, where x is a variable, then</span><span>
 </span><span id="line-56"></span><span>    </span><span class="hs-comment">-- either</span><span>
 </span><span id="line-57"></span><span>    </span><span class="hs-comment">--</span><span>
@@ -117,17 +117,17 @@ forall a. Ord a =&gt; a -&gt; Set a -&gt; Set a
 </span><span id="line-80"></span><span>    </span><span class="hs-comment">-- Actually, case (1) is the n=0 case of case (2).</span><span>
 </span><span id="line-81"></span><span>    </span><span class="hs-comment">--</span><span>
 </span><span id="line-82"></span><span>    </span><span class="hs-comment">-- The implementation:</span><span>
-</span><span id="line-83"></span><span>    </span><span class="annot"><a href="#local-6989586621679063616"><span class="hs-identifier hs-var">search</span></a></span><span> </span><span id="local-6989586621679063605"><span class="annot"><span class="annottext">s :: Set (Judgement a)
-</span><a href="#local-6989586621679063605"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621679063604"><span class="annot"><span class="annottext">j :: Judgement a
-</span><a href="#local-6989586621679063604"><span class="hs-identifier hs-var">j</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Judgement.html#Judgement"><span class="hs-identifier hs-type">Judgement</span></a></span><span> </span><span id="local-6989586621679063603"><span class="annot"><span class="annottext">g :: Context a
-</span><a href="#local-6989586621679063603"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679063602"><span class="annot"><span class="annottext">v :: Formula a
-</span><a href="#local-6989586621679063602"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Var"><span class="hs-identifier hs-type">Var</span></a></span><span> </span><span id="local-6989586621679063601"><span class="annot"><span class="annottext">x :: a
-</span><a href="#local-6989586621679063601"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-83"></span><span>    </span><span class="annot"><a href="#local-6989586621679063980"><span class="hs-identifier hs-var">search</span></a></span><span> </span><span id="local-6989586621679063969"><span class="annot"><span class="annottext">s :: Set (Judgement a)
+</span><a href="#local-6989586621679063969"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621679063968"><span class="annot"><span class="annottext">j :: Judgement a
+</span><a href="#local-6989586621679063968"><span class="hs-identifier hs-var">j</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Judgement.html#Judgement"><span class="hs-identifier hs-type">Judgement</span></a></span><span> </span><span id="local-6989586621679063967"><span class="annot"><span class="annottext">g :: Context a
+</span><a href="#local-6989586621679063967"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679063966"><span class="annot"><span class="annottext">v :: Formula a
+</span><a href="#local-6989586621679063966"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Var"><span class="hs-identifier hs-type">Var</span></a></span><span> </span><span id="local-6989586621679063965"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679063965"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-84"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Judgement a -&gt; Set (Judgement a) -&gt; Bool
 forall a. Ord a =&gt; a -&gt; Set a -&gt; Bool
 </span><span class="hs-identifier hs-var">Set.member</span></span><span> </span><span class="annot"><span class="annottext">Judgement a
-</span><a href="#local-6989586621679063604"><span class="hs-identifier hs-var">j</span></a></span><span> </span><span class="annot"><span class="annottext">Set (Judgement a)
-</span><a href="#local-6989586621679063605"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><a href="#local-6989586621679063968"><span class="hs-identifier hs-var">j</span></a></span><span> </span><span class="annot"><span class="annottext">Set (Judgement a)
+</span><a href="#local-6989586621679063969"><span class="hs-identifier hs-var">s</span></a></span><span>
 </span><span id="line-85"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Maybe (Proof a)
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-comment">-- Already visited current judgement; skip to avoid cycles</span><span>
@@ -145,57 +145,57 @@ forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
 -&gt; Maybe (Proof a)
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Formula a -&gt; Maybe (Proof a)
-</span><a href="#local-6989586621679063598"><span class="hs-identifier hs-var">findImp</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Maybe (Proof a)
+</span><a href="#local-6989586621679063962"><span class="hs-identifier hs-var">findImp</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Maybe (Proof a)
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="annot"><span class="annottext">Context a
-</span><a href="#local-6989586621679063603"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="hs-comment">-- Scan context looking for proof</span><span>
+</span><a href="#local-6989586621679063967"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="hs-comment">-- Scan context looking for proof</span><span>
 </span><span id="line-87"></span><span>      </span><span class="hs-keyword">where</span><span>
 </span><span id="line-88"></span><span>        </span><span class="hs-comment">-- findImp searches each formula in the context for implications ending</span><span>
 </span><span id="line-89"></span><span>        </span><span class="hs-comment">-- in the variable x. When encountering a formula of the form</span><span>
 </span><span id="line-90"></span><span>        </span><span class="hs-comment">-- a1 &#8594; (a2 &#8594; (... an &#8594; x)...), ensure each ai is provable, and, if so,</span><span>
 </span><span id="line-91"></span><span>        </span><span class="hs-comment">-- construct a proof</span><span>
-</span><span id="line-92"></span><span>        </span><span id="local-6989586621679063598"><span class="annot"><span class="annottext">findImp :: Formula a -&gt; Maybe (Proof a)
-</span><a href="#local-6989586621679063598"><span class="hs-identifier hs-var hs-var">findImp</span></a></span></span><span> </span><span id="local-6989586621679063597"><span class="annot"><span class="annottext">a :: Formula a
-</span><a href="#local-6989586621679063597"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-93"></span><span>          </span><span id="local-6989586621679063596"><span class="annot"><span class="annottext">[Formula a]
-</span><a href="#local-6989586621679063596"><span class="hs-keyword hs-var">as</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Formula a -&gt; Maybe [Formula a]
-</span><a href="#local-6989586621679063595"><span class="hs-identifier hs-var">splitImp</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679063597"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-92"></span><span>        </span><span id="local-6989586621679063962"><span class="annot"><span class="annottext">findImp :: Formula a -&gt; Maybe (Proof a)
+</span><a href="#local-6989586621679063962"><span class="hs-identifier hs-var hs-var">findImp</span></a></span></span><span> </span><span id="local-6989586621679063961"><span class="annot"><span class="annottext">a :: Formula a
+</span><a href="#local-6989586621679063961"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-93"></span><span>          </span><span id="local-6989586621679063960"><span class="annot"><span class="annottext">[Formula a]
+</span><a href="#local-6989586621679063960"><span class="hs-keyword hs-var">as</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Formula a -&gt; Maybe [Formula a]
+</span><a href="#local-6989586621679063959"><span class="hs-identifier hs-var">splitImp</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679063961"><span class="hs-identifier hs-var">a</span></a></span><span>
 </span><span id="line-94"></span><span>          </span><span class="annot"><span class="annottext">[Formula a] -&gt; Formula a -&gt; Maybe (Proof a)
-</span><a href="#local-6989586621679063594"><span class="hs-identifier hs-var">construct</span></a></span><span> </span><span class="annot"><span class="annottext">[Formula a]
-</span><a href="#local-6989586621679063596"><span class="hs-keyword hs-var">as</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679063602"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><a href="#local-6989586621679063958"><span class="hs-identifier hs-var">construct</span></a></span><span> </span><span class="annot"><span class="annottext">[Formula a]
+</span><a href="#local-6989586621679063960"><span class="hs-keyword hs-var">as</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679063966"><span class="hs-identifier hs-var">v</span></a></span><span>
 </span><span id="line-95"></span><span>
 </span><span id="line-96"></span><span>        </span><span class="hs-comment">-- Given a formula of the form a1 &#8594; (a2 &#8594; (... an &#8594; x)...), extract the</span><span>
 </span><span id="line-97"></span><span>        </span><span class="hs-comment">-- list [an, ..., a2, a1] (note the reverse order)</span><span>
-</span><span id="line-98"></span><span>        </span><span id="local-6989586621679063595"><span class="annot"><span class="annottext">splitImp :: Formula a -&gt; Maybe [Formula a]
-</span><a href="#local-6989586621679063595"><span class="hs-identifier hs-var hs-var">splitImp</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Formula a] -&gt; Formula a -&gt; Maybe [Formula a]
-</span><a href="#local-6989586621679063593"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-98"></span><span>        </span><span id="local-6989586621679063959"><span class="annot"><span class="annottext">splitImp :: Formula a -&gt; Maybe [Formula a]
+</span><a href="#local-6989586621679063959"><span class="hs-identifier hs-var hs-var">splitImp</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Formula a] -&gt; Formula a -&gt; Maybe [Formula a]
+</span><a href="#local-6989586621679063957"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
 </span><span id="line-99"></span><span>          </span><span class="hs-keyword">where</span><span>
-</span><span id="line-100"></span><span>            </span><span id="local-6989586621679063593"><span class="annot"><span class="annottext">go :: [Formula a] -&gt; Formula a -&gt; Maybe [Formula a]
-</span><a href="#local-6989586621679063593"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span id="local-6989586621679063592"><span class="annot"><span class="annottext">l :: [Formula a]
-</span><a href="#local-6989586621679063592"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Var"><span class="hs-identifier hs-type">Var</span></a></span><span> </span><span id="local-6989586621679063591"><span class="annot"><span class="annottext">y :: a
-</span><a href="#local-6989586621679063591"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679063601"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; Bool
+</span><span id="line-100"></span><span>            </span><span id="local-6989586621679063957"><span class="annot"><span class="annottext">go :: [Formula a] -&gt; Formula a -&gt; Maybe [Formula a]
+</span><a href="#local-6989586621679063957"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span id="local-6989586621679063956"><span class="annot"><span class="annottext">l :: [Formula a]
+</span><a href="#local-6989586621679063956"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Var"><span class="hs-identifier hs-type">Var</span></a></span><span> </span><span id="local-6989586621679063955"><span class="annot"><span class="annottext">y :: a
+</span><a href="#local-6989586621679063955"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679063965"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679063591"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">[Formula a] -&gt; Maybe [Formula a]
+</span><a href="#local-6989586621679063955"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">[Formula a] -&gt; Maybe [Formula a]
 forall a. a -&gt; Maybe a
 </span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">[Formula a]
-</span><a href="#local-6989586621679063592"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Maybe [Formula a]
+</span><a href="#local-6989586621679063956"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Maybe [Formula a]
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
-</span><span id="line-101"></span><span>            </span><span class="annot"><a href="#local-6989586621679063593"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span id="local-6989586621679063590"><span class="annot"><span class="annottext">l :: [Formula a]
-</span><a href="#local-6989586621679063590"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Imp"><span class="hs-identifier hs-type">Imp</span></a></span><span> </span><span id="local-6989586621679063589"><span class="annot"><span class="annottext">a :: Formula a
-</span><a href="#local-6989586621679063589"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679063588"><span class="annot"><span class="annottext">b :: Formula a
-</span><a href="#local-6989586621679063588"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Formula a] -&gt; Formula a -&gt; Maybe [Formula a]
-</span><a href="#local-6989586621679063593"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679063589"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a -&gt; [Formula a] -&gt; [Formula a]
+</span><span id="line-101"></span><span>            </span><span class="annot"><a href="#local-6989586621679063957"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span id="local-6989586621679063954"><span class="annot"><span class="annottext">l :: [Formula a]
+</span><a href="#local-6989586621679063954"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Imp"><span class="hs-identifier hs-type">Imp</span></a></span><span> </span><span id="local-6989586621679063953"><span class="annot"><span class="annottext">a :: Formula a
+</span><a href="#local-6989586621679063953"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679063952"><span class="annot"><span class="annottext">b :: Formula a
+</span><a href="#local-6989586621679063952"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Formula a] -&gt; Formula a -&gt; Maybe [Formula a]
+</span><a href="#local-6989586621679063957"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679063953"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a -&gt; [Formula a] -&gt; [Formula a]
 forall a. a -&gt; [a] -&gt; [a]
 </span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">[Formula a]
-</span><a href="#local-6989586621679063590"><span class="hs-identifier hs-var">l</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679063588"><span class="hs-identifier hs-var">b</span></a></span><span>
-</span><span id="line-102"></span><span>            </span><span class="annot"><a href="#local-6989586621679063593"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe [Formula a]
+</span><a href="#local-6989586621679063954"><span class="hs-identifier hs-var">l</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679063952"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-102"></span><span>            </span><span class="annot"><a href="#local-6989586621679063957"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe [Formula a]
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-comment">-- non-implicational case</span><span>
 </span><span id="line-103"></span><span>
@@ -203,40 +203,40 @@ forall a. Maybe a
 </span><span id="line-105"></span><span>        </span><span class="hs-comment">-- form a1 &#8594; (a2 &#8594; (... an &#8594; x)...), try to prove the ai's, and use the</span><span>
 </span><span id="line-106"></span><span>        </span><span class="hs-comment">-- resulting proofs to construct a proof of x using nested implication</span><span>
 </span><span id="line-107"></span><span>        </span><span class="hs-comment">-- eliminations</span><span>
-</span><span id="line-108"></span><span>        </span><span id="local-6989586621679063594"><span class="annot"><span class="annottext">construct :: [Formula a] -&gt; Formula a -&gt; Maybe (Proof a)
-</span><a href="#local-6989586621679063594"><span class="hs-identifier hs-var hs-var">construct</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span id="local-6989586621679063587"><span class="annot"><span class="annottext">b :: Formula a
-</span><a href="#local-6989586621679063587"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Proof a -&gt; Maybe (Proof a)
+</span><span id="line-108"></span><span>        </span><span id="local-6989586621679063958"><span class="annot"><span class="annottext">construct :: [Formula a] -&gt; Formula a -&gt; Maybe (Proof a)
+</span><a href="#local-6989586621679063958"><span class="hs-identifier hs-var hs-var">construct</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span id="local-6989586621679063951"><span class="annot"><span class="annottext">b :: Formula a
+</span><a href="#local-6989586621679063951"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Proof a -&gt; Maybe (Proof a)
 forall a. a -&gt; Maybe a
 </span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Judgement a -&gt; Proof a
 forall a. Judgement a -&gt; Proof a
 </span><a href="AutoProof.Internal.Proof.Types.html#Axiom"><span class="hs-identifier hs-var">Axiom</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Context a -&gt; Formula a -&gt; Judgement a
 forall a. Context a -&gt; Formula a -&gt; Judgement a
 </span><a href="AutoProof.Internal.Judgement.html#Judgement"><span class="hs-identifier hs-var">Judgement</span></a></span><span> </span><span class="annot"><span class="annottext">Context a
-</span><a href="#local-6989586621679063603"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679063587"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-109"></span><span>        </span><span class="annot"><a href="#local-6989586621679063594"><span class="hs-identifier hs-var">construct</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679063586"><span class="annot"><span class="annottext">a :: Formula a
-</span><a href="#local-6989586621679063586"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679063585"><span class="annot"><span class="annottext">as :: [Formula a]
-</span><a href="#local-6989586621679063585"><span class="hs-keyword hs-var">as</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679063584"><span class="annot"><span class="annottext">b :: Formula a
-</span><a href="#local-6989586621679063584"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-110"></span><span>          </span><span id="local-6989586621679063583"><span class="annot"><span class="annottext">Proof a
-</span><a href="#local-6989586621679063583"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Set (Judgement a) -&gt; Judgement a -&gt; Maybe (Proof a)
-</span><a href="#local-6989586621679063616"><span class="hs-identifier hs-var">search</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Judgement a -&gt; Set (Judgement a) -&gt; Set (Judgement a)
+</span><a href="#local-6989586621679063967"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679063951"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-109"></span><span>        </span><span class="annot"><a href="#local-6989586621679063958"><span class="hs-identifier hs-var">construct</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679063950"><span class="annot"><span class="annottext">a :: Formula a
+</span><a href="#local-6989586621679063950"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679063949"><span class="annot"><span class="annottext">as :: [Formula a]
+</span><a href="#local-6989586621679063949"><span class="hs-keyword hs-var">as</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679063948"><span class="annot"><span class="annottext">b :: Formula a
+</span><a href="#local-6989586621679063948"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-110"></span><span>          </span><span id="local-6989586621679063947"><span class="annot"><span class="annottext">Proof a
+</span><a href="#local-6989586621679063947"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Set (Judgement a) -&gt; Judgement a -&gt; Maybe (Proof a)
+</span><a href="#local-6989586621679063980"><span class="hs-identifier hs-var">search</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Judgement a -&gt; Set (Judgement a) -&gt; Set (Judgement a)
 forall a. Ord a =&gt; a -&gt; Set a -&gt; Set a
 </span><span class="hs-identifier hs-var">Set.insert</span></span><span> </span><span class="annot"><span class="annottext">Judgement a
-</span><a href="#local-6989586621679063604"><span class="hs-identifier hs-var">j</span></a></span><span> </span><span class="annot"><span class="annottext">Set (Judgement a)
-</span><a href="#local-6989586621679063605"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Context a -&gt; Formula a -&gt; Judgement a
+</span><a href="#local-6989586621679063968"><span class="hs-identifier hs-var">j</span></a></span><span> </span><span class="annot"><span class="annottext">Set (Judgement a)
+</span><a href="#local-6989586621679063969"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Context a -&gt; Formula a -&gt; Judgement a
 forall a. Context a -&gt; Formula a -&gt; Judgement a
 </span><a href="AutoProof.Internal.Judgement.html#Judgement"><span class="hs-identifier hs-var">Judgement</span></a></span><span> </span><span class="annot"><span class="annottext">Context a
-</span><a href="#local-6989586621679063603"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679063586"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-111"></span><span>          </span><span id="local-6989586621679063582"><span class="annot"><span class="annottext">Proof a
-</span><a href="#local-6989586621679063582"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Formula a] -&gt; Formula a -&gt; Maybe (Proof a)
-</span><a href="#local-6989586621679063594"><span class="hs-identifier hs-var">construct</span></a></span><span> </span><span class="annot"><span class="annottext">[Formula a]
-</span><a href="#local-6989586621679063585"><span class="hs-keyword hs-var">as</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a -&gt; Formula a -&gt; Formula a
+</span><a href="#local-6989586621679063967"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679063950"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-111"></span><span>          </span><span id="local-6989586621679063946"><span class="annot"><span class="annottext">Proof a
+</span><a href="#local-6989586621679063946"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Formula a] -&gt; Formula a -&gt; Maybe (Proof a)
+</span><a href="#local-6989586621679063958"><span class="hs-identifier hs-var">construct</span></a></span><span> </span><span class="annot"><span class="annottext">[Formula a]
+</span><a href="#local-6989586621679063949"><span class="hs-keyword hs-var">as</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a -&gt; Formula a -&gt; Formula a
 forall a. Formula a -&gt; Formula a -&gt; Formula a
 </span><a href="AutoProof.Internal.Formula.Types.html#Imp"><span class="hs-identifier hs-var">Imp</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679063586"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679063584"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679063950"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679063948"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-112"></span><span>          </span><span class="annot"><span class="annottext">Proof a -&gt; Maybe (Proof a)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Judgement a -&gt; Proof a -&gt; Proof a -&gt; Proof a
@@ -244,13 +244,13 @@ forall a. Judgement a -&gt; Proof a -&gt; Proof a -&gt; Proof a
 </span><a href="AutoProof.Internal.Proof.Types.html#ImpElim"><span class="hs-identifier hs-var">ImpElim</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Context a -&gt; Formula a -&gt; Judgement a
 forall a. Context a -&gt; Formula a -&gt; Judgement a
 </span><a href="AutoProof.Internal.Judgement.html#Judgement"><span class="hs-identifier hs-var">Judgement</span></a></span><span> </span><span class="annot"><span class="annottext">Context a
-</span><a href="#local-6989586621679063603"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679063584"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Proof a
-</span><a href="#local-6989586621679063582"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Proof a
-</span><a href="#local-6989586621679063583"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679063967"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679063948"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Proof a
+</span><a href="#local-6989586621679063946"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Proof a
+</span><a href="#local-6989586621679063947"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-113"></span><span>
 </span><span id="line-114"></span><span>    </span><span class="hs-comment">-- Non-implicational case</span><span>
-</span><span id="line-115"></span><span>    </span><span class="annot"><a href="#local-6989586621679063616"><span class="hs-identifier hs-var">search</span></a></span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe (Proof a)
+</span><span id="line-115"></span><span>    </span><span class="annot"><a href="#local-6989586621679063980"><span class="hs-identifier hs-var">search</span></a></span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe (Proof a)
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
 </span><span id="line-116"></span></pre></body></html>
