@@ -4,6 +4,13 @@
 
 -- | Propositional logic library
 --   
+--   The intended entry points into this library are
+--   
+--   <ol>
+--   <li><a>AutoProof.Classical</a>, for classical logic, and</li>
+--   <li><a>AutoProof.Intuitionistic</a>, for intuitionistic logic.</li>
+--   </ol>
+--   
 --   Please see the README on GitHub at
 --   <a>https://github.com/artemmavrin/autoproof#readme</a>
 @package autoproof
@@ -1912,7 +1919,7 @@ module AutoProof.Classical.Proof.Provability
 --   </pre>
 isProvable :: Ord a => Judgement a -> Bool
 
--- | Determine whether a formula is an classically tautology.
+-- | Determine whether a formula is a classically tautology.
 --   
 --   <h4><b>Examples</b></h4>
 --   
@@ -1944,7 +1951,7 @@ module AutoProof.Classical.Proof
 --   </pre>
 isProvable :: Ord a => Judgement a -> Bool
 
--- | Determine whether a formula is an classically tautology.
+-- | Determine whether a formula is a classically tautology.
 --   
 --   <h4><b>Examples</b></h4>
 --   
@@ -2201,7 +2208,7 @@ pattern IffIntr :: Judgement a -> Proof a -> Proof a -> Proof a
 --   </pre>
 isProvable :: Ord a => Judgement a -> Bool
 
--- | Determine whether a formula is an classically tautology.
+-- | Determine whether a formula is a classically tautology.
 --   
 --   <h4><b>Examples</b></h4>
 --   
