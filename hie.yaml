@@ -29,3 +29,5 @@ cradle:
         component: "autoproof:test:glivenko-test"
       - path: "./test/classical/provable/Main.hs"
         component: "autoproof:test:provable-test"
+      - path: "./test/classical/cnf/Main.hs"
+        component: "autoproof:test:cnf-test"
