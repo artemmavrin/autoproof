@@ -4,12 +4,18 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0a93c47b75bfd00adeee76175be88e02192ab5f49979599c691f730918388e0c
+-- hash: ef734287c5a3946266ecdbe4a3fe448dc36400a7793f5e3d30cd496061853ef6
 
 name:           autoproof
 version:        0.0.0.0
 synopsis:       Propositional logic library
-description:    Please see the README on GitHub at <https://github.com/artemmavrin/autoproof#readme>
+description:    .
+                The intended entry points into this library are
+                .
+                1.  "AutoProof.Classical", for classical logic, and
+                2.  "AutoProof.Intuitionistic", for intuitionistic logic.
+                .
+                Please see the README on GitHub at <https://github.com/artemmavrin/autoproof#readme>
 category:       Logic
 homepage:       https://github.com/artemmavrin/autoproof#readme
 bug-reports:    https://github.com/artemmavrin/autoproof/issues

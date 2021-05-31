@@ -30,7 +30,7 @@ import AutoProof.Internal.Judgement (Judgement, (|-))
 isProvable :: Ord a => Judgement a -> Bool
 isProvable = isProvableGlivenko
 
--- | Determine whether a formula is an classically tautology.
+-- | Determine whether a formula is a classically tautology.
 --
 -- ==== __Examples__
 --
