@@ -75,6 +75,17 @@ instance Show a => Show (Judgement a) where
     where
       turnstilePrec = 5
 
+instance (Ord a, Read a) => Read (Judgement a) where
+  readsPrec d = readParen (d > turnstilePrec) readJudgement
+    where
+      turnstilePrec = 5
+      readJudgement s =
+        [ (g |- a, v)
+          | (g, t) <- readList s,
+            ("|-", u) <- lex t,
+            (a, v) <- readsPrec (turnstilePrec + 1) u
+        ]
+
 instance PrettyPrintable a => PrettyPrintable (Judgement a) where
   pretty (Judgement c a) = case prettySeq c of
     "" -> turnstileS ++ " " ++ pretty a

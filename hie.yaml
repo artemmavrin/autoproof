@@ -7,6 +7,8 @@ cradle:
       component: "autoproof:exe:autoproof"
     - path: "./test/formula/Main.hs"
       component: "autoproof:test:formula-test"
+    - path: "./test/judgement/Main.hs"
+      component: "autoproof:test:judgement-test"
     - path: "./test/proof/Main.hs"
       component: "autoproof:test:proof-test"
     - path: "./test/parser/Main.hs"
