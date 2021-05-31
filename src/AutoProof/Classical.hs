@@ -65,6 +65,10 @@ module AutoProof.Classical
   )
 where
 
+import AutoProof.Classical.Proof
+  ( isProvable,
+    isTautology,
+  )
 import AutoProof.Internal.AST
   ( AST (Root, children, height, root, size),
     properSubtrees,
@@ -108,7 +112,3 @@ import AutoProof.Internal.Proof
     prettyProof,
   )
 import AutoProof.Internal.Utils.PrettyPrintable (PrettyPrintable (pretty))
-import AutoProof.Classical.Proof
-  ( isProvable,
-    isTautology,
-  )
