@@ -61,39 +61,53 @@ data Formula a
 -- tautology, or top), and @('Lit' 'False')@ is \(\bot\) (i.e., falsity,
 -- contradiction, or bottom).
 pattern Lit :: Bool -> Formula a
-pattern Lit x <- Lit_ _ x where
-  Lit = atomicASTConstructor Lit_
+pattern Lit x <-
+  Lit_ _ x
+  where
+    Lit = atomicASTConstructor Lit_
 
 -- | Propositional variable. @('Var' x)@ represents a propositional variable
 -- \(x\).
 pattern Var :: a -> Formula a
-pattern Var x <- Var_ _ x where
-  Var = atomicASTConstructor Var_
+pattern Var x <-
+  Var_ _ x
+  where
+    Var = atomicASTConstructor Var_
 
 -- | Negation. @('Not' p)@ represents the formula \(\lnot p\).
 pattern Not :: Formula a -> Formula a
-pattern Not a <- Not_ _ a where
-  Not = unaryASTConstructor Not_
+pattern Not a <-
+  Not_ _ a
+  where
+    Not = unaryASTConstructor Not_
 
 -- | Implication. @('Imp' p q)@ represents the formula \(p \rightarrow q\).
 pattern Imp :: Formula a -> Formula a -> Formula a
-pattern Imp a b <- Imp_ _ a b where
-  Imp = binaryASTConstructor Imp_
+pattern Imp a b <-
+  Imp_ _ a b
+  where
+    Imp = binaryASTConstructor Imp_
 
 -- | Disjunction. @('Or' p q)@ represents the formula \(p \lor q\).
 pattern Or :: Formula a -> Formula a -> Formula a
-pattern Or a b <- Or_ _ a b where
-  Or = binaryASTConstructor Or_
+pattern Or a b <-
+  Or_ _ a b
+  where
+    Or = binaryASTConstructor Or_
 
 -- | Conjunction. @('And' p q)@ represents the formula \(p \land q\).
 pattern And :: Formula a -> Formula a -> Formula a
-pattern And a b <- And_ _ a b where
-  And = binaryASTConstructor And_
+pattern And a b <-
+  And_ _ a b
+  where
+    And = binaryASTConstructor And_
 
 -- | Equivalence. @('Iff' p q)@ represents the formula \(p \leftrightarrow q\).
 pattern Iff :: Formula a -> Formula a -> Formula a
-pattern Iff a b <- Iff_ _ a b where
-  Iff = binaryASTConstructor Iff_
+pattern Iff a b <-
+  Iff_ _ a b
+  where
+    Iff = binaryASTConstructor Iff_
 
 {-# COMPLETE Lit, Var, Not, Imp, Or, And, Iff #-}
 
@@ -126,7 +140,6 @@ instance Show a => Show (Formula a) where
     where
       appPrec = 10
 
-      f _ a@(Lit _) = g a
       f b a = showParen b $ g a
 
       g (Lit False) = showString "Lit False"
@@ -139,6 +152,32 @@ instance Show a => Show (Formula a) where
       g (Iff p q) = h "Iff " p q
 
       h c p q = showString c . f True p . showString " " . f True q
+
+instance Read a => Read (Formula a) where
+  readsPrec d = f (d > appPrec)
+    where
+      appPrec = 10
+
+      f b s = concatMap (($ s) . readParen b) readers
+      readers =
+        [ readLit,
+          readVar,
+          readNot,
+          readImp,
+          readOr,
+          readAnd,
+          readIff
+        ]
+      readLit s = [(Lit b, r) | ("Lit", t) <- lex s, (b, r) <- readsPrec (appPrec + 1) t]
+      readVar s = [(Var x, r) | ("Var", t) <- lex s, (x, r) <- readsPrec (appPrec + 1) t]
+      readNot = parseUnary Not "Not"
+      readImp = parseBinary Imp "Imp"
+      readOr = parseBinary Or "Or"
+      readAnd = parseBinary And "And"
+      readIff = parseBinary Iff "Iff"
+
+      parseUnary c n s = [(c a, s'') | (n', s') <- lex s, n == n', (a, s'') <- f True s']
+      parseBinary c n s = [(c a b, s''') | (n', s') <- lex s, n == n', (a, s'') <- f True s', (b, s''') <- f True s'']
 
 -- | Syntactic equality.
 instance Eq a => Eq (Formula a) where
