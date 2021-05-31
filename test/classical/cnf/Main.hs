@@ -43,7 +43,7 @@ formula n
       ]
 
 instance QC.Arbitrary (Formula Int) where
-  arbitrary = QC.chooseInt (0, 3) >>= formula
+  arbitrary = QC.chooseInt (0, 2) >>= formula
 
 timeoutMicroseconds :: Int
 timeoutMicroseconds = 60000000 -- One minute
