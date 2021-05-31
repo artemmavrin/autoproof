@@ -22,10 +22,10 @@ import AutoProof.Internal.Judgement (Judgement, (|-))
 --
 -- ==== __Examples__
 --
--- >>> isProvable $ [Var "a", Var "b"] |- And (Var "a") (Var "b")
+-- >>> isProvable $ [Not (Not (Var 'a'))] |- Var 'a'
 -- True
 --
--- >>> isProvable $ [] |- Or (Var "a") (Not (Var "a"))
+-- >>> isProvable $ [Var 'a'] |- Var 'b'
 -- False
 isProvable :: Ord a => Judgement a -> Bool
 isProvable = isProvableGlivenko
@@ -34,13 +34,9 @@ isProvable = isProvableGlivenko
 --
 -- ==== __Examples__
 --
--- >>> isTautology $ Imp (And (Var 'a') (Var 'b')) (Var 'a')
--- True
---
 -- >>> isTautology $ Or (Var 'a') (Not (Var 'a'))
--- False
---
--- >>> isTautology $ Not (Not (Or (Var 'a') (Not (Var 'a'))))
 -- True
+-- >>> isTautology $ Var 'a'
+-- False
 isTautology :: Ord a => Formula a -> Bool
 isTautology = isProvable . ([] |-)
