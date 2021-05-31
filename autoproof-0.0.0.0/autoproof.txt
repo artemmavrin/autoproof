@@ -1902,12 +1902,12 @@ module AutoProof.Classical.Proof.Provability
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; isProvable $ [Var "a", Var "b"] |- And (Var "a") (Var "b")
+--   &gt;&gt;&gt; isProvable $ [Not (Not (Var 'a'))] |- Var 'a'
 --   True
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; isProvable $ [] |- Or (Var "a") (Not (Var "a"))
+--   &gt;&gt;&gt; isProvable $ [Var 'a'] |- Var 'b'
 --   False
 --   </pre>
 isProvable :: Ord a => Judgement a -> Bool
@@ -1917,18 +1917,11 @@ isProvable :: Ord a => Judgement a -> Bool
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; isTautology $ Imp (And (Var 'a') (Var 'b')) (Var 'a')
---   True
---   </pre>
---   
---   <pre>
 --   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
---   False
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; isTautology $ Not (Not (Or (Var 'a') (Not (Var 'a'))))
 --   True
+--   
+--   &gt;&gt;&gt; isTautology $ Var 'a'
+--   False
 --   </pre>
 isTautology :: Ord a => Formula a -> Bool
 
@@ -1941,12 +1934,12 @@ module AutoProof.Classical.Proof
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; isProvable $ [Var "a", Var "b"] |- And (Var "a") (Var "b")
+--   &gt;&gt;&gt; isProvable $ [Not (Not (Var 'a'))] |- Var 'a'
 --   True
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; isProvable $ [] |- Or (Var "a") (Not (Var "a"))
+--   &gt;&gt;&gt; isProvable $ [Var 'a'] |- Var 'b'
 --   False
 --   </pre>
 isProvable :: Ord a => Judgement a -> Bool
@@ -1956,18 +1949,11 @@ isProvable :: Ord a => Judgement a -> Bool
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; isTautology $ Imp (And (Var 'a') (Var 'b')) (Var 'a')
---   True
---   </pre>
---   
---   <pre>
 --   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
---   False
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; isTautology $ Not (Not (Or (Var 'a') (Not (Var 'a'))))
 --   True
+--   
+--   &gt;&gt;&gt; isTautology $ Var 'a'
+--   False
 --   </pre>
 isTautology :: Ord a => Formula a -> Bool
 
@@ -2205,12 +2191,12 @@ pattern IffIntr :: Judgement a -> Proof a -> Proof a -> Proof a
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; isProvable $ [Var "a", Var "b"] |- And (Var "a") (Var "b")
+--   &gt;&gt;&gt; isProvable $ [Not (Not (Var 'a'))] |- Var 'a'
 --   True
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; isProvable $ [] |- Or (Var "a") (Not (Var "a"))
+--   &gt;&gt;&gt; isProvable $ [Var 'a'] |- Var 'b'
 --   False
 --   </pre>
 isProvable :: Ord a => Judgement a -> Bool
@@ -2220,18 +2206,11 @@ isProvable :: Ord a => Judgement a -> Bool
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; isTautology $ Imp (And (Var 'a') (Var 'b')) (Var 'a')
---   True
---   </pre>
---   
---   <pre>
 --   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
---   False
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; isTautology $ Not (Not (Or (Var 'a') (Not (Var 'a'))))
 --   True
+--   
+--   &gt;&gt;&gt; isTautology $ Var 'a'
+--   False
 --   </pre>
 isTautology :: Ord a => Formula a -> Bool
 
