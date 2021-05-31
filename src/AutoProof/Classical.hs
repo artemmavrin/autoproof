@@ -1,13 +1,13 @@
 -- |
--- Module      : AutoProof
+-- Module      : AutoProof.Classical
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
 --
--- Propositional logic library.
-module AutoProof
+-- Classical propositional logic library.
+module AutoProof.Classical
   ( -- * Formulas
     Formula (Lit, Var, Not, Imp, Or, And, Iff),
 
@@ -43,6 +43,10 @@ module AutoProof
         IffElimR,
         IffIntr
       ),
+
+    -- ** Provability checking
+    isProvable,
+    isTautology,
 
     -- * Abstract syntax trees
     AST (Root, root, children, height, size),
@@ -104,3 +108,7 @@ import AutoProof.Internal.Proof
     prettyProof,
   )
 import AutoProof.Internal.Utils.PrettyPrintable (PrettyPrintable (pretty))
+import AutoProof.Classical.Proof
+  ( isProvable,
+    isTautology,
+  )

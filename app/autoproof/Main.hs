@@ -6,7 +6,7 @@
 
 module Main where
 
-import AutoProof
+import AutoProof.Intuitionistic
   ( Judgement,
     Proof,
     correct,
