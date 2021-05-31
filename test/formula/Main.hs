@@ -21,7 +21,7 @@ main = H.hspec $ do
     assertOrdConsistentStrict
     assertOrdEquality
     assertOrdStrictness
-  H.describe "instance Show (Formula a), Read (Formula a" $ do
+  H.describe "instance Show (Formula a), Read (Formula a)" $ do
     assertReadShow
   H.describe "subformulas" $ do
     assertSubformulasLTE
@@ -81,8 +81,8 @@ ordStrictness x y = (x < y) == (x <= y && x /= y)
 subformulasLTE :: Formula Int -> Bool
 subformulasLTE p = all (<= p) $ subformulas p
 
-readShow :: Formula Int -> Bool
-readShow x = (x,"") `elem` readsPrec 10 (showsPrec 10 x "")
+readShow :: Int -> Formula Int -> Bool
+readShow d x = (x,"") `elem` readsPrec d (showsPrec d x "")
 
 -- Testable assertions
 

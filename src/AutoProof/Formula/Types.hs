@@ -176,8 +176,8 @@ instance Read a => Read (Formula a) where
       readAnd = parseBinary And "And"
       readIff = parseBinary Iff "Iff"
 
-      parseUnary c n s = [(c a, s'') | (n', s') <- lex s, n == n', (a, s'') <- f True s']
-      parseBinary c n s = [(c a b, s''') | (n', s') <- lex s, n == n', (a, s'') <- f True s', (b, s''') <- f True s'']
+      parseUnary c n s = [(c a, u) | (n', t) <- lex s, n == n', (a, u) <- f True t]
+      parseBinary c n s = [(c a b, v) | (n', t) <- lex s, n == n', (a, u) <- f True t, (b, v) <- f True u]
 
 -- | Syntactic equality.
 instance Eq a => Eq (Formula a) where
