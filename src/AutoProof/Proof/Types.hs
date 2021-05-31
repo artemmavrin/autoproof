@@ -806,6 +806,78 @@ instance Show a => Show (Proof a) where
           . showString " "
           . f True r
 
+instance (Ord a, Read a) => Read (Proof a) where
+  readsPrec d = f (d > appPrec)
+    where
+      appPrec = 10
+
+      f b s = concatMap (($ s) . readParen b) readers
+      readers =
+        [ readAxiom,
+          readFalseElim,
+          readTrueIntr,
+          readNotElim,
+          readNotIntr,
+          readImpElim,
+          readImpIntr,
+          readOrElim,
+          readOrIntrL,
+          readOrIntrR,
+          readAndElimL,
+          readAndElimR,
+          readAndIntr,
+          readIffElimL,
+          readIffElimR,
+          readIffIntr
+        ]
+      readAxiom = parseNullary Axiom "Axiom"
+      readFalseElim = parseUnary FalseElim "FalseElim"
+      readTrueIntr = parseNullary TrueIntr "TrueIntr"
+      readNotElim = parseBinary NotElim "NotElim"
+      readNotIntr = parseUnary NotIntr "NotIntr"
+      readImpElim = parseBinary ImpElim "ImpElim"
+      readImpIntr = parseUnary ImpIntr "ImpIntr"
+      readOrElim = parseTernary OrElim "OrElim"
+      readOrIntrL = parseUnary OrIntrL "OrIntrL"
+      readOrIntrR = parseUnary OrIntrR "OrIntrR"
+      readAndElimL = parseUnary AndElimL "AndElimL"
+      readAndElimR = parseUnary AndElimR "AndElimR"
+      readAndIntr = parseBinary AndIntr "AndIntr"
+      readIffElimL = parseUnary IffElimL "IffElimL"
+      readIffElimR = parseUnary IffElimR "IffElimR"
+      readIffIntr = parseBinary IffIntr "IffIntr"
+
+      parseNullary c n s =
+        [ (c j, u)
+          | (n', t) <- lex s,
+            n == n',
+            (j, u) <- readsPrec (appPrec + 1) t
+        ]
+      parseUnary c n s =
+        [ (c j p, v)
+          | (n', t) <- lex s,
+            n == n',
+            (j, u) <- readsPrec (appPrec + 1) t,
+            (p, v) <- f True u
+        ]
+      parseBinary c n s =
+        [ (c j p q, w)
+          | (n', t) <- lex s,
+            n == n',
+            (j, u) <- readsPrec (appPrec + 1) t,
+            (p, v) <- f True u,
+            (q, w) <- f True v
+        ]
+      parseTernary c n s =
+        [ (c j p q r, x)
+          | (n', t) <- lex s,
+            n == n',
+            (j, u) <- readsPrec (appPrec + 1) t,
+            (p, v) <- f True u,
+            (q, w) <- f True v,
+            (r, x) <- f True w
+        ]
+
 instance PrettyPrintable a => PrettyPrintable (Proof a) where
   -- Adapted from drawTree in Data.Tree from the containers package
   pretty = unlines . reverse . draw

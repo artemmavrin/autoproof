@@ -69,6 +69,27 @@ tests:
     when:
       - condition: false
         other-modules: Paths_autoproof
+  judgement-test:
+    main: Main.hs
+    source-dirs: test/judgement
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
+      - -O0
+    dependencies:
+      - autoproof
+      - hspec >= 0.8.2
+      - QuickCheck >= 2.14.2
+    when:
+      - condition: false
+        other-modules: Paths_autoproof
   proof-test:
     main: Main.hs
     source-dirs: test/proof

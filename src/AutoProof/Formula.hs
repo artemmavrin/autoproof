@@ -1,5 +1,3 @@
-{-# LANGUAGE TypeFamilies #-}
-
 -- |
 -- Module      : AutoProof.Formula
 -- Copyright   : (c) Artem Mavrin, 2021
