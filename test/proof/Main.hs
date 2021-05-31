@@ -43,6 +43,8 @@ main = H.hspec $ do
     assertOrdConsistentStrict
     assertOrdEquality
     assertOrdStrictness
+  H.describe "instance Show (Proof a), Read (Proof a)" $ do
+    assertReadShow
 
 -- Generation of random formulas and proofs for testing
 
@@ -145,6 +147,9 @@ ordEquality x y = (x == y) == (compare x y == EQ)
 ordStrictness :: Ord a => a -> a -> Bool
 ordStrictness x y = (x < y) == (x <= y && x /= y)
 
+readShow :: Int -> Proof Int -> Bool
+readShow d x = (x, "") `elem` readsPrec d (showsPrec d x "")
+
 -- Testable assertions
 
 makeAssertion :: QC.Testable p => String -> Int -> p -> H.SpecWith ()
@@ -219,3 +224,11 @@ assertOrdStrictness =
     "strict inequality: p < q if and only if p <= q and p /= q"
     10000
     (ordStrictness :: Proof Int -> Proof Int -> Bool)
+
+assertReadShow :: H.SpecWith ()
+assertReadShow =
+  makeAssertion
+    "(x,\"\") is an element of (readsPrec d (showsPrec d x \"\"))"
+    1000
+    readShow
+
