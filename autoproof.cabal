@@ -4,11 +4,11 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 350923ddb297257cd8b7933356b3c064b3cd1501d6ea11396952eb108dc3b5c9
+-- hash: c5ddf8541c083cdfb3b1eee08dda53457b6dddee6b8517f1ca7fdf3e7e5aac9e
 
 name:           autoproof
 version:        0.0.0.0
-synopsis:       Automated theorem-proving in intuitionistic propositional logic
+synopsis:       Propositional logic library
 description:    Please see the README on GitHub at <https://github.com/artemmavrin/autoproof#readme>
 category:       Logic
 homepage:       https://github.com/artemmavrin/autoproof#readme
@@ -29,29 +29,32 @@ source-repository head
 library
   exposed-modules:
       AutoProof
-      AutoProof.AST
-      AutoProof.Formula
-      AutoProof.Formula.Operations
-      AutoProof.Formula.Types
-      AutoProof.Judgement
-      AutoProof.Parser
-      AutoProof.Proof
-      AutoProof.Proof.Correctness
-      AutoProof.Proof.Cut
-      AutoProof.Proof.Search
-      AutoProof.Proof.Search.General
-      AutoProof.Proof.Search.Implication
-      AutoProof.Proof.Search.Statman
-      AutoProof.Proof.Transform
-      AutoProof.Proof.Types
-      AutoProof.Utils.DList
-      AutoProof.Utils.Parser
-      AutoProof.Utils.Parser.Char
-      AutoProof.Utils.Parser.Combinator
-      AutoProof.Utils.Parser.Types
-      AutoProof.Utils.PrettyPrintable
-      AutoProof.Utils.Set
-      AutoProof.Utils.Symbols
+      AutoProof.Internal.AST
+      AutoProof.Internal.Formula
+      AutoProof.Internal.Formula.Operations
+      AutoProof.Internal.Formula.Types
+      AutoProof.Internal.Judgement
+      AutoProof.Internal.Parser
+      AutoProof.Internal.Proof
+      AutoProof.Internal.Proof.Structural
+      AutoProof.Internal.Proof.Types
+      AutoProof.Internal.Utils.DList
+      AutoProof.Internal.Utils.Parser
+      AutoProof.Internal.Utils.Parser.Char
+      AutoProof.Internal.Utils.Parser.Combinator
+      AutoProof.Internal.Utils.Parser.Types
+      AutoProof.Internal.Utils.PrettyPrintable
+      AutoProof.Internal.Utils.Set
+      AutoProof.Internal.Utils.Symbols
+      AutoProof.Intuitionistic
+      AutoProof.Intuitionistic.Proof
+      AutoProof.Intuitionistic.Proof.Correctness
+      AutoProof.Intuitionistic.Proof.Cut
+      AutoProof.Intuitionistic.Proof.Provability
+      AutoProof.Intuitionistic.Proof.Search
+      AutoProof.Intuitionistic.Proof.Search.General
+      AutoProof.Intuitionistic.Proof.Search.Implication
+      AutoProof.Intuitionistic.Proof.Search.Statman
   other-modules:
       Paths_autoproof
   hs-source-dirs:
@@ -80,7 +83,7 @@ test-suite dlist-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
-      test/dlist
+      test/internal/dlist
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       QuickCheck >=2.14.2
@@ -97,7 +100,7 @@ test-suite formula-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
-      test/formula
+      test/internal/formula
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -O0
   build-depends:
       QuickCheck >=2.14.2
@@ -114,7 +117,7 @@ test-suite is-tautology-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
-      test/is-tautology
+      test/intuitionistic/is-tautology
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       QuickCheck >=2.14.2
@@ -131,7 +134,7 @@ test-suite judgement-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
-      test/judgement
+      test/internal/judgement
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -O0
   build-depends:
       QuickCheck >=2.14.2
@@ -148,7 +151,7 @@ test-suite parser-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
-      test/parser
+      test/internal/parser
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       QuickCheck >=2.14.2
@@ -165,7 +168,7 @@ test-suite proof-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
-      test/proof
+      test/internal/proof
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -O0
   build-depends:
       QuickCheck >=2.14.2
@@ -182,7 +185,7 @@ test-suite prove-imp-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
-      test/prove-imp
+      test/intuitionistic/prove-imp
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       QuickCheck >=2.14.2
@@ -199,7 +202,7 @@ test-suite prove-statman-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
-      test/prove-statman
+      test/intuitionistic/prove-statman
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       QuickCheck >=2.14.2
@@ -216,7 +219,7 @@ test-suite prove-tautology-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
-      test/prove-tautology
+      test/intuitionistic/prove-tautology
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       QuickCheck >=2.14.2
@@ -233,7 +236,7 @@ test-suite prove-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
-      test/prove
+      test/intuitionistic/prove
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       QuickCheck >=2.14.2

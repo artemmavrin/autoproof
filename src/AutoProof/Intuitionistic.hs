@@ -1,13 +1,13 @@
 -- |
--- Module      : AutoProof
+-- Module      : AutoProof.Intuitionistic
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
 --
--- Propositional logic library.
-module AutoProof
+-- Intuitionistic propositional logic library.
+module AutoProof.Intuitionistic
   ( -- * Formulas
     Formula (Lit, Var, Not, Imp, Or, And, Iff),
 
@@ -43,6 +43,27 @@ module AutoProof
         IffElimR,
         IffIntr
       ),
+
+    -- ** Proof search for judgements and formulas
+    prove,
+    proveTautology,
+
+    -- ** Specific proof search algorithms
+    proveStatman,
+    proveImp,
+
+    -- ** Provability checking
+    isProvable,
+    isTautology,
+
+    -- ** Cuts
+    findCut,
+    hasCut,
+
+    -- ** Proof correctness
+    correct,
+    valid,
+    debug,
 
     -- * Abstract syntax trees
     AST (Root, root, children, height, size),
@@ -104,3 +125,16 @@ import AutoProof.Internal.Proof
     prettyProof,
   )
 import AutoProof.Internal.Utils.PrettyPrintable (PrettyPrintable (pretty))
+import AutoProof.Intuitionistic.Proof
+  ( correct,
+    debug,
+    findCut,
+    hasCut,
+    isProvable,
+    isTautology,
+    prove,
+    proveImp,
+    proveStatman,
+    proveTautology,
+    valid,
+  )
