@@ -1,24 +1,24 @@
 -- |
--- Module      : AutoProof.Intuitionistic.Proof.Provability
+-- Module      : AutoProof.Classical.Proof.Provablity
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
 --
--- Provability checking in intuitionistic propositional logic.
-module AutoProof.Intuitionistic.Proof.Provability
-  ( isProvable,
+-- Provability checking in classical propositional logic.
+module AutoProof.Classical.Proof.Provability
+  ( -- * Provability checking
+    isProvable,
     isTautology,
   )
 where
 
+import AutoProof.Classical.Proof.Glivenko (isProvableGlivenko)
 import AutoProof.Internal.Formula (Formula)
 import AutoProof.Internal.Judgement (Judgement, (|-))
-import AutoProof.Intuitionistic.Proof.Search (prove)
-import Data.Maybe (isJust)
 
--- | Determine whether a judgement is intuitionistically valid.
+-- | Determine whether a judgement is classically valid.
 --
 -- ==== __Examples__
 --
@@ -28,9 +28,9 @@ import Data.Maybe (isJust)
 -- >>> isProvable $ [] |- Or (Var "a") (Not (Var "a"))
 -- False
 isProvable :: Ord a => Judgement a -> Bool
-isProvable = isJust . prove
+isProvable = isProvableGlivenko
 
--- | Determine whether a formula is an intuitionistic tautology.
+-- | Determine whether a formula is an classically tautology.
 --
 -- ==== __Examples__
 --

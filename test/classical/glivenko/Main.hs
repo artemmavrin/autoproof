@@ -1,36 +1,30 @@
 module Main where
 
-import AutoProof.Intuitionistic
+import AutoProof.Classical
   ( Formula,
     Judgement,
-    correct,
     pretty,
-    prove,
     (|-),
   )
+import AutoProof.Classical.Proof.Glivenko (isProvableGlivenko)
 import AutoProof.Internal.Parser (unsafeParseFormula, unsafeParseJudgement)
 import Data.Char (isSpace)
-import Data.Maybe (fromJust, isJust, isNothing)
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
 
 main :: IO ()
 main = do
   -- Load known provable and unprovable formulas and judgements
-  provableFormulas <- loadFormulas "test/data/formulas/intuitionistic-tautologies.txt"
-  unprovableFormulas <- loadFormulas "test/data/formulas/intuitionistic-unprovable.txt"
-  provableImpJudgements <- loadJudgements "test/data/judgements/intuitionistic-provable-imp.txt"
-  unprovableImpJudgements <- loadJudgements "test/data/judgements/intuitionistic-unprovable-imp.txt"
-  provableJudgements <- loadJudgements "test/data/judgements/intuitionistic-provable.txt"
-  unprovableJudgements <- loadJudgements "test/data/judgements/intuitionistic-unprovable.txt"
+  provableFormulas <- loadFormulas "test/data/formulas/classical-only-tautologies.txt"
+  unprovableFormulas <- loadFormulas "test/data/formulas/classical-unprovable.txt"
+  provableJudgements <- loadJudgements "test/data/judgements/classical-only-provable.txt"
+  unprovableJudgements <- loadJudgements "test/data/judgements/classical-unprovable.txt"
 
   -- Run tests
   H.hspec $
-    H.describe "prove" $ do
+    H.describe "isProvableGlivenko" $ do
       mapM_ assertProvableFormula provableFormulas
       mapM_ assertUnprovableFormula unprovableFormulas
-      mapM_ assertProvableJudgement provableImpJudgements
-      mapM_ assertUnprovableJudgement unprovableImpJudgements
       mapM_ assertProvableJudgement provableJudgements
       mapM_ assertUnprovableJudgement unprovableJudgements
 
@@ -64,14 +58,11 @@ wait = QC.within timeoutMicroseconds
 
 assertProvableJudgement :: Judgement String -> H.SpecWith ()
 assertProvableJudgement j =
-  H.it ("provable: " ++ pretty j) $
-    wait $
-      let mp = prove j
-       in isJust mp && correct j (fromJust mp)
+  H.it ("provable: " ++ pretty j) $ wait $ isProvableGlivenko j
 
 assertUnprovableJudgement :: Judgement String -> H.SpecWith ()
 assertUnprovableJudgement j =
-  H.it ("not provable: " ++ pretty j) $ wait $ isNothing $ prove j
+  H.it ("not provable: " ++ pretty j) $ wait $ not (isProvableGlivenko j)
 
 assertProvableFormula :: Formula String -> H.SpecWith ()
 assertProvableFormula a = assertProvableJudgement $ [] |- a

@@ -77,7 +77,7 @@ a | b |- ~a -> b
 # deMorgan's laws
 ~a, ~b |- ~(a | b)
 ~a & ~b |- ~(a | b)
-~(a | b) |- (~a & ~b)
+~(a | b) |- ~a & ~b
 ~a | ~b |- ~(a & b)
 
 # Contraposition

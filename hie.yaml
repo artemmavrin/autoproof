@@ -25,3 +25,7 @@ cradle:
         component: "autoproof:test:prove-statman-test"
       - path: "./test/intuitionistic/prove/Main.hs"
         component: "autoproof:test:prove-test"
+      - path: "./test/classical/glivenko/Main.hs"
+        component: "autoproof:test:glivenko-test"
+      - path: "./test/classical/provable/Main.hs"
+        component: "autoproof:test:provable-test"
