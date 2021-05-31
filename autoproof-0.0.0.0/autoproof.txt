@@ -38,13 +38,13 @@ metadata :: AST t => t -> ASTMetadata
 
 -- | Container type for AST properties, intended for constant-time access.
 data ASTMetadata
-ASTMetadata :: Int -> Int -> ASTMetadata
+ASTMetadata :: !Int -> !Int -> ASTMetadata
 
 -- | Get an AST's height (see also <a>height</a>)
-[getHeight] :: ASTMetadata -> Int
+[getHeight] :: ASTMetadata -> !Int
 
 -- | Get an AST's size (see also <a>size</a>)
-[getSize] :: ASTMetadata -> Int
+[getSize] :: ASTMetadata -> !Int
 
 -- | <tt>(<a>subtrees</a> t)</tt> is the set of all subtrees of an AST
 --   <tt>t</tt> (including <tt>t</tt> itself).
