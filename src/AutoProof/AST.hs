@@ -34,9 +34,9 @@ import qualified Data.Set as Set
 -- | Container type for AST properties, intended for constant-time access.
 data ASTMetadata = ASTMetadata
   { -- | Get an AST's height (see also 'height')
-    getHeight :: Int,
+    getHeight :: !Int,
     -- | Get an AST's size (see also 'size')
-    getSize :: Int
+    getSize :: !Int
   }
   deriving (Eq, Ord)
 
