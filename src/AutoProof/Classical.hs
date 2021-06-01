@@ -13,6 +13,7 @@ module AutoProof.Classical
 
     -- ** Operations on formulas
     subformulas,
+    canonicalCNF,
 
     -- * Judgements
     Context,
@@ -65,6 +66,7 @@ module AutoProof.Classical
   )
 where
 
+import AutoProof.Classical.CNF (canonicalCNF)
 import AutoProof.Classical.Proof
   ( isProvable,
     isTautology,

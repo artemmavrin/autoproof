@@ -5,13 +5,16 @@ module Main where
 
 import AutoProof.Classical
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
+    canonicalCNF,
     isProvable,
+    subformulas,
     (|-),
   )
-import qualified AutoProof.Classical.CNF as CNF (fromFormula, toFormula)
+import AutoProof.Classical.CNF (CNF)
+import qualified AutoProof.Classical.CNF as CNF (fromFormula)
+import qualified Data.Set as Set (member)
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
-import qualified Data.Set as Set (member)
 
 main :: IO ()
 main = do
@@ -54,28 +57,40 @@ wait :: QC.Testable p => p -> QC.Property
 wait = QC.within timeoutMicroseconds
 
 assertFormulaEntailsCNF :: Formula Int -> QC.Property
-assertFormulaEntailsCNF a = wait $ isProvable ([a] |- CNF.toFormula (CNF.fromFormula a))
+assertFormulaEntailsCNF a = wait $ isProvable ([a] |- canonicalCNF a)
 
 assertCNFEntailsFormula :: Formula Int -> QC.Property
-assertCNFEntailsFormula a = wait $ isProvable ([CNF.toFormula (CNF.fromFormula a)] |- a)
+assertCNFEntailsFormula a = wait $ isProvable ([canonicalCNF a] |- a)
 
 assertCanonicalForm :: Formula Int -> Bool
-assertCanonicalForm a = all noLiteralAndItsNegation (CNF.fromFormula a)
+assertCanonicalForm a =
+  noRedundantClauses (CNF.fromFormula a)
+    && noTrueOrFalse (canonicalCNF a)
+
+noRedundantClauses :: CNF Int -> Bool
+noRedundantClauses = all noLiteralAndItsNegation
   where
     noLiteralAndItsNegation c = not (any (occursWithNegation c) c)
     occursWithNegation c (b, x) = (not b, x) `Set.member` c
 
+noTrueOrFalse :: Ord b => Formula b -> Bool
+noTrueOrFalse a =
+  a == Lit True || a == Lit False
+    || not (Lit True `Set.member` s || Lit False `Set.member` s)
+  where
+    s = subformulas a
+
 validateFormulaEntailsCNF :: H.SpecWith ()
 validateFormulaEntailsCNF =
   H.it "a |- CNF(a)" $
-    QC.withMaxSuccess 1000 assertFormulaEntailsCNF
+    QC.withMaxSuccess 10000 assertFormulaEntailsCNF
 
 validateCNFEntailsFormula :: H.SpecWith ()
 validateCNFEntailsFormula =
   H.it "CNF(a) |- a" $
-    QC.withMaxSuccess 1000 assertCNFEntailsFormula
+    QC.withMaxSuccess 10000 assertCNFEntailsFormula
 
 checkCanonicalForm :: H.SpecWith ()
 checkCanonicalForm =
   H.it "computed CNFs are in canonical form" $
-    QC.withMaxSuccess 1000 assertCanonicalForm
+    QC.withMaxSuccess 10000 assertCanonicalForm

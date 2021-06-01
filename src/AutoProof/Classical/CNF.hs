@@ -16,6 +16,7 @@ module AutoProof.Classical.CNF
     -- * Conversion functions
     fromFormula,
     toFormula,
+    canonicalCNF,
   )
 where
 
@@ -84,9 +85,12 @@ fromFormula = f . pos
 -- | Convert a conjunctive normal form representation of a formula into a
 -- formula.
 toFormula :: CNF a -> Formula a
-toFormula clauses = case Set.toList clauses of
-  [] -> Lit True
-  (c : cs) -> foldr (And . clauseToFormula) (clauseToFormula c) cs
+toFormula clauses =
+  if any Set.null clauses
+    then Lit False
+    else case Set.toList clauses of
+      [] -> Lit True
+      (c : cs) -> foldr (And . clauseToFormula) (clauseToFormula c) cs
 
 clauseToFormula :: Clause a -> Formula a
 clauseToFormula literals = case Set.toList literals of
@@ -96,3 +100,12 @@ clauseToFormula literals = case Set.toList literals of
 literalToFormula :: Literal a -> Formula a
 literalToFormula (False, x) = Not (Var x)
 literalToFormula (True, x) = Var x
+
+-- | Convert a formula into a canonical conjunctive normal form.
+--
+-- ==== __Examples__
+--
+-- >>> canonicalCNF $ Or (Not (Imp (Var "a") (Var "b"))) (Var "c")
+-- And (Or (Var "c") (Var "a")) (Or (Var "c") (Not (Var "b")))
+canonicalCNF :: Ord a => Formula a -> Formula a
+canonicalCNF = toFormula . fromFormula
