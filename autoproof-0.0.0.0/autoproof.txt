@@ -761,6 +761,16 @@ fromFormula :: Ord a => Formula a -> CNF a
 --   formula.
 toFormula :: CNF a -> Formula a
 
+-- | Convert a formula into a canonical conjunctive normal form.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; canonicalCNF $ Or (Not (Imp (Var "a") (Var "b"))) (Var "c")
+--   And (Or (Var "c") (Var "a")) (Or (Var "c") (Not (Var "b")))
+--   </pre>
+canonicalCNF :: Ord a => Formula a -> Formula a
+
 
 -- | Propositional logic library.
 module AutoProof
@@ -2058,6 +2068,16 @@ pattern Iff :: Formula a -> Formula a -> Formula a
 --   fromList [Var 'x',Var 'y',Var 'z',And (Var 'y') (Var 'z'),Or (Var 'x') (And (Var 'y') (Var 'z'))]
 --   </pre>
 subformulas :: Ord a => Formula a -> Set (Formula a)
+
+-- | Convert a formula into a canonical conjunctive normal form.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; canonicalCNF $ Or (Not (Imp (Var "a") (Var "b"))) (Var "c")
+--   And (Or (Var "c") (Var "a")) (Or (Var "c") (Not (Var "b")))
+--   </pre>
+canonicalCNF :: Ord a => Formula a -> Formula a
 
 -- | A set of propositional formulas, used as antecedents of a judgement.
 type Context a = Set (Formula a)
