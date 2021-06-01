@@ -739,10 +739,10 @@ unsafeParseJudgement :: String -> Judgement String
 module AutoProof.Classical.CNF
 
 -- | Conjunctive normal form: a conjunction of literals.
-type CNF a = [Clause a]
+type CNF a = Set (Clause a)
 
 -- | A disjunction of literals.
-type Clause a = [Literal a]
+type Clause a = Set (Literal a)
 
 -- | Either a propositional variable or its negation, depending on whether
 --   the first component is <a>True</a> or <a>False</a>, respectively.
@@ -755,7 +755,7 @@ type Literal a = (Bool, a)
 --   <ul>
 --   <li>Samuel Mimram (2020) <i>PROGRAM = PROOF</i>.</li>
 --   </ul>
-fromFormula :: Formula a -> CNF a
+fromFormula :: Ord a => Formula a -> CNF a
 
 -- | Convert a conjunctive normal form representation of a formula into a
 --   formula.
