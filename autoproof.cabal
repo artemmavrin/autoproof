@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5a854b0d5f850fb33f893f4acf0811b96a16466ef84fe3924a3039fa02df554f
+-- hash: ae186953f1ba4c1e4919a392f008b6813517f3a50854241e500e2b467bf06b56
 
 name:           autoproof
 version:        0.0.0.0
@@ -40,6 +40,9 @@ library
       AutoProof.Classical.Proof
       AutoProof.Classical.Proof.Glivenko
       AutoProof.Classical.Proof.Provability
+      AutoProof.Classical.SAT
+      AutoProof.Classical.SAT.Baseline
+      AutoProof.Classical.SAT.TruthAssignment
       AutoProof.Internal.AST
       AutoProof.Internal.Formula
       AutoProof.Internal.Formula.Operations
