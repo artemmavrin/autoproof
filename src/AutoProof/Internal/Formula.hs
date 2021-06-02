@@ -16,10 +16,11 @@ module AutoProof.Internal.Formula
 
     -- * Operations on formulas
     subformulas,
+    substitute,
   )
 where
 
-import AutoProof.Internal.Formula.Operations (subformulas)
+import AutoProof.Internal.Formula.Operations (subformulas, substitute)
 import AutoProof.Internal.Formula.Types
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
     prettyFormula,

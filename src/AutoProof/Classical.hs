@@ -13,6 +13,7 @@ module AutoProof.Classical
 
     -- ** Operations on formulas
     subformulas,
+    substitute,
     canonicalCNF,
 
     -- * Judgements
@@ -80,6 +81,7 @@ import AutoProof.Internal.Formula
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
     prettyFormula,
     subformulas,
+    substitute,
   )
 import AutoProof.Internal.Judgement
   ( Context,
