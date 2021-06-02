@@ -15,6 +15,7 @@ module AutoProof.Classical
     subformulas,
     substitute,
     canonicalCNF,
+    getAnyVariable,
 
     -- * Judgements
     Context,
@@ -79,6 +80,7 @@ import AutoProof.Internal.AST
   )
 import AutoProof.Internal.Formula
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
+    getAnyVariable,
     prettyFormula,
     subformulas,
     substitute,
