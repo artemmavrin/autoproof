@@ -9,14 +9,18 @@
 -- Defines miscellaneous operations on formulas.
 module AutoProof.Internal.Formula.Operations
   ( subformulas,
+    substitute,
+    getAnyVariable,
   )
 where
 
 import AutoProof.Internal.Formula.Types
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
   )
+import AutoProof.Internal.AST (children)
 import Data.Set (Set)
 import qualified Data.Set as Set
+import Control.Applicative ((<|>))
 
 -- | Get the set of subformulas of a propositional formula.
 --
@@ -34,3 +38,32 @@ subformulas = go Set.empty
     go s p@(Or a b) = go (go (Set.insert p s) a) b
     go s p@(And a b) = go (go (Set.insert p s) a) b
     go s p@(Iff a b) = go (go (Set.insert p s) a) b
+
+-- | @('substitute' a x p)@ represents \(a[x := p]\), the substitution of each
+-- occurence of the variable \(x\) in the formula \(a\) by the formula \(p\).
+--
+-- ==== __Examples__
+--
+-- >>> substitute (Imp (Var 'e') (Var 'e')) 'e' (And (Var 'a') (Var 'a'))
+-- Imp (And (Var 'a') (Var 'a')) (And (Var 'a') (Var 'a'))
+substitute :: Eq a => Formula a -> a -> Formula a -> Formula a
+substitute a@(Lit _) _ _ = a
+substitute v@(Var y) x p = if x == y then p else v
+substitute (Not a) x p = Not $ substitute a x p
+substitute (Imp a b) x p = Imp (substitute a x p) (substitute b x p)
+substitute (Or a b) x p = Or (substitute a x p) (substitute b x p)
+substitute (And a b) x p = And (substitute a x p) (substitute b x p)
+substitute (Iff a b) x p = Iff (substitute a x p) (substitute b x p)
+
+-- | Obtain a propositional variable from a formula, if there is one.
+--
+-- ==== __Examples__
+--
+-- >>> getAnyVariable (Or (Var "a") (Var "b"))
+-- Just "a"
+--
+-- >>> getAnyVariable (Lit False :: Formula String)
+-- Nothing
+getAnyVariable :: Formula a -> Maybe a
+getAnyVariable (Var x) = Just x
+getAnyVariable a = foldr ((<|>) . getAnyVariable) Nothing (children a)

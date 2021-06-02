@@ -13,6 +13,8 @@ module AutoProof.Intuitionistic
 
     -- ** Operations on formulas
     subformulas,
+    substitute,
+    getAnyVariable,
 
     -- * Judgements
     Context,
@@ -89,8 +91,10 @@ import AutoProof.Internal.AST
   )
 import AutoProof.Internal.Formula
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
+    getAnyVariable,
     prettyFormula,
     subformulas,
+    substitute,
   )
 import AutoProof.Internal.Judgement
   ( Context,
