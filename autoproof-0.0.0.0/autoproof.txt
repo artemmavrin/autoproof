@@ -194,6 +194,33 @@ module AutoProof.Internal.Formula.Operations
 --   </pre>
 subformulas :: Ord a => Formula a -> Set (Formula a)
 
+-- | <tt>(<a>substitute</a> a x p)</tt> represents &lt;math&gt;, the
+--   substitution of each occurence of the variable &lt;math&gt; in the
+--   formula &lt;math&gt; by the formula &lt;math&gt;.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; substitute (Imp (Var 'e') (Var 'e')) 'e' (And (Var 'a') (Var 'a'))
+--   Imp (And (Var 'a') (Var 'a')) (And (Var 'a') (Var 'a'))
+--   </pre>
+substitute :: Eq a => Formula a -> a -> Formula a -> Formula a
+
+-- | Obtain a propositional variable from a formula, if there is one.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; getAnyVariable (Or (Var "a") (Var "b"))
+--   Just "a"
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; getAnyVariable (Lit False :: Formula String)
+--   Nothing
+--   </pre>
+getAnyVariable :: Formula a -> Maybe a
+
 
 -- | Defines the <a>Formula</a> type and related functions.
 module AutoProof.Internal.Formula
@@ -271,6 +298,33 @@ prettyFormula :: PrettyPrintable a => Formula a -> String
 --   fromList [Var 'x',Var 'y',Var 'z',And (Var 'y') (Var 'z'),Or (Var 'x') (And (Var 'y') (Var 'z'))]
 --   </pre>
 subformulas :: Ord a => Formula a -> Set (Formula a)
+
+-- | <tt>(<a>substitute</a> a x p)</tt> represents &lt;math&gt;, the
+--   substitution of each occurence of the variable &lt;math&gt; in the
+--   formula &lt;math&gt; by the formula &lt;math&gt;.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; substitute (Imp (Var 'e') (Var 'e')) 'e' (And (Var 'a') (Var 'a'))
+--   Imp (And (Var 'a') (Var 'a')) (And (Var 'a') (Var 'a'))
+--   </pre>
+substitute :: Eq a => Formula a -> a -> Formula a -> Formula a
+
+-- | Obtain a propositional variable from a formula, if there is one.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; getAnyVariable (Or (Var "a") (Var "b"))
+--   Just "a"
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; getAnyVariable (Lit False :: Formula String)
+--   Nothing
+--   </pre>
+getAnyVariable :: Formula a -> Maybe a
 
 
 -- | Defines the <a>Judgement</a> type and related functions.
@@ -733,6 +787,146 @@ unsafeParseFormula :: String -> Formula String
 --   [And (Var "a") (Var "b")] |- Var "a"
 --   </pre>
 unsafeParseJudgement :: String -> Judgement String
+
+
+-- | Defines the TruthAssignment class.
+module AutoProof.Classical.SAT.TruthAssignment
+
+-- | Class representing truth assignments for evalutating propositional
+--   logic formulas.
+class TruthAssignment t a
+
+-- | Evaluate the truth value of a variable under a given truth assignment.
+evalVar :: TruthAssignment t a => t -> a -> Bool
+
+-- | Evaluate the truth value of a formula under a given truth assignment.
+evalFormula :: TruthAssignment t a => t -> Formula a -> Bool
+
+-- | Infix alias of <a>evalFormula</a>.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = Map.fromList $ [("a", True), ("b", False)]
+--   
+--   &gt;&gt;&gt; t |= And (Var "a") (Not (Var "b"))
+--   True
+--   </pre>
+(|=) :: TruthAssignment t a => t -> Formula a -> Bool
+instance GHC.Classes.Ord a => AutoProof.Classical.SAT.TruthAssignment.TruthAssignment (Data.Map.Internal.Map a GHC.Types.Bool) a
+instance AutoProof.Classical.SAT.TruthAssignment.TruthAssignment () a
+
+
+-- | Naive baseline SAT algorithm.
+module AutoProof.Classical.SAT.Baseline
+
+-- | Naive satisfiability algorithm.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; naiveSAT $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; naiveSAT $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+naiveSAT :: Eq a => Formula a -> Bool
+
+-- | Naive satisfiability algorithm, returning a satisfying truth
+--   assignment.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; naiveSATAssignment $ And (Not (Var "a")) (Or (Var "b") (Var "c"))
+--   Just (fromList [("a",False),("b",True),("c",True)])
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; naiveSATAssignment $ And (Var "a") (Not (Var "a"))
+--   Nothing
+--   </pre>
+naiveSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
+
+
+-- | Satisfiability algorithms.
+module AutoProof.Classical.SAT
+
+-- | Class representing truth assignments for evalutating propositional
+--   logic formulas.
+class TruthAssignment t a
+
+-- | Evaluate the truth value of a variable under a given truth assignment.
+evalVar :: TruthAssignment t a => t -> a -> Bool
+
+-- | Evaluate the truth value of a formula under a given truth assignment.
+evalFormula :: TruthAssignment t a => t -> Formula a -> Bool
+
+-- | Infix alias of <a>evalFormula</a>.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = Map.fromList $ [("a", True), ("b", False)]
+--   
+--   &gt;&gt;&gt; t |= And (Var "a") (Not (Var "b"))
+--   True
+--   </pre>
+(|=) :: TruthAssignment t a => t -> Formula a -> Bool
+
+-- | Naive satisfiability algorithm.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; naiveSAT $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; naiveSAT $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+naiveSAT :: Eq a => Formula a -> Bool
+
+-- | Naive satisfiability algorithm, returning a satisfying truth
+--   assignment.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; naiveSATAssignment $ And (Not (Var "a")) (Or (Var "b") (Var "c"))
+--   Just (fromList [("a",False),("b",True),("c",True)])
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; naiveSATAssignment $ And (Var "a") (Not (Var "a"))
+--   Nothing
+--   </pre>
+naiveSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
 
 
 -- | Functions and types related to conjunctive normal forms.
@@ -1528,6 +1722,33 @@ pattern Iff :: Formula a -> Formula a -> Formula a
 --   </pre>
 subformulas :: Ord a => Formula a -> Set (Formula a)
 
+-- | <tt>(<a>substitute</a> a x p)</tt> represents &lt;math&gt;, the
+--   substitution of each occurence of the variable &lt;math&gt; in the
+--   formula &lt;math&gt; by the formula &lt;math&gt;.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; substitute (Imp (Var 'e') (Var 'e')) 'e' (And (Var 'a') (Var 'a'))
+--   Imp (And (Var 'a') (Var 'a')) (And (Var 'a') (Var 'a'))
+--   </pre>
+substitute :: Eq a => Formula a -> a -> Formula a -> Formula a
+
+-- | Obtain a propositional variable from a formula, if there is one.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; getAnyVariable (Or (Var "a") (Var "b"))
+--   Just "a"
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; getAnyVariable (Lit False :: Formula String)
+--   Nothing
+--   </pre>
+getAnyVariable :: Formula a -> Maybe a
+
 -- | A set of propositional formulas, used as antecedents of a judgement.
 type Context a = Set (Formula a)
 
@@ -2069,6 +2290,18 @@ pattern Iff :: Formula a -> Formula a -> Formula a
 --   </pre>
 subformulas :: Ord a => Formula a -> Set (Formula a)
 
+-- | <tt>(<a>substitute</a> a x p)</tt> represents &lt;math&gt;, the
+--   substitution of each occurence of the variable &lt;math&gt; in the
+--   formula &lt;math&gt; by the formula &lt;math&gt;.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; substitute (Imp (Var 'e') (Var 'e')) 'e' (And (Var 'a') (Var 'a'))
+--   Imp (And (Var 'a') (Var 'a')) (And (Var 'a') (Var 'a'))
+--   </pre>
+substitute :: Eq a => Formula a -> a -> Formula a -> Formula a
+
 -- | Convert a formula into a canonical conjunctive normal form.
 --   
 --   <h4><b>Examples</b></h4>
@@ -2078,6 +2311,21 @@ subformulas :: Ord a => Formula a -> Set (Formula a)
 --   And (Or (Var "c") (Var "a")) (Or (Var "c") (Not (Var "b")))
 --   </pre>
 canonicalCNF :: Ord a => Formula a -> Formula a
+
+-- | Obtain a propositional variable from a formula, if there is one.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; getAnyVariable (Or (Var "a") (Var "b"))
+--   Just "a"
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; getAnyVariable (Lit False :: Formula String)
+--   Nothing
+--   </pre>
+getAnyVariable :: Formula a -> Maybe a
 
 -- | A set of propositional formulas, used as antecedents of a judgement.
 type Context a = Set (Formula a)
@@ -2267,6 +2515,69 @@ isProvable :: Ord a => Judgement a -> Bool
 --   False
 --   </pre>
 isTautology :: Ord a => Formula a -> Bool
+
+-- | Class representing truth assignments for evalutating propositional
+--   logic formulas.
+class TruthAssignment t a
+
+-- | Evaluate the truth value of a variable under a given truth assignment.
+evalVar :: TruthAssignment t a => t -> a -> Bool
+
+-- | Evaluate the truth value of a formula under a given truth assignment.
+evalFormula :: TruthAssignment t a => t -> Formula a -> Bool
+
+-- | Infix alias of <a>evalFormula</a>.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = Map.fromList $ [("a", True), ("b", False)]
+--   
+--   &gt;&gt;&gt; t |= And (Var "a") (Not (Var "b"))
+--   True
+--   </pre>
+(|=) :: TruthAssignment t a => t -> Formula a -> Bool
+
+-- | Naive satisfiability algorithm.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; naiveSAT $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; naiveSAT $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+naiveSAT :: Eq a => Formula a -> Bool
+
+-- | Naive satisfiability algorithm, returning a satisfying truth
+--   assignment.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; naiveSATAssignment $ And (Not (Var "a")) (Or (Var "b") (Var "c"))
+--   Just (fromList [("a",False),("b",True),("c",True)])
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; naiveSATAssignment $ And (Var "a") (Not (Var "a"))
+--   Nothing
+--   </pre>
+naiveSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
 
 -- | Abstract syntax tree class.
 class AST t where {

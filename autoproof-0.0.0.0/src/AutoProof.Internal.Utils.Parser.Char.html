@@ -34,23 +34,23 @@
 </span><span id="line-34"></span><span class="hs-comment">-- Nothing</span><span>
 </span><span id="line-35"></span><span class="annot"><a href="AutoProof.Internal.Utils.Parser.Char.html#charIf"><span class="hs-identifier hs-type">charIf</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span>
 </span><span id="line-36"></span><span id="charIf"><span class="annot"><span class="annottext">charIf :: (Char -&gt; Bool) -&gt; Parser Char
-</span><a href="AutoProof.Internal.Utils.Parser.Char.html#charIf"><span class="hs-identifier hs-var hs-var">charIf</span></a></span></span><span> </span><span id="local-6989586621679061923"><span class="annot"><span class="annottext">p :: Char -&gt; Bool
-</span><a href="#local-6989586621679061923"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe (String, Char)) -&gt; Parser Char
+</span><a href="AutoProof.Internal.Utils.Parser.Char.html#charIf"><span class="hs-identifier hs-var hs-var">charIf</span></a></span></span><span> </span><span id="local-6989586621679063955"><span class="annot"><span class="annottext">p :: Char -&gt; Bool
+</span><a href="#local-6989586621679063955"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe (String, Char)) -&gt; Parser Char
 forall a. (String -&gt; Maybe (String, a)) -&gt; Parser a
 </span><a href="AutoProof.Internal.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-var">Parser</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe (String, Char)
-</span><a href="#local-6989586621679061922"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><a href="#local-6989586621679063954"><span class="hs-identifier hs-var">f</span></a></span><span>
 </span><span id="line-37"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-38"></span><span>    </span><span id="local-6989586621679061922"><span class="annot"><span class="annottext">f :: String -&gt; Maybe (String, Char)
-</span><a href="#local-6989586621679061922"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679061921"><span class="annot"><span class="annottext">c :: Char
-</span><a href="#local-6989586621679061921"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679061920"><span class="annot"><span class="annottext">cs :: String
-</span><a href="#local-6989586621679061920"><span class="hs-identifier hs-var">cs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
-</span><a href="#local-6989586621679061923"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679061921"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(String, Char) -&gt; Maybe (String, Char)
+</span><span id="line-38"></span><span>    </span><span id="local-6989586621679063954"><span class="annot"><span class="annottext">f :: String -&gt; Maybe (String, Char)
+</span><a href="#local-6989586621679063954"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679063953"><span class="annot"><span class="annottext">c :: Char
+</span><a href="#local-6989586621679063953"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679063952"><span class="annot"><span class="annottext">cs :: String
+</span><a href="#local-6989586621679063952"><span class="hs-identifier hs-var">cs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><a href="#local-6989586621679063955"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679063953"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(String, Char) -&gt; Maybe (String, Char)
 forall a. a -&gt; Maybe a
 </span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679061920"><span class="hs-identifier hs-var">cs</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679061921"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-39"></span><span>    </span><span class="annot"><a href="#local-6989586621679061922"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe (String, Char)
+</span><a href="#local-6989586621679063952"><span class="hs-identifier hs-var">cs</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679063953"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>    </span><span class="annot"><a href="#local-6989586621679063954"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe (String, Char)
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
 </span><span id="line-40"></span><span>
@@ -65,12 +65,12 @@ forall a. Maybe a
 </span><span id="line-49"></span><span class="hs-comment">-- Nothing</span><span>
 </span><span id="line-50"></span><span class="annot"><a href="AutoProof.Internal.Utils.Parser.Char.html#char"><span class="hs-identifier hs-type">char</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Utils.Parser.Types.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span>
 </span><span id="line-51"></span><span id="char"><span class="annot"><span class="annottext">char :: Char -&gt; Parser Char
-</span><a href="AutoProof.Internal.Utils.Parser.Char.html#char"><span class="hs-identifier hs-var hs-var">char</span></a></span></span><span> </span><span id="local-6989586621679061919"><span class="annot"><span class="annottext">c :: Char
-</span><a href="#local-6989586621679061919"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Parser Char
+</span><a href="AutoProof.Internal.Utils.Parser.Char.html#char"><span class="hs-identifier hs-var hs-var">char</span></a></span></span><span> </span><span id="local-6989586621679063951"><span class="annot"><span class="annottext">c :: Char
+</span><a href="#local-6989586621679063951"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Parser Char
 </span><a href="AutoProof.Internal.Utils.Parser.Char.html#charIf"><span class="hs-identifier hs-var">charIf</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679061919"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679063951"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-52"></span><span>
 </span><span id="line-53"></span><span class="hs-comment">-- | Parse any character.</span><span>
 </span><span id="line-54"></span><span class="hs-comment">--</span><span>
