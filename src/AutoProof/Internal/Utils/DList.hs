@@ -18,6 +18,7 @@ module AutoProof.Internal.Utils.DList
     toSet,
     cons,
     empty,
+    singleton,
   )
 where
 
@@ -60,3 +61,10 @@ cons = (.) . (:)
 -- []
 empty :: DList a
 empty = id
+
+-- | Singleton difference list.
+--
+-- >>> toList $ (singleton 0) . (singleton 1)
+-- [0,1]
+singleton :: a -> DList a
+singleton = (:)
