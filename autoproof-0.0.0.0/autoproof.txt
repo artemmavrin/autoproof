@@ -131,6 +131,28 @@ cons :: a -> DList a -> DList a
 --   </pre>
 empty :: DList a
 
+-- | Singleton difference list.
+--   
+--   <pre>
+--   &gt;&gt;&gt; toList $ (singleton 0) . (singleton 1)
+--   [0,1]
+--   </pre>
+singleton :: a -> DList a
+
+
+-- | Miscellaneous map-related functions.
+module AutoProof.Internal.Utils.MapUtils
+
+-- | Convert a foldable collection of (key, value) pairs into a map.
+--   
+--   <pre>
+--   &gt;&gt;&gt; set = Set.fromList [("a", 0), ("b", 1)]
+--   
+--   &gt;&gt;&gt; toMap set
+--   fromList [("a",0),("b",1)]
+--   </pre>
+toMap :: (Ord k, Foldable t) => t (k, v) -> Map k v
+
 
 -- | Defines a lightweight parser type.
 module AutoProof.Internal.Utils.Parser.Types
@@ -976,12 +998,12 @@ module AutoProof.Internal.Classical.CNF
 type CNF a = Set (Clause a)
 
 -- | Represents a disjunction of literals.
-type Clause a = Set (Literal a)
+type Clause a = Map a Bool
 
 -- | Represents either a propositional variable or its negation, depending
---   on whether the boolean first component is <a>True</a> or <a>False</a>,
---   respectively.
-type Literal a = (Bool, a)
+--   on whether the boolean second component is <a>True</a> or
+--   <a>False</a>, respectively.
+type Literal a = (a, Bool)
 
 -- | Convert a <a>Formula</a> into conjunctive normal form.
 --   
@@ -1001,8 +1023,10 @@ toFormula :: CNF a -> Formula a
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
+--   &gt;&gt;&gt; import AutoProof.Internal.Formula
+--   
 --   &gt;&gt;&gt; canonicalCNF $ Or (Not (Imp (Var "a") (Var "b"))) (Var "c")
---   And (Or (Var "c") (Var "a")) (Or (Var "c") (Not (Var "b")))
+--   And (Or (Var "c") (Not (Var "b"))) (Or (Var "c") (Var "a"))
 --   </pre>
 canonicalCNF :: Ord a => Formula a -> Formula a
 
@@ -1020,12 +1044,12 @@ canonicalCNF :: Ord a => Formula a -> Formula a
 --   &gt;&gt;&gt; cnf = CNF.fromFormula a
 --   
 --   &gt;&gt;&gt; cnf
---   fromList [fromList [(False,"a"),(False,"b"),(True,"c")],fromList [(True,"a")]]
+--   fromList [fromList [("a",False),("b",False),("c",True)],fromList [("a",True)]]
 --   
 --   &gt;&gt;&gt; cnf2 = CNF.substitute cnf "a" True
 --   
 --   &gt;&gt;&gt; cnf2
---   fromList [fromList [(False,"b"),(True,"c")]]
+--   fromList [fromList [("b",False),("c",True)]]
 --   
 --   &gt;&gt;&gt; a2 = CNF.toFormula cnf2
 --   
@@ -1033,6 +1057,18 @@ canonicalCNF :: Ord a => Formula a -> Formula a
 --   Or (Var "c") (Not (Var "b"))
 --   </pre>
 substitute :: Ord a => CNF a -> a -> Bool -> CNF a
+
+-- | Obtain the literal of a unitary clause of a CNF formula, if there is
+--   one.
+--   
+--   A <i>unitary clause</i> is one in which exactly one literal occurs.
+unitLiteral :: CNF a -> Maybe (Literal a)
+
+-- | Obtain a pure literal of a CNF formula, if there is one.
+--   
+--   A <i>pure literal</i> is one which only occurs with the a single
+--   polarity in the formula.
+pureLiteral :: Ord a => CNF a -> Maybe (Literal a)
 
 
 -- | Functions and types related to conjunctive normal forms.
@@ -1052,12 +1088,12 @@ module AutoProof.Classical.CNF
 type CNF a = Set (Clause a)
 
 -- | Represents a disjunction of literals.
-type Clause a = Set (Literal a)
+type Clause a = Map a Bool
 
 -- | Represents either a propositional variable or its negation, depending
---   on whether the boolean first component is <a>True</a> or <a>False</a>,
---   respectively.
-type Literal a = (Bool, a)
+--   on whether the boolean second component is <a>True</a> or
+--   <a>False</a>, respectively.
+type Literal a = (a, Bool)
 
 -- | Convert a <a>Formula</a> into conjunctive normal form.
 --   
@@ -1077,8 +1113,10 @@ toFormula :: CNF a -> Formula a
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
+--   &gt;&gt;&gt; import AutoProof.Internal.Formula
+--   
 --   &gt;&gt;&gt; canonicalCNF $ Or (Not (Imp (Var "a") (Var "b"))) (Var "c")
---   And (Or (Var "c") (Var "a")) (Or (Var "c") (Not (Var "b")))
+--   And (Or (Var "c") (Not (Var "b"))) (Or (Var "c") (Var "a"))
 --   </pre>
 canonicalCNF :: Ord a => Formula a -> Formula a
 
@@ -1096,12 +1134,12 @@ canonicalCNF :: Ord a => Formula a -> Formula a
 --   &gt;&gt;&gt; cnf = CNF.fromFormula a
 --   
 --   &gt;&gt;&gt; cnf
---   fromList [fromList [(False,"a"),(False,"b"),(True,"c")],fromList [(True,"a")]]
+--   fromList [fromList [("a",False),("b",False),("c",True)],fromList [("a",True)]]
 --   
 --   &gt;&gt;&gt; cnf2 = CNF.substitute cnf "a" True
 --   
 --   &gt;&gt;&gt; cnf2
---   fromList [fromList [(False,"b"),(True,"c")]]
+--   fromList [fromList [("b",False),("c",True)]]
 --   
 --   &gt;&gt;&gt; a2 = CNF.toFormula cnf2
 --   
@@ -1109,6 +1147,18 @@ canonicalCNF :: Ord a => Formula a -> Formula a
 --   Or (Var "c") (Not (Var "b"))
 --   </pre>
 substitute :: Ord a => CNF a -> a -> Bool -> CNF a
+
+-- | Obtain the literal of a unitary clause of a CNF formula, if there is
+--   one.
+--   
+--   A <i>unitary clause</i> is one in which exactly one literal occurs.
+unitLiteral :: CNF a -> Maybe (Literal a)
+
+-- | Obtain a pure literal of a CNF formula, if there is one.
+--   
+--   A <i>pure literal</i> is one which only occurs with the a single
+--   polarity in the formula.
+pureLiteral :: Ord a => CNF a -> Maybe (Literal a)
 
 
 -- | Miscellaneous set-related functions.
@@ -2064,8 +2114,10 @@ substitute :: Eq a => Formula a -> a -> Formula a -> Formula a
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
+--   &gt;&gt;&gt; import AutoProof.Internal.Formula
+--   
 --   &gt;&gt;&gt; canonicalCNF $ Or (Not (Imp (Var "a") (Var "b"))) (Var "c")
---   And (Or (Var "c") (Var "a")) (Or (Var "c") (Not (Var "b")))
+--   And (Or (Var "c") (Not (Var "b"))) (Or (Var "c") (Var "a"))
 --   </pre>
 canonicalCNF :: Ord a => Formula a -> Formula a
 

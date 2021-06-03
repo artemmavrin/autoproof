@@ -35,26 +35,26 @@
 </span><span id="line-35"></span><span class="hs-comment">--</span><span>
 </span><span id="line-36"></span><span class="hs-comment">-- &gt;&gt;&gt; simpleSAT $ And (Var &quot;a&quot;) (Not (Var &quot;a&quot;))</span><span>
 </span><span id="line-37"></span><span class="hs-comment">-- False</span><span>
-</span><span id="line-38"></span><span id="local-6989586621679064695"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSAT"><span class="hs-identifier hs-type">simpleSAT</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Eq</span></span><span> </span><span class="annot"><a href="#local-6989586621679064695"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679064695"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span></span><span>
+</span><span id="line-38"></span><span id="local-6989586621679065088"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSAT"><span class="hs-identifier hs-type">simpleSAT</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Eq</span></span><span> </span><span class="annot"><a href="#local-6989586621679065088"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679065088"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span></span><span>
 </span><span id="line-39"></span><span id="simpleSAT"><span class="annot"><span class="annottext">simpleSAT :: Formula a -&gt; Bool
-</span><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSAT"><span class="hs-identifier hs-var hs-var">simpleSAT</span></a></span></span><span> </span><span id="local-6989586621679064674"><span class="annot"><span class="annottext">a :: Formula a
-</span><a href="#local-6989586621679064674"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Formula a -&gt; Maybe a
+</span><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSAT"><span class="hs-identifier hs-var hs-var">simpleSAT</span></a></span></span><span> </span><span id="local-6989586621679065067"><span class="annot"><span class="annottext">a :: Formula a
+</span><a href="#local-6989586621679065067"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Formula a -&gt; Maybe a
 forall a. Formula a -&gt; Maybe a
 </span><a href="AutoProof.Internal.Formula.Operations.html#getAnyVariable"><span class="hs-identifier hs-var">getAnyVariable</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679064674"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621679065067"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-40"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; Formula a -&gt; Bool
 forall t a. TruthAssignment t a =&gt; t -&gt; Formula a -&gt; Bool
 </span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679064674"><span class="hs-identifier hs-var">a</span></a></span><span>
-</span><span id="line-41"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679064673"><span class="annot"><span class="annottext">x :: a
-</span><a href="#local-6989586621679064673"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621679065067"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679065066"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679065066"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-42"></span><span>    </span><span class="annot"><span class="annottext">Formula a -&gt; Bool
 forall a. Eq a =&gt; Formula a -&gt; Bool
 </span><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSAT"><span class="hs-identifier hs-var">simpleSAT</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a -&gt; a -&gt; Formula a -&gt; Formula a
 forall a. Eq a =&gt; Formula a -&gt; a -&gt; Formula a -&gt; Formula a
 </span><a href="AutoProof.Internal.Formula.Operations.html#substitute"><span class="hs-identifier hs-var">substitute</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679064674"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679064673"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Formula a
+</span><a href="#local-6989586621679065067"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679065066"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Formula a
 forall a. Bool -&gt; Formula a
 </span><a href="AutoProof.Internal.Formula.Types.html#Lit"><span class="hs-identifier hs-var">Lit</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
@@ -64,8 +64,8 @@ forall a. Eq a =&gt; Formula a -&gt; Bool
 </span><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSAT"><span class="hs-identifier hs-var">simpleSAT</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a -&gt; a -&gt; Formula a -&gt; Formula a
 forall a. Eq a =&gt; Formula a -&gt; a -&gt; Formula a -&gt; Formula a
 </span><a href="AutoProof.Internal.Formula.Operations.html#substitute"><span class="hs-identifier hs-var">substitute</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679064674"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679064673"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Formula a
+</span><a href="#local-6989586621679065067"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679065066"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Formula a
 forall a. Bool -&gt; Formula a
 </span><a href="AutoProof.Internal.Formula.Types.html#Lit"><span class="hs-identifier hs-var">Lit</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">False</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
@@ -90,59 +90,59 @@ forall a. Bool -&gt; Formula a
 </span><span id="line-62"></span><span class="hs-comment">--</span><span>
 </span><span id="line-63"></span><span class="hs-comment">-- &gt;&gt;&gt; simpleSATAssignment $ And (Var &quot;a&quot;) (Not (Var &quot;a&quot;)) -- unsatisfiable</span><span>
 </span><span id="line-64"></span><span class="hs-comment">-- Nothing</span><span>
-</span><span id="line-65"></span><span id="local-6989586621679064671"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSATAssignment"><span class="hs-identifier hs-type">simpleSATAssignment</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679064671"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679064671"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Map</span></span><span> </span><span class="annot"><a href="#local-6989586621679064671"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span></span><span>
+</span><span id="line-65"></span><span id="local-6989586621679065064"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSATAssignment"><span class="hs-identifier hs-type">simpleSATAssignment</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679065064"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679065064"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Map</span></span><span> </span><span class="annot"><a href="#local-6989586621679065064"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span></span><span>
 </span><span id="line-66"></span><span id="simpleSATAssignment"><span class="annot"><span class="annottext">simpleSATAssignment :: Formula a -&gt; Maybe (Map a Bool)
 </span><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSATAssignment"><span class="hs-identifier hs-var hs-var">simpleSATAssignment</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Map a Bool -&gt; Formula a -&gt; Maybe (Map a Bool)
 forall a. Ord a =&gt; Map a Bool -&gt; Formula a -&gt; Maybe (Map a Bool)
-</span><a href="#local-6989586621679064670"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Map a Bool
+</span><a href="#local-6989586621679065063"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Map a Bool
 forall k a. Map k a
 </span><span class="hs-identifier hs-var">Map.empty</span></span><span>
 </span><span id="line-67"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-68"></span><span>    </span><span id="local-6989586621679064670"><span class="annot"><span class="annottext">f :: Map a Bool -&gt; Formula a -&gt; Maybe (Map a Bool)
-</span><a href="#local-6989586621679064670"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679064668"><span class="annot"><span class="annottext">m :: Map a Bool
-</span><a href="#local-6989586621679064668"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span id="local-6989586621679064667"><span class="annot"><span class="annottext">a :: Formula a
-</span><a href="#local-6989586621679064667"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Formula a -&gt; Maybe a
+</span><span id="line-68"></span><span>    </span><span id="local-6989586621679065063"><span class="annot"><span class="annottext">f :: Map a Bool -&gt; Formula a -&gt; Maybe (Map a Bool)
+</span><a href="#local-6989586621679065063"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679065061"><span class="annot"><span class="annottext">m :: Map a Bool
+</span><a href="#local-6989586621679065061"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span id="local-6989586621679065060"><span class="annot"><span class="annottext">a :: Formula a
+</span><a href="#local-6989586621679065060"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Formula a -&gt; Maybe a
 forall a. Formula a -&gt; Maybe a
 </span><a href="AutoProof.Internal.Formula.Operations.html#getAnyVariable"><span class="hs-identifier hs-var">getAnyVariable</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679064667"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621679065060"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-69"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">() -&gt; Formula a -&gt; Bool
 forall t a. TruthAssignment t a =&gt; t -&gt; Formula a -&gt; Bool
 </span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679064667"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Map a Bool -&gt; Maybe (Map a Bool)
+</span><a href="#local-6989586621679065060"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Map a Bool -&gt; Maybe (Map a Bool)
 forall a. a -&gt; Maybe a
 </span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Map a Bool
-</span><a href="#local-6989586621679064668"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Maybe (Map a Bool)
+</span><a href="#local-6989586621679065061"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Maybe (Map a Bool)
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
-</span><span id="line-70"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679064666"><span class="annot"><span class="annottext">x :: a
-</span><a href="#local-6989586621679064666"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-70"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679065059"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679065059"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-71"></span><span>        </span><span class="annot"><span class="annottext">Map a Bool -&gt; Formula a -&gt; Maybe (Map a Bool)
-</span><a href="#local-6989586621679064670"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Bool -&gt; Map a Bool -&gt; Map a Bool
+</span><a href="#local-6989586621679065063"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Bool -&gt; Map a Bool -&gt; Map a Bool
 forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
 </span><span class="hs-identifier hs-var">Map.insert</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679064666"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679065059"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">Map a Bool
-</span><a href="#local-6989586621679064668"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a -&gt; a -&gt; Formula a -&gt; Formula a
+</span><a href="#local-6989586621679065061"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a -&gt; a -&gt; Formula a -&gt; Formula a
 forall a. Eq a =&gt; Formula a -&gt; a -&gt; Formula a -&gt; Formula a
 </span><a href="AutoProof.Internal.Formula.Operations.html#substitute"><span class="hs-identifier hs-var">substitute</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679064667"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679064666"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Formula a
+</span><a href="#local-6989586621679065060"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679065059"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Formula a
 forall a. Bool -&gt; Formula a
 </span><a href="AutoProof.Internal.Formula.Types.html#Lit"><span class="hs-identifier hs-var">Lit</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
 </span><span id="line-72"></span><span>          </span><span class="annot"><span class="annottext">Maybe (Map a Bool) -&gt; Maybe (Map a Bool) -&gt; Maybe (Map a Bool)
 forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
 </span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">Map a Bool -&gt; Formula a -&gt; Maybe (Map a Bool)
-</span><a href="#local-6989586621679064670"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Bool -&gt; Map a Bool -&gt; Map a Bool
+</span><a href="#local-6989586621679065063"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Bool -&gt; Map a Bool -&gt; Map a Bool
 forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
 </span><span class="hs-identifier hs-var">Map.insert</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679064666"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679065059"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">Map a Bool
-</span><a href="#local-6989586621679064668"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a -&gt; a -&gt; Formula a -&gt; Formula a
+</span><a href="#local-6989586621679065061"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a -&gt; a -&gt; Formula a -&gt; Formula a
 forall a. Eq a =&gt; Formula a -&gt; a -&gt; Formula a -&gt; Formula a
 </span><a href="AutoProof.Internal.Formula.Operations.html#substitute"><span class="hs-identifier hs-var">substitute</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
-</span><a href="#local-6989586621679064667"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679064666"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Formula a
+</span><a href="#local-6989586621679065060"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679065059"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Formula a
 forall a. Bool -&gt; Formula a
 </span><a href="AutoProof.Internal.Formula.Types.html#Lit"><span class="hs-identifier hs-var">Lit</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">False</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
