@@ -1006,6 +1006,34 @@ toFormula :: CNF a -> Formula a
 --   </pre>
 canonicalCNF :: Ord a => Formula a -> Formula a
 
+-- | Substitute a boolean value for a variable in a CNF formula.
+--   
+--   <tt>(<a>substitute</a> a x <a>True</a>)</tt> and
+--   <tt>(<a>substitute</a> a x <a>False</a>)</tt> represent the
+--   substitutions &lt;math&gt; and &lt;math&gt;, respectively.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; a = And (Imp (Var "a") (Not (And (Var "b") (Not (Var "c"))))) (Var "a")
+--   
+--   &gt;&gt;&gt; cnf = CNF.fromFormula a
+--   
+--   &gt;&gt;&gt; cnf
+--   fromList [fromList [(False,"a"),(False,"b"),(True,"c")],fromList [(True,"a")]]
+--   
+--   &gt;&gt;&gt; cnf2 = CNF.substitute cnf "a" True
+--   
+--   &gt;&gt;&gt; cnf2
+--   fromList [fromList [(False,"b"),(True,"c")]]
+--   
+--   &gt;&gt;&gt; a2 = CNF.toFormula cnf2
+--   
+--   &gt;&gt;&gt; a2
+--   Or (Var "c") (Not (Var "b"))
+--   </pre>
+substitute :: Ord a => CNF a -> a -> Bool -> CNF a
+
 
 -- | Functions and types related to conjunctive normal forms.
 --   
@@ -1053,6 +1081,34 @@ toFormula :: CNF a -> Formula a
 --   And (Or (Var "c") (Var "a")) (Or (Var "c") (Not (Var "b")))
 --   </pre>
 canonicalCNF :: Ord a => Formula a -> Formula a
+
+-- | Substitute a boolean value for a variable in a CNF formula.
+--   
+--   <tt>(<a>substitute</a> a x <a>True</a>)</tt> and
+--   <tt>(<a>substitute</a> a x <a>False</a>)</tt> represent the
+--   substitutions &lt;math&gt; and &lt;math&gt;, respectively.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; a = And (Imp (Var "a") (Not (And (Var "b") (Not (Var "c"))))) (Var "a")
+--   
+--   &gt;&gt;&gt; cnf = CNF.fromFormula a
+--   
+--   &gt;&gt;&gt; cnf
+--   fromList [fromList [(False,"a"),(False,"b"),(True,"c")],fromList [(True,"a")]]
+--   
+--   &gt;&gt;&gt; cnf2 = CNF.substitute cnf "a" True
+--   
+--   &gt;&gt;&gt; cnf2
+--   fromList [fromList [(False,"b"),(True,"c")]]
+--   
+--   &gt;&gt;&gt; a2 = CNF.toFormula cnf2
+--   
+--   &gt;&gt;&gt; a2
+--   Or (Var "c") (Not (Var "b"))
+--   </pre>
+substitute :: Ord a => CNF a -> a -> Bool -> CNF a
 
 
 -- | Miscellaneous set-related functions.
