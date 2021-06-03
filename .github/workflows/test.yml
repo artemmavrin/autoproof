@@ -20,10 +20,15 @@ jobs:
           enable-stack: true
           stack-version: ${{ matrix.stack }}
       - run: stack test --coverage
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+      - run: stack test
+        if: ${{ matrix.os != 'ubuntu-latest' }}
       - name: Generate coverage report
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: 8c6794b6/hpc-codecov-action@v2
         with:
           target: stack:all
           excludes: Paths_autoproof
       - name: Send coverage report
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: codecov/codecov-action@v1
