@@ -8,8 +8,8 @@
 --
 -- A simple baseline SAT algorithm.
 module AutoProof.Internal.Classical.SAT.Algorithms.Simple
-  ( simpleSAT,
-    simpleSATAssignment,
+  ( satSimple,
+    satAssignmentSimple,
   )
 where
 
@@ -30,17 +30,17 @@ import qualified Data.Map as Map
 --
 -- ==== __Examples__
 --
--- >>> simpleSAT $ Var "a"
+-- >>> satSimple $ Var "a"
 -- True
 --
--- >>> simpleSAT $ And (Var "a") (Not (Var "a"))
+-- >>> satSimple $ And (Var "a") (Not (Var "a"))
 -- False
-simpleSAT :: Eq a => Formula a -> Bool
-simpleSAT a = case getAnyVariable a of
+satSimple :: Eq a => Formula a -> Bool
+satSimple a = case getAnyVariable a of
   Nothing -> evalFormula () a
   Just x ->
-    simpleSAT (substitute a x (Lit True))
-      || simpleSAT (substitute a x (Lit False))
+    satSimple (substitute a x (Lit True))
+      || satSimple (substitute a x (Lit False))
 
 -- | A simple baseline satisfiability algorithm, returning a satisfying truth
 -- assignment if there is one.
@@ -52,18 +52,17 @@ simpleSAT a = case getAnyVariable a of
 --
 -- ==== __Examples__
 --
---
 -- >>> a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
--- >>> Just t = simpleSATAssignment a
+-- >>> Just t = satAssignmentSimple a
 -- >>> t
 -- fromList [("a",False),("b",True),("c",True)]
 -- >>> t |= a
 -- True
 --
--- >>> simpleSATAssignment $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+-- >>> satAssignmentSimple $ And (Var "a") (Not (Var "a")) -- unsatisfiable
 -- Nothing
-simpleSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
-simpleSATAssignment = f Map.empty
+satAssignmentSimple :: Ord a => Formula a -> Maybe (Map a Bool)
+satAssignmentSimple = f Map.empty
   where
     f m a = case getAnyVariable a of
       Nothing -> if evalFormula () a then Just m else Nothing

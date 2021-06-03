@@ -13,14 +13,22 @@ module AutoProof.Internal.Classical.SAT
     (|=),
 
     -- * Satisfiability algorithms
-    simpleSAT,
-    simpleSATAssignment,
+
+    -- ** Check satisfiability
+    satSimple,
+    satDPLL,
+
+    -- ** Satisfying assignment search
+    satAssignmentSimple,
+    satAssignmentDPLL,
   )
 where
 
 import AutoProof.Internal.Classical.SAT.Algorithms
-  ( simpleSAT,
-    simpleSATAssignment,
+  ( satAssignmentDPLL,
+    satAssignmentSimple,
+    satDPLL,
+    satSimple,
   )
 import AutoProof.Internal.Classical.SAT.TruthAssignment
   ( TruthAssignment (evalFormula, evalVar),

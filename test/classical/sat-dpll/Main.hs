@@ -6,8 +6,8 @@ module Main where
 import AutoProof.Classical
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
     pretty,
-    satSimple,
-    satAssignmentSimple,
+    satAssignmentDPLL,
+    satDPLL,
     (|=),
   )
 import AutoProof.Internal.Parser (unsafeParseFormula)
@@ -22,7 +22,7 @@ main = do
   unprovableFormulas <- loadFormulas "test/data/formulas/classical-unprovable.txt"
 
   H.hspec $
-    H.describe "simple SAT" $ do
+    H.describe "DPLL SAT" $ do
       mapM_ assertSatisfiable provableFormulas
       mapM_ (assertSatisfiable . Not) unprovableFormulas
       mapM_ (assertUnsatisfiable . Not) provableFormulas
@@ -74,11 +74,11 @@ wait = QC.within timeoutMicroseconds
 assertSATCase :: Formula Int -> QC.Property
 assertSATCase a =
   wait $
-    if satSimple a
-      then case satAssignmentSimple a of
+    if satDPLL a
+      then case satAssignmentDPLL a of
         Just m -> m |= a
         _ -> False
-      else case satAssignmentSimple a of
+      else case satAssignmentDPLL a of
         Nothing -> True
         _ -> False
 
@@ -86,8 +86,8 @@ assertSatisfiable :: (PrettyPrintable a, Ord a) => Formula a -> H.SpecWith ()
 assertSatisfiable a =
   H.it ("satisfiable: " ++ pretty a) $
     wait $
-      satSimple a
-        && case satAssignmentSimple a of
+      satDPLL a
+        && case satAssignmentDPLL a of
           Just m -> m |= a
           _ -> False
 
@@ -95,8 +95,8 @@ assertUnsatisfiable :: (PrettyPrintable a, Ord a) => Formula a -> H.SpecWith ()
 assertUnsatisfiable a =
   H.it ("unsatisfiable: " ++ pretty a) $
     wait $
-      not (satSimple a)
-        && case satAssignmentSimple a of
+      not (satDPLL a)
+        && case satAssignmentDPLL a of
           Nothing -> True
           _ -> False
 

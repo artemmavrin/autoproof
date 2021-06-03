@@ -33,3 +33,5 @@ cradle:
         component: "autoproof:test:cnf-test"
       - path: "./test/classical/sat-simple/Main.hs"
         component: "autoproof:test:sat-simple-test"
+      - path: "./test/classical/sat-dpll/Main.hs"
+        component: "autoproof:test:sat-dpll-test"
