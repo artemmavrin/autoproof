@@ -24,6 +24,9 @@ module AutoProof.Classical.CNF
     fromFormula,
     toFormula,
     canonicalCNF,
+
+    -- * Operations
+    substitute,
   )
 where
 
@@ -33,5 +36,6 @@ import AutoProof.Internal.Classical.CNF
     Literal,
     canonicalCNF,
     fromFormula,
+    substitute,
     toFormula,
   )

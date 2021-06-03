@@ -8,10 +8,11 @@ import AutoProof.Classical
     canonicalCNF,
     isProvable,
     subformulas,
+    substitute,
     (|-),
   )
 import AutoProof.Classical.CNF (CNF)
-import qualified AutoProof.Classical.CNF as CNF (fromFormula)
+import qualified AutoProof.Classical.CNF as CNF (fromFormula, substitute)
 import qualified Data.Set as Set (member)
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
@@ -20,9 +21,10 @@ main :: IO ()
 main = do
   H.hspec $
     H.describe "CNF" $ do
-      checkCanonicalForm
+      validateCanonicalForm
       validateFormulaEntailsCNF
       validateCNFEntailsFormula
+      validateSubstitution
 
 arbitraryFormula :: Int -> QC.Gen (Formula Int)
 arbitraryFormula n
@@ -80,6 +82,11 @@ noTrueOrFalse a =
   where
     s = subformulas a
 
+assertSubstitution :: Formula Int -> Bool -> Bool
+assertSubstitution a b =
+  CNF.substitute (CNF.fromFormula a) 0 b
+    == CNF.fromFormula (substitute a 0 (Lit b))
+
 validateFormulaEntailsCNF :: H.SpecWith ()
 validateFormulaEntailsCNF =
   H.it "a |- CNF(a)" $
@@ -90,7 +97,12 @@ validateCNFEntailsFormula =
   H.it "CNF(a) |- a" $
     QC.withMaxSuccess 10000 assertCNFEntailsFormula
 
-checkCanonicalForm :: H.SpecWith ()
-checkCanonicalForm =
+validateCanonicalForm :: H.SpecWith ()
+validateCanonicalForm =
   H.it "computed CNFs are in canonical form" $
     QC.withMaxSuccess 10000 assertCanonicalForm
+
+validateSubstitution :: H.SpecWith ()
+validateSubstitution =
+  H.it "CNF conversion \"commutes\" with substitutions" $
+    QC.withMaxSuccess 10000 assertSubstitution

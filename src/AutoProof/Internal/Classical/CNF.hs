@@ -17,6 +17,9 @@ module AutoProof.Internal.Classical.CNF
     fromFormula,
     toFormula,
     canonicalCNF,
+
+    -- * Operations
+    substitute,
   )
 where
 
@@ -109,3 +112,24 @@ literalToFormula (True, x) = Var x
 -- And (Or (Var "c") (Var "a")) (Or (Var "c") (Not (Var "b")))
 canonicalCNF :: Ord a => Formula a -> Formula a
 canonicalCNF = toFormula . fromFormula
+
+-- | Substitute a boolean value for a variable in a CNF formula.
+--
+-- @('substitute' a x 'True')@ and @('substitute' a x 'False')@ represent the
+-- substitutions \(a[\top/x]\) and \(a[\bot/x]\), respectively.
+--
+-- ==== __Examples__
+--
+-- >>> a = And (Imp (Var "a") (Not (And (Var "b") (Not (Var "c"))))) (Var "a")
+-- >>> cnf = CNF.fromFormula a
+-- >>> cnf
+-- fromList [fromList [(False,"a"),(False,"b"),(True,"c")],fromList [(True,"a")]]
+-- >>> cnf2 = CNF.substitute cnf "a" True
+-- >>> cnf2
+-- fromList [fromList [(False,"b"),(True,"c")]]
+-- >>> a2 = CNF.toFormula cnf2
+-- >>> a2
+-- Or (Var "c") (Not (Var "b"))
+substitute :: Ord a => CNF a -> a -> Bool -> CNF a
+substitute a x b =
+  Set.map (Set.filter (/= (not b, x))) (Set.filter (not . Set.member (b, x)) a)
