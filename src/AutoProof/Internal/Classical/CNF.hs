@@ -195,6 +195,7 @@ pureLiteral a = case List.find isPure variables of
       -- This is the first time we see x
       Nothing -> findVariables ls ((x, Just b) : vs)
 
+
 -- | Obtain a literal from a CNF formula, if there is one.
 getAnyLiteral :: CNF a -> Maybe (Literal a)
 getAnyLiteral = f . Set.toList
