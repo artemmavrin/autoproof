@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- |</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- Module      : AutoProof.Internal.Classical.SAT.Algorithms.DPLL</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- Copyright   : (c) Artem Mavrin, 2021</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- License     : BSD3</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- Maintainer  : artemvmavrin@gmail.com</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- Stability   : experimental</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- Portability : POSIX</span><span>
+</span><span id="line-8"></span><span class="hs-comment">--</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- DPLL satisfiability algorithm.</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">AutoProof.Internal.Classical.SAT.Algorithms.DPLL</span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satDPLL"><span class="hs-identifier">satDPLL</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satAssignmentDPLL"><span class="hs-identifier">satAssignmentDPLL</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.CNF.html"><span class="hs-identifier">AutoProof.Internal.Classical.CNF</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Classical.CNF.html#CNF"><span class="hs-identifier">CNF</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.CNF.html"><span class="hs-identifier">AutoProof.Internal.Classical.CNF</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">CNF</span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.CNF.html#fromFormula"><span class="hs-identifier">fromFormula</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.CNF.html#getAnyLiteral"><span class="hs-identifier">getAnyLiteral</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.CNF.html#pureLiteral"><span class="hs-identifier">pureLiteral</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.CNF.html#substitute"><span class="hs-identifier">substitute</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.CNF.html#unitLiteral"><span class="hs-identifier">unitLiteral</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="AutoProof.Internal.Formula.html"><span class="hs-identifier">AutoProof.Internal.Formula</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Formula"><span class="hs-identifier">Formula</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Applicative</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-operator">(&lt;|&gt;)</span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Map</span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">empty</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">insert</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">null</span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">isJust</span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Set</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Set</span></span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- | DPLL satisfiability algorithm.</span><span>
+</span><span id="line-32"></span><span class="hs-comment">--</span><span>
+</span><span id="line-33"></span><span class="hs-comment">-- ==== __Examples__</span><span>
+</span><span id="line-34"></span><span class="hs-comment">--</span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- &gt;&gt;&gt; import AutoProof.Internal.Formula</span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- &gt;&gt;&gt; satDPLL $ Var &quot;a&quot;</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- True</span><span>
+</span><span id="line-38"></span><span class="hs-comment">--</span><span>
+</span><span id="line-39"></span><span class="hs-comment">-- &gt;&gt;&gt; satDPLL $ And (Var &quot;a&quot;) (Not (Var &quot;a&quot;))</span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- False</span><span>
+</span><span id="line-41"></span><span id="local-6989586621679065545"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satDPLL"><span class="hs-identifier hs-type">satDPLL</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679065545"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679065545"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span></span><span>
+</span><span id="line-42"></span><span id="satDPLL"><span class="annot"><span class="annottext">satDPLL :: Formula a -&gt; Bool
+</span><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satDPLL"><span class="hs-identifier hs-var hs-var">satDPLL</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe (Map a Bool) -&gt; Bool
+forall a. Maybe a -&gt; Bool
+</span><span class="hs-identifier hs-var">isJust</span></span><span> </span><span class="annot"><span class="annottext">(Maybe (Map a Bool) -&gt; Bool)
+-&gt; (Formula a -&gt; Maybe (Map a Bool)) -&gt; Formula a -&gt; Bool
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Formula a -&gt; Maybe (Map a Bool)
+forall a. Ord a =&gt; Formula a -&gt; Maybe (Map a Bool)
+</span><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satAssignmentDPLL"><span class="hs-identifier hs-var">satAssignmentDPLL</span></a></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-comment">-- | DPLL satisfiability algorithm, returning a satisfying truth assihnment, if</span><span>
+</span><span id="line-45"></span><span class="hs-comment">-- there is one.</span><span>
+</span><span id="line-46"></span><span class="hs-comment">--</span><span>
+</span><span id="line-47"></span><span class="hs-comment">-- ==== __Examples__</span><span>
+</span><span id="line-48"></span><span class="hs-comment">--</span><span>
+</span><span id="line-49"></span><span class="hs-comment">-- &gt;&gt;&gt; a = And (Not (Var &quot;a&quot;)) (Or (Var &quot;b&quot;) (Var &quot;c&quot;)) -- satisfiable</span><span>
+</span><span id="line-50"></span><span class="hs-comment">-- &gt;&gt;&gt; Just t = satAssignmentDPLL a</span><span>
+</span><span id="line-51"></span><span class="hs-comment">-- &gt;&gt;&gt; t</span><span>
+</span><span id="line-52"></span><span class="hs-comment">-- fromList [(&quot;a&quot;,False),(&quot;c&quot;,True)]</span><span>
+</span><span id="line-53"></span><span class="hs-comment">-- &gt;&gt;&gt; t |= a</span><span>
+</span><span id="line-54"></span><span class="hs-comment">-- True</span><span>
+</span><span id="line-55"></span><span class="hs-comment">--</span><span>
+</span><span id="line-56"></span><span class="hs-comment">-- /Note:/ The variable @&quot;b&quot;@ is missing in the map above, which means that it's</span><span>
+</span><span id="line-57"></span><span class="hs-comment">-- implictly assigned the value 'False'.</span><span>
+</span><span id="line-58"></span><span class="hs-comment">--</span><span>
+</span><span id="line-59"></span><span class="hs-comment">-- &gt;&gt;&gt; satAssignmentDPLL $ And (Var &quot;a&quot;) (Not (Var &quot;a&quot;)) -- unsatisfiable</span><span>
+</span><span id="line-60"></span><span class="hs-comment">-- Nothing</span><span>
+</span><span id="line-61"></span><span id="local-6989586621679065582"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satAssignmentDPLL"><span class="hs-identifier hs-type">satAssignmentDPLL</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679065582"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679065582"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Map</span></span><span> </span><span class="annot"><a href="#local-6989586621679065582"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span></span><span>
+</span><span id="line-62"></span><span id="satAssignmentDPLL"><span class="annot"><span class="annottext">satAssignmentDPLL :: Formula a -&gt; Maybe (Map a Bool)
+</span><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satAssignmentDPLL"><span class="hs-identifier hs-var hs-var">satAssignmentDPLL</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CNF a -&gt; Maybe (Map a Bool)
+forall a. Ord a =&gt; CNF a -&gt; Maybe (Map a Bool)
+</span><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satAssignmentDPLLFromCNF"><span class="hs-identifier hs-var">satAssignmentDPLLFromCNF</span></a></span><span> </span><span class="annot"><span class="annottext">(CNF a -&gt; Maybe (Map a Bool))
+-&gt; (Formula a -&gt; CNF a) -&gt; Formula a -&gt; Maybe (Map a Bool)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Formula a -&gt; CNF a
+forall a. Ord a =&gt; Formula a -&gt; CNF a
+</span><a href="AutoProof.Internal.Classical.CNF.html#fromFormula"><span class="hs-identifier hs-var">CNF.fromFormula</span></a></span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span id="local-6989586621679065579"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satAssignmentDPLLFromCNF"><span class="hs-identifier hs-type">satAssignmentDPLLFromCNF</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679065579"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.CNF.html#CNF"><span class="hs-identifier hs-type">CNF</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679065579"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Map</span></span><span> </span><span class="annot"><a href="#local-6989586621679065579"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span></span><span>
+</span><span id="line-65"></span><span id="satAssignmentDPLLFromCNF"><span class="annot"><span class="annottext">satAssignmentDPLLFromCNF :: CNF a -&gt; Maybe (Map a Bool)
+</span><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satAssignmentDPLLFromCNF"><span class="hs-identifier hs-var hs-var">satAssignmentDPLLFromCNF</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Map a Bool -&gt; CNF a -&gt; Maybe (Map a Bool)
+forall a. Ord a =&gt; Map a Bool -&gt; CNF a -&gt; Maybe (Map a Bool)
+</span><a href="#local-6989586621679065542"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Map a Bool
+forall k a. Map k a
+</span><span class="hs-identifier hs-var">Map.empty</span></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-67"></span><span>    </span><span id="local-6989586621679065542"><span class="annot"><span class="annottext">f :: Map a Bool -&gt; CNF a -&gt; Maybe (Map a Bool)
+</span><a href="#local-6989586621679065542"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679065541"><span class="annot"><span class="annottext">m :: Map a Bool
+</span><a href="#local-6989586621679065541"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span id="local-6989586621679065540"><span class="annot"><span class="annottext">cnf :: CNF a
+</span><a href="#local-6989586621679065540"><span class="hs-identifier hs-var">cnf</span></a></span></span><span>
+</span><span id="line-68"></span><span>      </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">CNF a -&gt; Bool
+forall a. Set a -&gt; Bool
+</span><span class="hs-identifier hs-var">Set.null</span></span><span> </span><span class="annot"><span class="annottext">CNF a
+</span><a href="#local-6989586621679065540"><span class="hs-identifier hs-var">cnf</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Map a Bool -&gt; Maybe (Map a Bool)
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Map a Bool
+</span><a href="#local-6989586621679065541"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><span id="line-69"></span><span>      </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">(Map a Bool -&gt; Bool) -&gt; CNF a -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">any</span></span><span> </span><span class="annot"><span class="annottext">Map a Bool -&gt; Bool
+forall k a. Map k a -&gt; Bool
+</span><span class="hs-identifier hs-var">Map.null</span></span><span> </span><span class="annot"><span class="annottext">CNF a
+</span><a href="#local-6989586621679065540"><span class="hs-identifier hs-var">cnf</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe (Map a Bool)
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-70"></span><span>      </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-71"></span><span>        </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">CNF a -&gt; Maybe (Literal a)
+forall a. CNF a -&gt; Maybe (Literal a)
+</span><a href="AutoProof.Internal.Classical.CNF.html#unitLiteral"><span class="hs-identifier hs-var">CNF.unitLiteral</span></a></span><span> </span><span class="annot"><span class="annottext">CNF a
+</span><a href="#local-6989586621679065540"><span class="hs-identifier hs-var">cnf</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-72"></span><span>          </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679065537"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679065537"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679065536"><span class="annot"><span class="annottext">b :: Bool
+</span><a href="#local-6989586621679065536"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Map a Bool -&gt; CNF a -&gt; Maybe (Map a Bool)
+</span><a href="#local-6989586621679065542"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Bool -&gt; Map a Bool -&gt; Map a Bool
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">Map.insert</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679065537"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679065536"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">Map a Bool
+</span><a href="#local-6989586621679065541"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CNF a -&gt; a -&gt; Bool -&gt; CNF a
+forall a. Ord a =&gt; CNF a -&gt; a -&gt; Bool -&gt; CNF a
+</span><a href="AutoProof.Internal.Classical.CNF.html#substitute"><span class="hs-identifier hs-var">CNF.substitute</span></a></span><span> </span><span class="annot"><span class="annottext">CNF a
+</span><a href="#local-6989586621679065540"><span class="hs-identifier hs-var">cnf</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679065537"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679065536"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>          </span><span class="annot"><span class="hs-identifier hs-type">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">CNF a -&gt; Maybe (Literal a)
+forall a. Ord a =&gt; CNF a -&gt; Maybe (Literal a)
+</span><a href="AutoProof.Internal.Classical.CNF.html#pureLiteral"><span class="hs-identifier hs-var">CNF.pureLiteral</span></a></span><span> </span><span class="annot"><span class="annottext">CNF a
+</span><a href="#local-6989586621679065540"><span class="hs-identifier hs-var">cnf</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-74"></span><span>            </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679065535"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679065535"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679065534"><span class="annot"><span class="annottext">b :: Bool
+</span><a href="#local-6989586621679065534"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Map a Bool -&gt; CNF a -&gt; Maybe (Map a Bool)
+</span><a href="#local-6989586621679065542"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Bool -&gt; Map a Bool -&gt; Map a Bool
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">Map.insert</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679065535"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679065534"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">Map a Bool
+</span><a href="#local-6989586621679065541"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CNF a -&gt; a -&gt; Bool -&gt; CNF a
+forall a. Ord a =&gt; CNF a -&gt; a -&gt; Bool -&gt; CNF a
+</span><a href="AutoProof.Internal.Classical.CNF.html#substitute"><span class="hs-identifier hs-var">CNF.substitute</span></a></span><span> </span><span class="annot"><span class="annottext">CNF a
+</span><a href="#local-6989586621679065540"><span class="hs-identifier hs-var">cnf</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679065535"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679065534"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span>            </span><span class="annot"><span class="hs-identifier hs-type">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">CNF a -&gt; Maybe (Literal a)
+forall a. CNF a -&gt; Maybe (Literal a)
+</span><a href="AutoProof.Internal.Classical.CNF.html#getAnyLiteral"><span class="hs-identifier hs-var">CNF.getAnyLiteral</span></a></span><span> </span><span class="annot"><span class="annottext">CNF a
+</span><a href="#local-6989586621679065540"><span class="hs-identifier hs-var">cnf</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-76"></span><span>              </span><span class="annot"><span class="hs-identifier hs-type">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe (Map a Bool)
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-comment">-- should be unreachable</span><span>
+</span><span id="line-77"></span><span>              </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679065533"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679065533"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span> </span><span class="hs-identifier">_</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-78"></span><span>                </span><span class="annot"><span class="annottext">Map a Bool -&gt; CNF a -&gt; Maybe (Map a Bool)
+</span><a href="#local-6989586621679065542"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Bool -&gt; Map a Bool -&gt; Map a Bool
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">Map.insert</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679065533"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">Map a Bool
+</span><a href="#local-6989586621679065541"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CNF a -&gt; a -&gt; Bool -&gt; CNF a
+forall a. Ord a =&gt; CNF a -&gt; a -&gt; Bool -&gt; CNF a
+</span><a href="AutoProof.Internal.Classical.CNF.html#substitute"><span class="hs-identifier hs-var">CNF.substitute</span></a></span><span> </span><span class="annot"><span class="annottext">CNF a
+</span><a href="#local-6989586621679065540"><span class="hs-identifier hs-var">cnf</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679065533"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">)</span><span>
+</span><span id="line-79"></span><span>                  </span><span class="annot"><span class="annottext">Maybe (Map a Bool) -&gt; Maybe (Map a Bool) -&gt; Maybe (Map a Bool)
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">Map a Bool -&gt; CNF a -&gt; Maybe (Map a Bool)
+</span><a href="#local-6989586621679065542"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Bool -&gt; Map a Bool -&gt; Map a Bool
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">Map.insert</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679065533"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">Map a Bool
+</span><a href="#local-6989586621679065541"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CNF a -&gt; a -&gt; Bool -&gt; CNF a
+forall a. Ord a =&gt; CNF a -&gt; a -&gt; Bool -&gt; CNF a
+</span><a href="AutoProof.Internal.Classical.CNF.html#substitute"><span class="hs-identifier hs-var">CNF.substitute</span></a></span><span> </span><span class="annot"><span class="annottext">CNF a
+</span><a href="#local-6989586621679065540"><span class="hs-identifier hs-var">cnf</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679065533"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span class="hs-special">)</span><span>
+</span><span id="line-80"></span></pre></body></html>

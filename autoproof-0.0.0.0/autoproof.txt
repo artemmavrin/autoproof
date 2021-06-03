@@ -824,15 +824,15 @@ module AutoProof.Internal.Classical.SAT.Algorithms.Simple
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; simpleSAT $ Var "a"
+--   &gt;&gt;&gt; satSimple $ Var "a"
 --   True
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; simpleSAT $ And (Var "a") (Not (Var "a"))
+--   &gt;&gt;&gt; satSimple $ And (Var "a") (Not (Var "a"))
 --   False
 --   </pre>
-simpleSAT :: Eq a => Formula a -> Bool
+satSimple :: Eq a => Formula a -> Bool
 
 -- | A simple baseline satisfiability algorithm, returning a satisfying
 --   truth assignment if there is one.
@@ -847,7 +847,7 @@ simpleSAT :: Eq a => Formula a -> Bool
 --   <pre>
 --   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
 --   
---   &gt;&gt;&gt; Just t = simpleSATAssignment a
+--   &gt;&gt;&gt; Just t = satAssignmentSimple a
 --   
 --   &gt;&gt;&gt; t
 --   fromList [("a",False),("b",True),("c",True)]
@@ -857,138 +857,10 @@ simpleSAT :: Eq a => Formula a -> Bool
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; simpleSATAssignment $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+--   &gt;&gt;&gt; satAssignmentSimple $ And (Var "a") (Not (Var "a")) -- unsatisfiable
 --   Nothing
 --   </pre>
-simpleSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
-
-
--- | Satisfiability algorithms.
-module AutoProof.Internal.Classical.SAT.Algorithms
-
--- | A simple baseline satisfiability algorithm.
---   
---   This algorithm is based on the observation that if &lt;math&gt; is a
---   propositional formula and &lt;math&gt; is a propositional variable,
---   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
---   satisfiable or &lt;math&gt; is satisfiable.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; simpleSAT $ Var "a"
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; simpleSAT $ And (Var "a") (Not (Var "a"))
---   False
---   </pre>
-simpleSAT :: Eq a => Formula a -> Bool
-
--- | A simple baseline satisfiability algorithm, returning a satisfying
---   truth assignment if there is one.
---   
---   This algorithm is based on the observation that if &lt;math&gt; is a
---   propositional formula and &lt;math&gt; is a propositional variable,
---   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
---   satisfiable or &lt;math&gt; is satisfiable.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
---   
---   &gt;&gt;&gt; Just t = simpleSATAssignment a
---   
---   &gt;&gt;&gt; t
---   fromList [("a",False),("b",True),("c",True)]
---   
---   &gt;&gt;&gt; t |= a
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; simpleSATAssignment $ And (Var "a") (Not (Var "a")) -- unsatisfiable
---   Nothing
---   </pre>
-simpleSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
-
-
--- | Satisfiability algorithms.
-module AutoProof.Internal.Classical.SAT
-
--- | Class representing truth assignments for evalutating propositional
---   logic formulas.
-class TruthAssignment t a
-
--- | Evaluate the truth value of a variable under a given truth assignment.
-evalVar :: TruthAssignment t a => t -> a -> Bool
-
--- | Evaluate the truth value of a formula under a given truth assignment.
-evalFormula :: TruthAssignment t a => t -> Formula a -> Bool
-
--- | Semantic entailment relation. This is an infix alias of
---   <a>evalFormula</a>.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; t = Map.fromList $ [("a", True), ("b", False)]
---   
---   &gt;&gt;&gt; t |= And (Var "a") (Not (Var "b"))
---   True
---   </pre>
-(|=) :: TruthAssignment t a => t -> Formula a -> Bool
-infix 5 |=
-
--- | A simple baseline satisfiability algorithm.
---   
---   This algorithm is based on the observation that if &lt;math&gt; is a
---   propositional formula and &lt;math&gt; is a propositional variable,
---   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
---   satisfiable or &lt;math&gt; is satisfiable.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; simpleSAT $ Var "a"
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; simpleSAT $ And (Var "a") (Not (Var "a"))
---   False
---   </pre>
-simpleSAT :: Eq a => Formula a -> Bool
-
--- | A simple baseline satisfiability algorithm, returning a satisfying
---   truth assignment if there is one.
---   
---   This algorithm is based on the observation that if &lt;math&gt; is a
---   propositional formula and &lt;math&gt; is a propositional variable,
---   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
---   satisfiable or &lt;math&gt; is satisfiable.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
---   
---   &gt;&gt;&gt; Just t = simpleSATAssignment a
---   
---   &gt;&gt;&gt; t
---   fromList [("a",False),("b",True),("c",True)]
---   
---   &gt;&gt;&gt; t |= a
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; simpleSATAssignment $ And (Var "a") (Not (Var "a")) -- unsatisfiable
---   Nothing
---   </pre>
-simpleSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
+satAssignmentSimple :: Ord a => Formula a -> Maybe (Map a Bool)
 
 
 -- | Functions and types related to conjunctive normal forms.
@@ -1069,6 +941,270 @@ unitLiteral :: CNF a -> Maybe (Literal a)
 --   A <i>pure literal</i> is one which only occurs with the a single
 --   polarity in the formula.
 pureLiteral :: Ord a => CNF a -> Maybe (Literal a)
+
+-- | Obtain a literal from a CNF formula, if there is one.
+getAnyLiteral :: CNF a -> Maybe (Literal a)
+
+
+-- | DPLL satisfiability algorithm.
+module AutoProof.Internal.Classical.SAT.Algorithms.DPLL
+
+-- | DPLL satisfiability algorithm.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; import AutoProof.Internal.Formula
+--   
+--   &gt;&gt;&gt; satDPLL $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; satDPLL $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+satDPLL :: Ord a => Formula a -> Bool
+
+-- | DPLL satisfiability algorithm, returning a satisfying truth
+--   assihnment, if there is one.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
+--   
+--   &gt;&gt;&gt; Just t = satAssignmentDPLL a
+--   
+--   &gt;&gt;&gt; t
+--   fromList [("a",False),("c",True)]
+--   
+--   &gt;&gt;&gt; t |= a
+--   True
+--   </pre>
+--   
+--   <i>Note:</i> The variable <tt>"b"</tt> is missing in the map above,
+--   which means that it's implictly assigned the value <a>False</a>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; satAssignmentDPLL $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+--   Nothing
+--   </pre>
+satAssignmentDPLL :: Ord a => Formula a -> Maybe (Map a Bool)
+
+
+-- | Satisfiability algorithms.
+module AutoProof.Internal.Classical.SAT.Algorithms
+
+-- | A simple baseline satisfiability algorithm.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; satSimple $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; satSimple $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+satSimple :: Eq a => Formula a -> Bool
+
+-- | A simple baseline satisfiability algorithm, returning a satisfying
+--   truth assignment if there is one.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
+--   
+--   &gt;&gt;&gt; Just t = satAssignmentSimple a
+--   
+--   &gt;&gt;&gt; t
+--   fromList [("a",False),("b",True),("c",True)]
+--   
+--   &gt;&gt;&gt; t |= a
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; satAssignmentSimple $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+--   Nothing
+--   </pre>
+satAssignmentSimple :: Ord a => Formula a -> Maybe (Map a Bool)
+
+-- | DPLL satisfiability algorithm.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; import AutoProof.Internal.Formula
+--   
+--   &gt;&gt;&gt; satDPLL $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; satDPLL $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+satDPLL :: Ord a => Formula a -> Bool
+
+-- | DPLL satisfiability algorithm, returning a satisfying truth
+--   assihnment, if there is one.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
+--   
+--   &gt;&gt;&gt; Just t = satAssignmentDPLL a
+--   
+--   &gt;&gt;&gt; t
+--   fromList [("a",False),("c",True)]
+--   
+--   &gt;&gt;&gt; t |= a
+--   True
+--   </pre>
+--   
+--   <i>Note:</i> The variable <tt>"b"</tt> is missing in the map above,
+--   which means that it's implictly assigned the value <a>False</a>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; satAssignmentDPLL $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+--   Nothing
+--   </pre>
+satAssignmentDPLL :: Ord a => Formula a -> Maybe (Map a Bool)
+
+
+-- | Satisfiability algorithms.
+module AutoProof.Internal.Classical.SAT
+
+-- | Class representing truth assignments for evalutating propositional
+--   logic formulas.
+class TruthAssignment t a
+
+-- | Evaluate the truth value of a variable under a given truth assignment.
+evalVar :: TruthAssignment t a => t -> a -> Bool
+
+-- | Evaluate the truth value of a formula under a given truth assignment.
+evalFormula :: TruthAssignment t a => t -> Formula a -> Bool
+
+-- | Semantic entailment relation. This is an infix alias of
+--   <a>evalFormula</a>.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = Map.fromList $ [("a", True), ("b", False)]
+--   
+--   &gt;&gt;&gt; t |= And (Var "a") (Not (Var "b"))
+--   True
+--   </pre>
+(|=) :: TruthAssignment t a => t -> Formula a -> Bool
+infix 5 |=
+
+-- | A simple baseline satisfiability algorithm.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; satSimple $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; satSimple $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+satSimple :: Eq a => Formula a -> Bool
+
+-- | DPLL satisfiability algorithm.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; import AutoProof.Internal.Formula
+--   
+--   &gt;&gt;&gt; satDPLL $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; satDPLL $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+satDPLL :: Ord a => Formula a -> Bool
+
+-- | A simple baseline satisfiability algorithm, returning a satisfying
+--   truth assignment if there is one.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
+--   
+--   &gt;&gt;&gt; Just t = satAssignmentSimple a
+--   
+--   &gt;&gt;&gt; t
+--   fromList [("a",False),("b",True),("c",True)]
+--   
+--   &gt;&gt;&gt; t |= a
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; satAssignmentSimple $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+--   Nothing
+--   </pre>
+satAssignmentSimple :: Ord a => Formula a -> Maybe (Map a Bool)
+
+-- | DPLL satisfiability algorithm, returning a satisfying truth
+--   assihnment, if there is one.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
+--   
+--   &gt;&gt;&gt; Just t = satAssignmentDPLL a
+--   
+--   &gt;&gt;&gt; t
+--   fromList [("a",False),("c",True)]
+--   
+--   &gt;&gt;&gt; t |= a
+--   True
+--   </pre>
+--   
+--   <i>Note:</i> The variable <tt>"b"</tt> is missing in the map above,
+--   which means that it's implictly assigned the value <a>False</a>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; satAssignmentDPLL $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+--   Nothing
+--   </pre>
+satAssignmentDPLL :: Ord a => Formula a -> Maybe (Map a Bool)
 
 
 -- | Functions and types related to conjunctive normal forms.
@@ -2359,15 +2495,32 @@ infix 5 |=
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; simpleSAT $ Var "a"
+--   &gt;&gt;&gt; satSimple $ Var "a"
 --   True
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; simpleSAT $ And (Var "a") (Not (Var "a"))
+--   &gt;&gt;&gt; satSimple $ And (Var "a") (Not (Var "a"))
 --   False
 --   </pre>
-simpleSAT :: Eq a => Formula a -> Bool
+satSimple :: Eq a => Formula a -> Bool
+
+-- | DPLL satisfiability algorithm.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; import AutoProof.Internal.Formula
+--   
+--   &gt;&gt;&gt; satDPLL $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; satDPLL $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+satDPLL :: Ord a => Formula a -> Bool
 
 -- | A simple baseline satisfiability algorithm, returning a satisfying
 --   truth assignment if there is one.
@@ -2382,7 +2535,7 @@ simpleSAT :: Eq a => Formula a -> Bool
 --   <pre>
 --   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
 --   
---   &gt;&gt;&gt; Just t = simpleSATAssignment a
+--   &gt;&gt;&gt; Just t = satAssignmentSimple a
 --   
 --   &gt;&gt;&gt; t
 --   fromList [("a",False),("b",True),("c",True)]
@@ -2392,10 +2545,36 @@ simpleSAT :: Eq a => Formula a -> Bool
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; simpleSATAssignment $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+--   &gt;&gt;&gt; satAssignmentSimple $ And (Var "a") (Not (Var "a")) -- unsatisfiable
 --   Nothing
 --   </pre>
-simpleSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
+satAssignmentSimple :: Ord a => Formula a -> Maybe (Map a Bool)
+
+-- | DPLL satisfiability algorithm, returning a satisfying truth
+--   assihnment, if there is one.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
+--   
+--   &gt;&gt;&gt; Just t = satAssignmentDPLL a
+--   
+--   &gt;&gt;&gt; t
+--   fromList [("a",False),("c",True)]
+--   
+--   &gt;&gt;&gt; t |= a
+--   True
+--   </pre>
+--   
+--   <i>Note:</i> The variable <tt>"b"</tt> is missing in the map above,
+--   which means that it's implictly assigned the value <a>False</a>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; satAssignmentDPLL $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+--   Nothing
+--   </pre>
+satAssignmentDPLL :: Ord a => Formula a -> Maybe (Map a Bool)
 
 -- | Abstract syntax tree class.
 class AST t where {

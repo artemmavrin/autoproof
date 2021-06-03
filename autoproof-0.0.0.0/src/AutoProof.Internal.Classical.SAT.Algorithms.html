@@ -9,13 +9,21 @@
 </span><span id="line-9"></span><span class="hs-comment">-- Satisfiability algorithms.</span><span>
 </span><span id="line-10"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">AutoProof.Internal.Classical.SAT.Algorithms</span><span>
 </span><span id="line-11"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Simple baseline algorithm</span></span><span>
-</span><span id="line-12"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSAT"><span class="hs-identifier">simpleSAT</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-13"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSATAssignment"><span class="hs-identifier">simpleSATAssignment</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-14"></span><span>  </span><span class="hs-special">)</span><span>
-</span><span id="line-15"></span><span class="hs-keyword">where</span><span>
-</span><span id="line-16"></span><span>
-</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html"><span class="hs-identifier">AutoProof.Internal.Classical.SAT.Algorithms.Simple</span></a></span><span>
-</span><span id="line-18"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSAT"><span class="hs-identifier">simpleSAT</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-19"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#simpleSATAssignment"><span class="hs-identifier">simpleSATAssignment</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-20"></span><span>  </span><span class="hs-special">)</span><span>
-</span><span id="line-21"></span></pre></body></html>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#satSimple"><span class="hs-identifier">satSimple</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#satAssignmentSimple"><span class="hs-identifier">satAssignmentSimple</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><span class="hs-comment">-- * DPLL</span></span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satDPLL"><span class="hs-identifier">satDPLL</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satAssignmentDPLL"><span class="hs-identifier">satAssignmentDPLL</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html"><span class="hs-identifier">AutoProof.Internal.Classical.SAT.Algorithms.DPLL</span></a></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satAssignmentDPLL"><span class="hs-identifier">satAssignmentDPLL</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.DPLL.html#satDPLL"><span class="hs-identifier">satDPLL</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html"><span class="hs-identifier">AutoProof.Internal.Classical.SAT.Algorithms.Simple</span></a></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#satAssignmentSimple"><span class="hs-identifier">satAssignmentSimple</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.Algorithms.Simple.html#satSimple"><span class="hs-identifier">satSimple</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span></pre></body></html>
