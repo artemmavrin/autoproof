@@ -1,6 +1,4 @@
 {-# LANGUAGE TupleSections #-}
-{-# OPTIONS_HADDOCK hide, prune #-}
-
 -- |
 -- Module      : AutoProof.Internal.Utils.Parser.Types
 -- Copyright   : (c) Artem Mavrin, 2021

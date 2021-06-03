@@ -29,7 +29,7 @@ import AutoProof.Internal.AST
 import AutoProof.Internal.Utils.PrettyPrintable
   ( PrettyPrintable (pretty, prettys),
   )
-import AutoProof.Internal.Utils.Symbols
+import AutoProof.Internal.Utils.PrettyPrintable.Symbols
   ( andS,
     falseS,
     iffS,
@@ -271,7 +271,7 @@ instance PrettyPrintable a => PrettyPrintable (Formula a) where
 --
 -- ==== __Examples__
 --
--- >>> prettyFormula $ Imp (Var 'a') (Or (Var 'b') (Lit False))
+-- >>> prettyFormula $ Imp (Var "a") (Or (Var "b") (Lit False))
 -- "a → (b ∨ ⊥)"
 prettyFormula :: PrettyPrintable a => Formula a -> String
 prettyFormula = pretty

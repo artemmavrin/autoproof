@@ -1,5 +1,5 @@
 -- |
--- Module      : AutoProof.Intuitionistic.Proof
+-- Module      : AutoProof.Internal.Intuitionistic.Proof
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -7,7 +7,7 @@
 -- Portability : POSIX
 --
 -- Intuitionistic proofs in propositional logic.
-module AutoProof.Intuitionistic.Proof
+module AutoProof.Internal.Intuitionistic.Proof
   ( -- * Proof search for judgements and formulas
     prove,
     proveTautology,
@@ -31,10 +31,20 @@ module AutoProof.Intuitionistic.Proof
   )
 where
 
-import AutoProof.Intuitionistic.Proof.Correctness (correct, debug, valid)
-import AutoProof.Intuitionistic.Proof.Cut (findCut, hasCut)
-import AutoProof.Intuitionistic.Proof.Provability (isProvable, isTautology)
-import AutoProof.Intuitionistic.Proof.Search
+import AutoProof.Internal.Intuitionistic.Proof.Correctness
+  ( correct,
+    debug,
+    valid,
+  )
+import AutoProof.Internal.Intuitionistic.Proof.Cut
+  ( findCut,
+    hasCut,
+  )
+import AutoProof.Internal.Intuitionistic.Proof.Provability
+  ( isProvable,
+    isTautology,
+  )
+import AutoProof.Internal.Intuitionistic.Proof.Search
   ( prove,
     proveImp,
     proveStatman,

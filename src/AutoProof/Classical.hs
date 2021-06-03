@@ -54,11 +54,12 @@ module AutoProof.Classical
     -- * Satisfiability
 
     -- ** Truth assignments
-    TruthAssignment (evalVar, evalFormula, (|=)),
+    TruthAssignment (evalVar, evalFormula),
+    (|=),
 
     -- ** Satisfiability algorithms
-    naiveSAT,
-    naiveSATAssignment,
+    simpleSAT,
+    simpleSATAssignment,
 
     -- * Abstract syntax trees
     AST (Root, root, children, height, size),
@@ -77,20 +78,21 @@ module AutoProof.Classical
   )
 where
 
-import AutoProof.Classical.CNF (canonicalCNF)
-import AutoProof.Classical.Proof
-  ( isProvable,
-    isTautology,
-  )
-import AutoProof.Classical.SAT
-  ( TruthAssignment (evalFormula, evalVar, (|=)),
-    naiveSAT,
-    naiveSATAssignment,
-  )
 import AutoProof.Internal.AST
   ( AST (Root, children, height, root, size),
     properSubtrees,
     subtrees,
+  )
+import AutoProof.Internal.Classical.CNF (canonicalCNF)
+import AutoProof.Internal.Classical.Proof
+  ( isProvable,
+    isTautology,
+  )
+import AutoProof.Internal.Classical.SAT
+  ( TruthAssignment (evalFormula, evalVar),
+    simpleSAT,
+    simpleSATAssignment,
+    (|=),
   )
 import AutoProof.Internal.Formula
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),

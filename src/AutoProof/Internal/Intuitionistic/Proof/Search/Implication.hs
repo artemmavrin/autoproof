@@ -1,5 +1,5 @@
 -- |
--- Module      : AutoProof.Intuitionistic.Proof.Search.Implication
+-- Module      : AutoProof.Internal.Intuitionistic.Proof.Search.Implication
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -7,7 +7,7 @@
 -- Portability : POSIX
 --
 -- Intuitionistic proofs in the implicational fragment of propositional logic.
-module AutoProof.Intuitionistic.Proof.Search.Implication
+module AutoProof.Internal.Intuitionistic.Proof.Search.Implication
   ( proveImp,
   )
 where

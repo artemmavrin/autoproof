@@ -1,5 +1,5 @@
 -- |
--- Module      : AutoProof.Intuitionistic.Proof.Cut
+-- Module      : AutoProof.Internal.Intuitionistic.Proof.Cut
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -7,7 +7,7 @@
 -- Portability : POSIX
 --
 -- Functions related to cuts in proofs.
-module AutoProof.Intuitionistic.Proof.Cut (findCut, hasCut) where
+module AutoProof.Internal.Intuitionistic.Proof.Cut (findCut, hasCut) where
 
 import AutoProof.Internal.AST (children)
 import AutoProof.Internal.Proof.Types

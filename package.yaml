@@ -318,9 +318,9 @@ tests:
     when:
       - condition: false
         other-modules: Paths_autoproof
-  sat-naive-test:
+  sat-simple-test:
     main: Main.hs
-    source-dirs: test/classical/sat-naive
+    source-dirs: test/classical/sat-simple
     ghc-options:
       - -threaded
       - -rtsopts

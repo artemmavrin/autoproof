@@ -1,7 +1,5 @@
-{-# OPTIONS_HADDOCK hide, prune #-}
-
 -- |
--- Module      : AutoProof.Internal.Utils.Set
+-- Module      : AutoProof.Internal.Utils.SetUtils
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -9,7 +7,7 @@
 -- Portability : POSIX
 --
 -- Miscellaneous set-related functions.
-module AutoProof.Internal.Utils.Set (toSet) where
+module AutoProof.Internal.Utils.SetUtils (toSet) where
 
 import Data.Set (Set)
 import qualified Data.Set as Set

@@ -1,5 +1,5 @@
 -- |
--- Module      : AutoProof.Classical.Proof.Provablity
+-- Module      : AutoProof.Internal.Classical.Proof.Provablity
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -7,14 +7,14 @@
 -- Portability : POSIX
 --
 -- Provability checking in classical propositional logic.
-module AutoProof.Classical.Proof.Provability
+module AutoProof.Internal.Classical.Proof.Provability
   ( -- * Provability checking
     isProvable,
     isTautology,
   )
 where
 
-import AutoProof.Classical.Proof.Glivenko (isProvableGlivenko)
+import AutoProof.Internal.Classical.Proof.Glivenko (isProvableGlivenko)
 import AutoProof.Internal.Formula (Formula)
 import AutoProof.Internal.Judgement (Judgement, (|-))
 

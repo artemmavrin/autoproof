@@ -26,8 +26,8 @@ import AutoProof.Internal.Utils.PrettyPrintable
   ( PrettyPrintable (pretty),
     prettySeq,
   )
-import AutoProof.Internal.Utils.Set (toSet)
-import AutoProof.Internal.Utils.Symbols (turnstileS)
+import AutoProof.Internal.Utils.PrettyPrintable.Symbols (turnstileS)
+import AutoProof.Internal.Utils.SetUtils (toSet)
 import Data.Set (Set)
 import qualified Data.Set as Set
 
@@ -95,7 +95,7 @@ instance PrettyPrintable a => PrettyPrintable (Judgement a) where
 --
 -- ==== __Examples__
 --
--- >>> prettyJudgement $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
+-- >>> prettyJudgement $ [Var "a", Imp (Var "a") (Var "b")] |- Var "b"
 -- "a, a → b ⊢ b"
 prettyJudgement :: PrettyPrintable a => Judgement a -> String
 prettyJudgement = pretty

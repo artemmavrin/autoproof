@@ -5,13 +5,13 @@ module Main where
 
 import AutoProof.Classical
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
-    TruthAssignment ((|=)),
-    naiveSAT,
-    naiveSATAssignment,
     pretty,
+    simpleSAT,
+    simpleSATAssignment,
+    (|=),
   )
-import AutoProof.Internal.Utils.PrettyPrintable (PrettyPrintable)
 import AutoProof.Internal.Parser (unsafeParseFormula)
+import AutoProof.Internal.Utils.PrettyPrintable (PrettyPrintable)
 import Data.Char (isSpace)
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
@@ -22,7 +22,7 @@ main = do
   unprovableFormulas <- loadFormulas "test/data/formulas/classical-unprovable.txt"
 
   H.hspec $
-    H.describe "naive SAT" $ do
+    H.describe "simple SAT" $ do
       mapM_ assertSatisfiable provableFormulas
       mapM_ (assertSatisfiable . Not) unprovableFormulas
       mapM_ (assertUnsatisfiable . Not) provableFormulas
@@ -74,11 +74,11 @@ wait = QC.within timeoutMicroseconds
 assertSATCase :: Formula Int -> QC.Property
 assertSATCase a =
   wait $
-    if naiveSAT a
-      then case naiveSATAssignment a of
+    if simpleSAT a
+      then case simpleSATAssignment a of
         Just m -> m |= a
         _ -> False
-      else case naiveSATAssignment a of
+      else case simpleSATAssignment a of
         Nothing -> True
         _ -> False
 
@@ -86,8 +86,8 @@ assertSatisfiable :: (PrettyPrintable a, Ord a) => Formula a -> H.SpecWith ()
 assertSatisfiable a =
   H.it ("satisfiable: " ++ pretty a) $
     wait $
-      naiveSAT a
-        && case naiveSATAssignment a of
+      simpleSAT a
+        && case simpleSATAssignment a of
           Just m -> m |= a
           _ -> False
 
@@ -95,8 +95,8 @@ assertUnsatisfiable :: (PrettyPrintable a, Ord a) => Formula a -> H.SpecWith ()
 assertUnsatisfiable a =
   H.it ("unsatisfiable: " ++ pretty a) $
     wait $
-      not (naiveSAT a)
-        && case naiveSATAssignment a of
+      not (simpleSAT a)
+        && case simpleSATAssignment a of
           Nothing -> True
           _ -> False
 

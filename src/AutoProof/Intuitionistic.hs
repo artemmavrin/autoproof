@@ -96,6 +96,19 @@ import AutoProof.Internal.Formula
     subformulas,
     substitute,
   )
+import AutoProof.Internal.Intuitionistic.Proof
+  ( correct,
+    debug,
+    findCut,
+    hasCut,
+    isProvable,
+    isTautology,
+    prove,
+    proveImp,
+    proveStatman,
+    proveTautology,
+    valid,
+  )
 import AutoProof.Internal.Judgement
   ( Context,
     Judgement (Judgement, antecedents, succedent),
@@ -129,16 +142,3 @@ import AutoProof.Internal.Proof
     prettyProof,
   )
 import AutoProof.Internal.Utils.PrettyPrintable (PrettyPrintable (pretty))
-import AutoProof.Intuitionistic.Proof
-  ( correct,
-    debug,
-    findCut,
-    hasCut,
-    isProvable,
-    isTautology,
-    prove,
-    proveImp,
-    proveStatman,
-    proveTautology,
-    valid,
-  )

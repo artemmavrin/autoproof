@@ -7,12 +7,24 @@
 -- Portability : POSIX
 --
 -- Propositional logic library.
+--
+-- This top-level module only includes type definitions and functions for the
+-- syntactic entities of propositional logic. If you want semantics, then you
+-- must first choose either classical or intuitionistic logic, and then use the
+-- corresponding module
+--
+--  1.  "AutoProof.Classical", for classical logic, or
+--  2.  "AutoProof.Intuitionistic", for intuitionistic logic.
+--
+-- Both of the above module expose every symbol in this module, and more.
 module AutoProof
   ( -- * Formulas
     Formula (Lit, Var, Not, Imp, Or, And, Iff),
 
     -- ** Operations on formulas
     subformulas,
+    substitute,
+    getAnyVariable,
 
     -- * Judgements
     Context,
@@ -68,8 +80,10 @@ import AutoProof.Internal.AST
   )
 import AutoProof.Internal.Formula
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
+    getAnyVariable,
     prettyFormula,
     subformulas,
+    substitute,
   )
 import AutoProof.Internal.Judgement
   ( Context,

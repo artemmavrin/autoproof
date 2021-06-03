@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 693d2463b5586e3d5b8242e8148aea31fe317fe9438d7fed1c8afaa9c9a0f1ac
+-- hash: 44f78ac146b92e1adf653f06047384c2b4f34521b908c120c82c2da0d28d54b4
 
 name:           autoproof
 version:        0.0.0.0
@@ -37,16 +37,26 @@ library
       AutoProof
       AutoProof.Classical
       AutoProof.Classical.CNF
-      AutoProof.Classical.Proof
-      AutoProof.Classical.Proof.Glivenko
-      AutoProof.Classical.Proof.Provability
-      AutoProof.Classical.SAT
-      AutoProof.Classical.SAT.Baseline
-      AutoProof.Classical.SAT.TruthAssignment
       AutoProof.Internal.AST
+      AutoProof.Internal.Classical.CNF
+      AutoProof.Internal.Classical.Proof
+      AutoProof.Internal.Classical.Proof.Glivenko
+      AutoProof.Internal.Classical.Proof.Provability
+      AutoProof.Internal.Classical.SAT
+      AutoProof.Internal.Classical.SAT.Algorithms
+      AutoProof.Internal.Classical.SAT.Algorithms.Simple
+      AutoProof.Internal.Classical.SAT.TruthAssignment
       AutoProof.Internal.Formula
       AutoProof.Internal.Formula.Operations
       AutoProof.Internal.Formula.Types
+      AutoProof.Internal.Intuitionistic.Proof
+      AutoProof.Internal.Intuitionistic.Proof.Correctness
+      AutoProof.Internal.Intuitionistic.Proof.Cut
+      AutoProof.Internal.Intuitionistic.Proof.Provability
+      AutoProof.Internal.Intuitionistic.Proof.Search
+      AutoProof.Internal.Intuitionistic.Proof.Search.General
+      AutoProof.Internal.Intuitionistic.Proof.Search.Implication
+      AutoProof.Internal.Intuitionistic.Proof.Search.Statman
       AutoProof.Internal.Judgement
       AutoProof.Internal.Parser
       AutoProof.Internal.Proof
@@ -58,17 +68,9 @@ library
       AutoProof.Internal.Utils.Parser.Combinator
       AutoProof.Internal.Utils.Parser.Types
       AutoProof.Internal.Utils.PrettyPrintable
-      AutoProof.Internal.Utils.Set
-      AutoProof.Internal.Utils.Symbols
+      AutoProof.Internal.Utils.PrettyPrintable.Symbols
+      AutoProof.Internal.Utils.SetUtils
       AutoProof.Intuitionistic
-      AutoProof.Intuitionistic.Proof
-      AutoProof.Intuitionistic.Proof.Correctness
-      AutoProof.Intuitionistic.Proof.Cut
-      AutoProof.Intuitionistic.Proof.Provability
-      AutoProof.Intuitionistic.Proof.Search
-      AutoProof.Intuitionistic.Proof.Search.General
-      AutoProof.Intuitionistic.Proof.Search.Implication
-      AutoProof.Intuitionistic.Proof.Search.Statman
   other-modules:
       Paths_autoproof
   hs-source-dirs:
@@ -314,11 +316,11 @@ test-suite prove-test
         Paths_autoproof
   default-language: Haskell2010
 
-test-suite sat-naive-test
+test-suite sat-simple-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
-      test/classical/sat-naive
+      test/classical/sat-simple
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       QuickCheck >=2.14.2

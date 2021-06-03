@@ -1,5 +1,5 @@
 -- |
--- Module      : AutoProof.Intuitionistic.Proof.Provability
+-- Module      : AutoProof.Internal.Intuitionistic.Proof.Provability
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -7,15 +7,15 @@
 -- Portability : POSIX
 --
 -- Provability checking in intuitionistic propositional logic.
-module AutoProof.Intuitionistic.Proof.Provability
+module AutoProof.Internal.Intuitionistic.Proof.Provability
   ( isProvable,
     isTautology,
   )
 where
 
 import AutoProof.Internal.Formula (Formula)
+import AutoProof.Internal.Intuitionistic.Proof.Search (prove)
 import AutoProof.Internal.Judgement (Judgement, (|-))
-import AutoProof.Intuitionistic.Proof.Search (prove)
 import Data.Maybe (isJust)
 
 -- | Determine whether a judgement is intuitionistically valid.

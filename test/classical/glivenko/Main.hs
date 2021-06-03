@@ -6,7 +6,7 @@ import AutoProof.Classical
     pretty,
     (|-),
   )
-import AutoProof.Classical.Proof.Glivenko (isProvableGlivenko)
+import AutoProof.Internal.Classical.Proof.Glivenko (isProvableGlivenko)
 import AutoProof.Internal.Parser (unsafeParseFormula, unsafeParseJudgement)
 import Data.Char (isSpace)
 import qualified Test.Hspec as H

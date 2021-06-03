@@ -1,5 +1,5 @@
 -- |
--- Module      : AutoProof.Intuitionistic.Proof.Search.Statman
+-- Module      : AutoProof.Internal.Intuitionistic.Proof.Search.Statman
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -13,7 +13,7 @@
 --    "Intuitionistic propositional logic is polynomial-space complete."
 --    Theoretical Computer Science, Volume 9, Issue 1, pp. 67–72.
 --    <https://doi.org/10.1016/0304-3975(79)90006-9 DOI>.
-module AutoProof.Intuitionistic.Proof.Search.Statman
+module AutoProof.Internal.Intuitionistic.Proof.Search.Statman
   ( proveStatman,
     toImp,
   )
@@ -24,6 +24,7 @@ import AutoProof.Internal.Formula
   ( Formula (And, Iff, Imp, Lit, Not, Or, Var),
     subformulas,
   )
+import AutoProof.Internal.Intuitionistic.Proof.Search.Implication (proveImp)
 import AutoProof.Internal.Judgement
   ( Judgement
       ( Judgement,
@@ -59,7 +60,6 @@ import qualified AutoProof.Internal.Utils.DList as DList
     fromList,
     toSet,
   )
-import AutoProof.Intuitionistic.Proof.Search.Implication (proveImp)
 import qualified Data.Set as Set
 
 -- | Convert a general propositional judgement into an implicational judgement

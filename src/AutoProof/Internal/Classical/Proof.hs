@@ -1,5 +1,5 @@
 -- |
--- Module      : AutoProof.Classical.Proof
+-- Module      : AutoProof.Internal.Classical.Proof
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -7,11 +7,14 @@
 -- Portability : POSIX
 --
 -- Classical proofs in propositional logic.
-module AutoProof.Classical.Proof
+module AutoProof.Internal.Classical.Proof
   ( -- * Provability checking
     isProvable,
     isTautology,
   )
 where
 
-import AutoProof.Classical.Proof.Provability (isProvable, isTautology)
+import AutoProof.Internal.Classical.Proof.Provability
+  ( isProvable,
+    isTautology,
+  )

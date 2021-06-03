@@ -43,7 +43,7 @@ import AutoProof.Internal.AST
   )
 import AutoProof.Internal.Judgement (Judgement)
 import AutoProof.Internal.Utils.PrettyPrintable (PrettyPrintable (pretty))
-import AutoProof.Internal.Utils.Symbols
+import AutoProof.Internal.Utils.PrettyPrintable.Symbols
   ( andElimLS,
     andElimRS,
     andIntrS,

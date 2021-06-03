@@ -1,5 +1,5 @@
 -- |
--- Module      : AutoProof.Intuitionistic.Proof.Correctness
+-- Module      : AutoProof.Internal.Intuitionistic.Proof.Correctness
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -7,7 +7,7 @@
 -- Portability : POSIX
 --
 -- Check proof correctness in intuitionistic logic.
-module AutoProof.Intuitionistic.Proof.Correctness
+module AutoProof.Internal.Intuitionistic.Proof.Correctness
   ( correct,
     valid,
     debug,

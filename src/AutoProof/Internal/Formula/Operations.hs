@@ -39,7 +39,7 @@ subformulas = go Set.empty
     go s p@(And a b) = go (go (Set.insert p s) a) b
     go s p@(Iff a b) = go (go (Set.insert p s) a) b
 
--- | @('substitute' a x p)@ represents \(a[x := p]\), the substitution of each
+-- | @('substitute' a x p)@ represents \(a[p/x]\), the substitution of each
 -- occurence of the variable \(x\) in the formula \(a\) by the formula \(p\).
 --
 -- ==== __Examples__

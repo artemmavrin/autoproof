@@ -1,5 +1,5 @@
 -- |
--- Module      : AutoProof.Intuitionistic.Proof.Search
+-- Module      : AutoProof.Internal.Intuitionistic.Proof.Search
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -7,7 +7,7 @@
 -- Portability : POSIX
 --
 -- Proof search algorithms.
-module AutoProof.Intuitionistic.Proof.Search
+module AutoProof.Internal.Intuitionistic.Proof.Search
   ( -- * Proof search for judgements and formulas
     prove,
     proveTautology,
@@ -18,9 +18,9 @@ module AutoProof.Intuitionistic.Proof.Search
   )
 where
 
-import AutoProof.Intuitionistic.Proof.Search.General
+import AutoProof.Internal.Intuitionistic.Proof.Search.General
   ( prove,
     proveTautology,
   )
-import AutoProof.Intuitionistic.Proof.Search.Implication (proveImp)
-import AutoProof.Intuitionistic.Proof.Search.Statman (proveStatman)
+import AutoProof.Internal.Intuitionistic.Proof.Search.Implication (proveImp)
+import AutoProof.Internal.Intuitionistic.Proof.Search.Statman (proveStatman)

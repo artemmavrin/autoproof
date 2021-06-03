@@ -1,5 +1,5 @@
 -- |
--- Module      : AutoProof.Intuitionistic.Proof.Search.General
+-- Module      : AutoProof.Internal.Intuitionistic.Proof.Search.General
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -7,7 +7,7 @@
 -- Portability : POSIX
 --
 -- A general-purpose proof search algorithm.
-module AutoProof.Intuitionistic.Proof.Search.General
+module AutoProof.Internal.Intuitionistic.Proof.Search.General
   ( -- * Proof search for judgements and formulas
     prove,
     proveTautology,
@@ -15,10 +15,10 @@ module AutoProof.Intuitionistic.Proof.Search.General
 where
 
 import AutoProof.Internal.Formula (Formula)
+import AutoProof.Internal.Intuitionistic.Proof.Search.Implication (proveImp)
+import AutoProof.Internal.Intuitionistic.Proof.Search.Statman (proveStatman)
 import AutoProof.Internal.Judgement (Judgement, (|-))
 import AutoProof.Internal.Proof.Types (Proof)
-import AutoProof.Intuitionistic.Proof.Search.Implication (proveImp)
-import AutoProof.Intuitionistic.Proof.Search.Statman (proveStatman)
 import Control.Applicative (Alternative ((<|>)))
 
 -- | Find an intuitionistic proof of a judgement, if a proof exists.

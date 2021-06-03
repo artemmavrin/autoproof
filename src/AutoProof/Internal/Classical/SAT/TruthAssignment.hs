@@ -2,7 +2,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 -- |
--- Module      : AutoProof.Classical.SAT.TruthAssignment
+-- Module      : AutoProof.Internal.Classical.SAT.TruthAssignment
 -- Copyright   : (c) Artem Mavrin, 2021
 -- License     : BSD3
 -- Maintainer  : artemvmavrin@gmail.com
@@ -10,8 +10,9 @@
 -- Portability : POSIX
 --
 -- Defines the TruthAssignment class.
-module AutoProof.Classical.SAT.TruthAssignment
-  ( TruthAssignment (evalVar, evalFormula, (|=)),
+module AutoProof.Internal.Classical.SAT.TruthAssignment
+  ( TruthAssignment (evalVar, evalFormula),
+    (|=),
   )
 where
 
@@ -45,17 +46,19 @@ class TruthAssignment t a where
   evalFormula t (And a b) = evalFormula t a && evalFormula t b
   evalFormula t (Iff a b) = evalFormula t (And (Imp a b) (Imp b a))
 
-  -- | Infix alias of 'evalFormula'.
-  --
-  -- ==== __Examples__
-  --
-  -- >>> t = Map.fromList $ [("a", True), ("b", False)]
-  -- >>> t |= And (Var "a") (Not (Var "b"))
-  -- True
-  (|=) :: t -> Formula a -> Bool
-  (|=) = evalFormula
+-- | Semantic entailment relation. This is an infix alias of 'evalFormula'.
+--
+-- ==== __Examples__
+--
+-- >>> t = Map.fromList $ [("a", True), ("b", False)]
+-- >>> t |= And (Var "a") (Not (Var "b"))
+-- True
+(|=) :: TruthAssignment t a => t -> Formula a -> Bool
+(|=) = evalFormula
 
--- | Truth assignments where a missing key in the map is interpreted as false.
+infix 5 |=
+
+-- | Truth assignments where a missing key in the map is interpreted as 'False'.
 --
 -- ==== __Examples__
 --
@@ -69,7 +72,8 @@ class TruthAssignment t a where
 instance Ord a => TruthAssignment (Map a Bool) a where
   evalVar t x = Map.findWithDefault False x t
 
--- | Can be used to evaluate closed formulas
+-- | Assigns all propositional variables the truth value 'False'. Can be used to
+-- evaluate closed formulas.
 --
 -- ==== __Examples__
 --

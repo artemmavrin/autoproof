@@ -31,17 +31,8 @@ class PrettyPrintable a where
   prettys :: a -> ShowS
   prettys = DList.fromList . pretty
 
-instance PrettyPrintable Char where
-  prettys = showChar
-
 instance PrettyPrintable String where
   prettys = showString
-
-instance PrettyPrintable Int where
-  prettys = shows
-
-instance PrettyPrintable Integer where
-  prettys = shows
 
 -- | Difference-list representation of a pretty-printed collection of
 -- pretty-printable values.

@@ -1,5 +1,3 @@
-{-# OPTIONS_HADDOCK hide, prune #-}
-
 -- |
 -- Module      : AutoProof.Internal.Utils.Parser.Char
 -- Copyright   : (c) Artem Mavrin, 2021

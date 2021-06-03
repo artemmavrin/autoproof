@@ -31,5 +31,5 @@ cradle:
         component: "autoproof:test:provable-test"
       - path: "./test/classical/cnf/Main.hs"
         component: "autoproof:test:cnf-test"
-      - path: "./test/classical/sat-naive/Main.hs"
-        component: "autoproof:test:sat-naive-test"
+      - path: "./test/classical/sat-simple/Main.hs"
+        component: "autoproof:test:sat-simple-test"
