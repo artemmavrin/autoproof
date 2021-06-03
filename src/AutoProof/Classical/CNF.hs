@@ -27,6 +27,8 @@ module AutoProof.Classical.CNF
 
     -- * Operations
     substitute,
+    unitLiteral,
+    pureLiteral,
   )
 where
 
@@ -36,6 +38,8 @@ import AutoProof.Internal.Classical.CNF
     Literal,
     canonicalCNF,
     fromFormula,
+    pureLiteral,
     substitute,
     toFormula,
+    unitLiteral,
   )

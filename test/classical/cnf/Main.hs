@@ -11,8 +11,14 @@ import AutoProof.Classical
     substitute,
     (|-),
   )
-import AutoProof.Classical.CNF (CNF)
-import qualified AutoProof.Classical.CNF as CNF (fromFormula, substitute)
+import qualified AutoProof.Classical.CNF as CNF
+  ( fromFormula,
+    pureLiteral,
+    substitute,
+    unitLiteral,
+  )
+import Data.Maybe (fromJust, isJust)
+import qualified Data.Map as Map (findWithDefault, toList)
 import qualified Data.Set as Set (member)
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
@@ -25,6 +31,8 @@ main = do
       validateFormulaEntailsCNF
       validateCNFEntailsFormula
       validateSubstitution
+      validateUnitLiteral
+      validatePureLiteral
 
 arbitraryFormula :: Int -> QC.Gen (Formula Int)
 arbitraryFormula n
@@ -65,15 +73,23 @@ assertCNFEntailsFormula :: Formula Int -> QC.Property
 assertCNFEntailsFormula a = wait $ isProvable ([canonicalCNF a] |- a)
 
 assertCanonicalForm :: Formula Int -> Bool
-assertCanonicalForm a =
-  noRedundantClauses (CNF.fromFormula a)
-    && noTrueOrFalse (canonicalCNF a)
+assertCanonicalForm a = noTrueOrFalse (canonicalCNF a)
 
-noRedundantClauses :: CNF Int -> Bool
-noRedundantClauses = all noLiteralAndItsNegation
-  where
-    noLiteralAndItsNegation c = not (any (occursWithNegation c) c)
-    occursWithNegation c (b, x) = (not b, x) `Set.member` c
+assertCorrectUnitLiteral :: Formula Int -> QC.Property
+assertCorrectUnitLiteral a =
+  let cnf = CNF.fromFormula a
+      l' = CNF.unitLiteral cnf
+   in isJust l'
+        QC.==> let (x, b) = fromJust l'
+                in any ((== [(x, b)]) . Map.toList) cnf
+
+assertCorrectPureLiteral :: Formula Int -> QC.Property
+assertCorrectPureLiteral a =
+  let cnf = CNF.fromFormula a
+      l' = CNF.pureLiteral cnf
+   in isJust l'
+        QC.==> let (x, b) = fromJust l'
+                in all ((== b) . Map.findWithDefault b x) cnf
 
 noTrueOrFalse :: Ord b => Formula b -> Bool
 noTrueOrFalse a =
@@ -106,3 +122,13 @@ validateSubstitution :: H.SpecWith ()
 validateSubstitution =
   H.it "CNF conversion \"commutes\" with substitutions" $
     QC.withMaxSuccess 10000 assertSubstitution
+
+validateUnitLiteral :: H.SpecWith ()
+validateUnitLiteral =
+  H.it "get unit literal" $
+    QC.withMaxSuccess 10000 assertCorrectUnitLiteral
+
+validatePureLiteral :: H.SpecWith ()
+validatePureLiteral =
+  H.it "get pure literal" $
+    QC.withMaxSuccess 10000 assertCorrectPureLiteral
