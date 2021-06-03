@@ -20,6 +20,7 @@ module AutoProof.Internal.Classical.CNF
 
     -- * Operations
     substitute,
+    substitutePure,
     unitLiteral,
     pureLiteral,
     getAnyLiteral,
@@ -131,7 +132,7 @@ literalToFormula (x, True) = Var x
 canonicalCNF :: Ord a => Formula a -> Formula a
 canonicalCNF = toFormula . fromFormula
 
--- | Substitute a boolean value for a variable in a CNF formula.
+-- | Substitute a truth value for a variable in a CNF formula.
 --
 -- @('substitute' a x 'True')@ and @('substitute' a x 'False')@ represent the
 -- substitutions \(a[\top/x]\) and \(a[\bot/x]\), respectively.
@@ -153,6 +154,12 @@ substitute a x b =
   Set.map
     (Map.filterWithKey (curry (/= (x, not b))))
     (Set.filter ((/= Just b) . Map.lookup x) a)
+
+-- | Substitute a truth value for a variable that occurs as a pure literal
+-- within a CNF formula with the same polarity as the truth value. This
+-- precondition is /not/ checked.
+substitutePure :: Ord a => CNF a -> a -> Bool -> CNF a
+substitutePure a x b = Set.filter ((/= Just b) . Map.lookup x) a
 
 -- | Obtain the literal of a unitary clause of a CNF formula, if there is one.
 --
@@ -194,7 +201,6 @@ pureLiteral a = case List.find isPure variables of
       Just Nothing -> findVariables ls vs
       -- This is the first time we see x
       Nothing -> findVariables ls ((x, Just b) : vs)
-
 
 -- | Obtain a literal from a CNF formula, if there is one.
 getAnyLiteral :: CNF a -> Maybe (Literal a)

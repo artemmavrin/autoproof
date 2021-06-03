@@ -62,10 +62,10 @@ satSimple a = case getAnyVariable a of
 -- >>> satAssignmentSimple $ And (Var "a") (Not (Var "a")) -- unsatisfiable
 -- Nothing
 satAssignmentSimple :: Ord a => Formula a -> Maybe (Map a Bool)
-satAssignmentSimple = f Map.empty
+satAssignmentSimple = solve Map.empty
   where
-    f m a = case getAnyVariable a of
+    solve m a = case getAnyVariable a of
       Nothing -> if evalFormula () a then Just m else Nothing
       Just x ->
-        f (Map.insert x True m) (substitute a x (Lit True))
-          <|> f (Map.insert x False m) (substitute a x (Lit False))
+        solve (Map.insert x True m) (substitute a x (Lit True))
+          <|> solve (Map.insert x False m) (substitute a x (Lit False))

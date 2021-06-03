@@ -19,6 +19,7 @@ import qualified AutoProof.Internal.Classical.CNF as CNF
     getAnyLiteral,
     pureLiteral,
     substitute,
+    substitutePure,
     unitLiteral,
   )
 import AutoProof.Internal.Formula (Formula)
@@ -62,18 +63,18 @@ satAssignmentDPLL :: Ord a => Formula a -> Maybe (Map a Bool)
 satAssignmentDPLL = satAssignmentDPLLFromCNF . CNF.fromFormula
 
 satAssignmentDPLLFromCNF :: Ord a => CNF a -> Maybe (Map a Bool)
-satAssignmentDPLLFromCNF = f Map.empty
+satAssignmentDPLLFromCNF = solve Map.empty
   where
-    f m cnf
+    solve m cnf
       | Set.null cnf = Just m
       | any Map.null cnf = Nothing
       | otherwise =
         case CNF.unitLiteral cnf of
-          Just (x, b) -> f (Map.insert x b m) (CNF.substitute cnf x b)
+          Just (x, b) -> solve (Map.insert x b m) (CNF.substitute cnf x b)
           Nothing -> case CNF.pureLiteral cnf of
-            Just (x, b) -> f (Map.insert x b m) (CNF.substitute cnf x b)
+            Just (x, b) -> solve (Map.insert x b m) (CNF.substitutePure cnf x b)
             Nothing -> case CNF.getAnyLiteral cnf of
               Nothing -> Nothing -- should be unreachable
               Just (x, _) ->
-                f (Map.insert x True m) (CNF.substitute cnf x True)
-                  <|> f (Map.insert x False m) (CNF.substitute cnf x False)
+                solve (Map.insert x True m) (CNF.substitute cnf x True)
+                  <|> solve (Map.insert x False m) (CNF.substitute cnf x False)
