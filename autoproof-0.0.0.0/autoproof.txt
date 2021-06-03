@@ -902,7 +902,7 @@ toFormula :: CNF a -> Formula a
 --   </pre>
 canonicalCNF :: Ord a => Formula a -> Formula a
 
--- | Substitute a boolean value for a variable in a CNF formula.
+-- | Substitute a truth value for a variable in a CNF formula.
 --   
 --   <tt>(<a>substitute</a> a x <a>True</a>)</tt> and
 --   <tt>(<a>substitute</a> a x <a>False</a>)</tt> represent the
@@ -929,6 +929,11 @@ canonicalCNF :: Ord a => Formula a -> Formula a
 --   Or (Var "c") (Not (Var "b"))
 --   </pre>
 substitute :: Ord a => CNF a -> a -> Bool -> CNF a
+
+-- | Substitute a truth value for a variable that occurs as a pure literal
+--   within a CNF formula with the same polarity as the truth value. This
+--   precondition is <i>not</i> checked.
+substitutePure :: Ord a => CNF a -> a -> Bool -> CNF a
 
 -- | Obtain the literal of a unitary clause of a CNF formula, if there is
 --   one.
@@ -1256,7 +1261,7 @@ toFormula :: CNF a -> Formula a
 --   </pre>
 canonicalCNF :: Ord a => Formula a -> Formula a
 
--- | Substitute a boolean value for a variable in a CNF formula.
+-- | Substitute a truth value for a variable in a CNF formula.
 --   
 --   <tt>(<a>substitute</a> a x <a>True</a>)</tt> and
 --   <tt>(<a>substitute</a> a x <a>False</a>)</tt> represent the
@@ -1284,6 +1289,11 @@ canonicalCNF :: Ord a => Formula a -> Formula a
 --   </pre>
 substitute :: Ord a => CNF a -> a -> Bool -> CNF a
 
+-- | Substitute a truth value for a variable that occurs as a pure literal
+--   within a CNF formula with the same polarity as the truth value. This
+--   precondition is <i>not</i> checked.
+substitutePure :: Ord a => CNF a -> a -> Bool -> CNF a
+
 -- | Obtain the literal of a unitary clause of a CNF formula, if there is
 --   one.
 --   
@@ -1295,6 +1305,9 @@ unitLiteral :: CNF a -> Maybe (Literal a)
 --   A <i>pure literal</i> is one which only occurs with the a single
 --   polarity in the formula.
 pureLiteral :: Ord a => CNF a -> Maybe (Literal a)
+
+-- | Obtain a literal from a CNF formula, if there is one.
+getAnyLiteral :: CNF a -> Maybe (Literal a)
 
 
 -- | Miscellaneous set-related functions.
