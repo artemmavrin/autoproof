@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>AutoProof.Internal.Intuitionistic.Proof.Search.Statman</title><link href="linuwial.css" rel="stylesheet" type="text/css" title="Linuwial" /><link rel="stylesheet" type="text/css" href="quick-jump.css" /><link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700" /><script src="haddock-bundle.min.js" async="async" type="text/javascript"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: { processClass: "mathjax", ignoreClass: ".*" } });</script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script></head><body><div id="package-header"><span class="caption">autoproof-0.0.0.0: Propositional logic library</span><ul class="links" id="page-menu"><li><a href="src/AutoProof.Internal.Intuitionistic.Proof.Search.Statman.html">Source</a></li><li><a href="index.html">Contents</a></li><li><a href="doc-index.html">Index</a></li></ul></div><div id="content"><div id="module-header"><table class="info"><tr><th valign="top">Copyright</th><td>(c) Artem Mavrin 2021</td></tr><tr><th>License</th><td>BSD3</td></tr><tr><th>Maintainer</th><td>artemvmavrin@gmail.com</td></tr><tr><th>Stability</th><td>experimental</td></tr><tr><th>Portability</th><td>POSIX</td></tr><tr><th>Safe Haskell</th><td>Safe</td></tr><tr><th>Language</th><td>Haskell2010</td></tr></table><p class="caption">AutoProof.Internal.Intuitionistic.Proof.Search.Statman</p></div><div id="description"><p class="caption">Description</p><div class="doc"><p>Check provability of general propositional formulas using an algorithm
+ derived from</p><ul><li>Richard Statman (1979)
+    &quot;Intuitionistic propositional logic is polynomial-space complete.&quot;
+    Theoretical Computer Science, Volume 9, Issue 1, pp. 67&#8211;72.
+    <a href="https://doi.org/10.1016/0304-3975(79)90006-9">DOI</a>.</li></ul></div></div><div id="synopsis"><details id="syn"><summary>Synopsis</summary><ul class="details-toggle" data-details-id="syn"><li class="src short"><a href="#v:proveStatman">proveStatman</a> :: <a href="../base-4.13.0.0/Data-Ord.html#t:Ord" title="Data.Ord">Ord</a> a =&gt; <a href="AutoProof-Internal-Judgement.html#t:Judgement" title="AutoProof.Internal.Judgement">Judgement</a> a -&gt; <a href="../base-4.13.0.0/Data-Maybe.html#t:Maybe" title="Data.Maybe">Maybe</a> (<a href="AutoProof-Internal-Proof-Types.html#t:Proof" title="AutoProof.Internal.Proof.Types">Proof</a> a)</li><li class="src short"><a href="#v:toImp">toImp</a> :: <a href="../base-4.13.0.0/Data-Ord.html#t:Ord" title="Data.Ord">Ord</a> a =&gt; <a href="AutoProof-Internal-Judgement.html#t:Judgement" title="AutoProof.Internal.Judgement">Judgement</a> a -&gt; <a href="AutoProof-Internal-Judgement.html#t:Judgement" title="AutoProof.Internal.Judgement">Judgement</a> (<a href="AutoProof-Internal-Formula-Types.html#t:Formula" title="AutoProof.Internal.Formula.Types">Formula</a> a)</li></ul></details></div><div id="interface"><h1>Documentation</h1><div class="top"><p class="src"><a id="v:proveStatman" class="def">proveStatman</a> :: <a href="../base-4.13.0.0/Data-Ord.html#t:Ord" title="Data.Ord">Ord</a> a =&gt; <a href="AutoProof-Internal-Judgement.html#t:Judgement" title="AutoProof.Internal.Judgement">Judgement</a> a -&gt; <a href="../base-4.13.0.0/Data-Maybe.html#t:Maybe" title="Data.Maybe">Maybe</a> (<a href="AutoProof-Internal-Proof-Types.html#t:Proof" title="AutoProof.Internal.Proof.Types">Proof</a> a) <a href="src/AutoProof.Internal.Intuitionistic.Proof.Search.Statman.html#proveStatman" class="link">Source</a> <a href="#v:proveStatman" class="selflink">#</a></p><div class="doc"><p>Find an intuitionistic proof of a judgement, if one exists, using Statman's
+ algorithm.</p><ul><li>Richard Statman (1979)
+    &quot;Intuitionistic propositional logic is polynomial-space complete.&quot;
+    Theoretical Computer Science, Volume 9, Issue 1, pp. 67&#8211;72.
+    <a href="https://doi.org/10.1016/0304-3975(79)90006-9">DOI</a>.</li></ul><p>The judgement to be proved is converted to an implicational judgement as
+ described in <code><a href="AutoProof-Internal-Intuitionistic-Proof-Search-Statman.html#v:toImp" title="AutoProof.Internal.Intuitionistic.Proof.Search.Statman">toImp</a></code> and proved (if possible) using <code><a href="AutoProof-Internal-Intuitionistic-Proof-Search-Implication.html#v:proveImp" title="AutoProof.Internal.Intuitionistic.Proof.Search.Implication">proveImp</a></code>. The resulting
+ proof is then converted into a proof of the original judgement.</p></div></div><div class="top"><p class="src"><a id="v:toImp" class="def">toImp</a> :: <a href="../base-4.13.0.0/Data-Ord.html#t:Ord" title="Data.Ord">Ord</a> a =&gt; <a href="AutoProof-Internal-Judgement.html#t:Judgement" title="AutoProof.Internal.Judgement">Judgement</a> a -&gt; <a href="AutoProof-Internal-Judgement.html#t:Judgement" title="AutoProof.Internal.Judgement">Judgement</a> (<a href="AutoProof-Internal-Formula-Types.html#t:Formula" title="AutoProof.Internal.Formula.Types">Formula</a> a) <a href="src/AutoProof.Internal.Intuitionistic.Proof.Search.Statman.html#toImp" class="link">Source</a> <a href="#v:toImp" class="selflink">#</a></p><div class="doc"><p>Convert a general propositional judgement into an implicational judgement
+ which is intuitionistically provable if and only if the original judgement is
+ intuitionistically provable.</p><p>This construction is due to</p><ul><li>Richard Statman (1979)
+    &quot;Intuitionistic propositional logic is polynomial-space complete.&quot;
+    Theoretical Computer Science, Volume 9, Issue 1, pp. 67&#8211;72.
+    <a href="https://doi.org/10.1016/0304-3975(79)90006-9">DOI</a>.</li></ul><h4 class="caption details-toggle-control details-toggle" data-details-id="ch:toImp0">Details</h4><details id="ch:toImp0"><summary class="hide-when-js-enabled">Expand</summary><p>This algorithm turns a judgement <span class="mathjax">\(g \vdash a\)</span> in full propositional logic
+ into a judgement <span class="mathjax">\(g^* \vdash a^*\)</span> in just the implicational fragment of
+ propositional logic such that <span class="mathjax">\(g \vdash a\)</span> is provable if and only if the
+ judgement <span class="mathjax">\(g^* \vdash a^*\)</span> is provable. The latter judgement's provability
+ can then be checked using <code><a href="AutoProof-Proof-Search-Implication.html#v:proveImp" title="AutoProof.Proof.Search.Implication">proveImp</a></code>.</p><p>The transformation from <span class="mathjax">\(g \vdash a\)</span> to <span class="mathjax">\(g^* \vdash a^*\)</span> involves two
+ steps:</p><ol><li>For each propositional formula <span class="mathjax">\(b\)</span>, introduce a new propositional
+    variable <span class="mathjax">\(x_b\)</span>. Take <span class="mathjax">\(a^* = x_a\)</span>.</li><li><p>Construct the set <span class="mathjax">\(g^*\)</span> as follows.</p><ol><li>For each formula <span class="mathjax">\(b \in g\)</span>, add <span class="mathjax">\(x_b\)</span> to <span class="mathjax">\(g^*\)</span>.</li><li>(Truth)
+   Add <span class="mathjax">\(x_\top\)</span> to  <span class="mathjax">\(g^*\)</span>.</li><li><p>For each subformula <span class="mathjax">\(b\)</span> of either <span class="mathjax">\(a\)</span> or a formula in <span class="mathjax">\(g\)</span>, do
+   the following.</p><ol><li>(Falsity elimination and truth introduction)
+   Add the following formulas to <span class="mathjax">\(g^*\)</span>.
+   <span class="mathjax">\[
+     \begin{gathered}
+       x_\bot \rightarrow x_b \\
+       x_b \rightarrow x_\top
+     \end{gathered}
+   \]</span></li><li>(Negation introduction and elimination)
+   If <span class="mathjax">\(b = \lnot c\)</span>, then add the following formulas to <span class="mathjax">\(g^*\)</span>.
+   <span class="mathjax">\[
+     \begin{gathered}
+       (x_c \rightarrow x_\bot) \rightarrow x_{\lnot c} \\
+       x_{\lnot c} \rightarrow (x_c \rightarrow x_\bot)
+     \end{gathered}
+   \]</span></li><li>(Implication introduction and elimination)
+   If <span class="mathjax">\(b = c \rightarrow d\)</span>, then add the following formulas to
+   <span class="mathjax">\(g^*\)</span>.
+   <span class="mathjax">\[
+     \begin{gathered}
+       (x_c \rightarrow x_d) \rightarrow x_{c \rightarrow d} \\
+       x_{c \rightarrow d} \rightarrow (x_c \rightarrow x_d)
+     \end{gathered}
+   \]</span></li><li>(Disjunction introduction and elimination)
+   If <span class="mathjax">\(b = c \lor d\)</span>, then for each additional subformula <span class="mathjax">\(e\)</span> of
+   <span class="mathjax">\(a\)</span>, add the following formulas to <span class="mathjax">\(g^*\)</span>.
+   <span class="mathjax">\[
+     \begin{gathered}
+       x_c \rightarrow x_{c \lor d} \\
+       x_d \rightarrow x_{c \lor d} \\
+       x_{c \lor d} \rightarrow ((x_c \rightarrow x_e) \rightarrow ((x_d \rightarrow x_e) \rightarrow x_e))
+     \end{gathered}
+   \]</span></li><li>(Conjunction introduction and elimination)
+   If <span class="mathjax">\(b = c \land d\)</span>, then add the following formulas to <span class="mathjax">\(g^*\)</span>.
+   <span class="mathjax">\[
+     \begin{gathered}
+       x_c \rightarrow (x_d \rightarrow x_{c \land d}) \\
+       x_{c \land d} \rightarrow x_c \\
+       x_{c \land d} \rightarrow x_d
+     \end{gathered}
+   \]</span></li><li>(Equivalence introduction and elimination)
+   If <span class="mathjax">\(b = c \leftrightarrow d\)</span>, then add the following formulas to
+   <span class="mathjax">\(g^*\)</span>.
+   <span class="mathjax">\[
+     \begin{gathered}
+       (x_c \rightarrow x_d) \rightarrow ((x_d \rightarrow x_c) \rightarrow x_{c \leftrightarrow d}) \\
+       x_{c \leftrightarrow d} \rightarrow (x_c \rightarrow x_d) \\
+       x_{c \leftrightarrow d} \rightarrow (x_d \rightarrow x_c)
+     \end{gathered}
+   \]</span></li></ol></li></ol></li></ol></details></div></div></div></div><div id="footer"><p>Produced by <a href="http://www.haskell.org/haddock/">Haddock</a> version 2.23.0</p></div></body></html>

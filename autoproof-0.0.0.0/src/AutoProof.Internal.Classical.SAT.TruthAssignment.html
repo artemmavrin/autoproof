@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- Module      : AutoProof.Internal.Classical.SAT.TruthAssignment</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- Copyright   : (c) Artem Mavrin, 2021</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- License     : BSD3</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Maintainer  : artemvmavrin@gmail.com</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- Stability   : experimental</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- Portability : POSIX</span><span>
+</span><span id="line-11"></span><span class="hs-comment">--</span><span>
+</span><span id="line-12"></span><span class="hs-comment">-- Defines the TruthAssignment class.</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">AutoProof.Internal.Classical.SAT.TruthAssignment</span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#TruthAssignment"><span class="hs-identifier">TruthAssignment</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalVar"><span class="hs-identifier">evalVar</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier">evalFormula</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#%7C%3D"><span class="hs-operator">(|=)</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="AutoProof.Internal.Formula.html"><span class="hs-identifier">AutoProof.Internal.Formula</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Formula"><span class="hs-identifier">Formula</span></a></span><span>
+</span><span id="line-21"></span><span>      </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#And"><span class="hs-identifier">And</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>        </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Iff"><span class="hs-identifier">Iff</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>        </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Imp"><span class="hs-identifier">Imp</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>        </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Lit"><span class="hs-identifier">Lit</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>        </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Not"><span class="hs-identifier">Not</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>        </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Or"><span class="hs-identifier">Or</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>        </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Var"><span class="hs-identifier">Var</span></a></span><span>
+</span><span id="line-28"></span><span>      </span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Map</span></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Map</span></span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-comment">-- | Class representing truth assignments for evalutating propositional logic</span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- formulas.</span><span>
+</span><span id="line-35"></span><span class="hs-keyword">class</span><span> </span><span id="TruthAssignment"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#TruthAssignment"><span class="hs-identifier hs-var">TruthAssignment</span></a></span></span><span> </span><span id="local-6989586621679064614"><span class="annot"><a href="#local-6989586621679064614"><span class="hs-identifier hs-type">t</span></a></span></span><span> </span><span id="local-6989586621679064613"><span class="annot"><a href="#local-6989586621679064613"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-comment">-- | Evaluate the truth value of a variable under a given truth assignment.</span><span>
+</span><span id="line-37"></span><span>  </span><span id="evalVar"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalVar"><span class="hs-identifier hs-type">evalVar</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679064614"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679064613"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-comment">-- | Evaluate the truth value of a formula under a given truth assignment.</span><span>
+</span><span id="line-40"></span><span>  </span><span id="evalFormula"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-type">evalFormula</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679064614"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679064613"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-41"></span><span>  </span><span id="local-6989586621679064590"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var hs-var">evalFormula</span></a></span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Lit"><span class="hs-identifier hs-type">Lit</span></a></span><span> </span><span id="local-6989586621679064589"><span class="annot"><span class="annottext">b :: Bool
+</span><a href="#local-6989586621679064589"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679064589"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-42"></span><span>  </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span id="local-6989586621679064588"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679064588"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Var"><span class="hs-identifier hs-type">Var</span></a></span><span> </span><span id="local-6989586621679064587"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679064587"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">t -&gt; a -&gt; Bool
+forall t a. TruthAssignment t a =&gt; t -&gt; a -&gt; Bool
+</span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalVar"><span class="hs-identifier hs-var">evalVar</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679064588"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679064587"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-43"></span><span>  </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span id="local-6989586621679064586"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679064586"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Not"><span class="hs-identifier hs-type">Not</span></a></span><span> </span><span id="local-6989586621679064585"><span class="annot"><span class="annottext">a :: Formula a
+</span><a href="#local-6989586621679064585"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; Formula a -&gt; Bool
+forall t a. TruthAssignment t a =&gt; t -&gt; Formula a -&gt; Bool
+</span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679064586"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679064585"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>  </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span id="local-6989586621679064583"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679064583"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Imp"><span class="hs-identifier hs-type">Imp</span></a></span><span> </span><span id="local-6989586621679064582"><span class="annot"><span class="annottext">a :: Formula a
+</span><a href="#local-6989586621679064582"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679064581"><span class="annot"><span class="annottext">b :: Formula a
+</span><a href="#local-6989586621679064581"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; Formula a -&gt; Bool
+forall t a. TruthAssignment t a =&gt; t -&gt; Formula a -&gt; Bool
+</span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679064583"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679064582"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Formula a -&gt; Bool
+forall t a. TruthAssignment t a =&gt; t -&gt; Formula a -&gt; Bool
+</span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679064583"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679064581"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-45"></span><span>  </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span id="local-6989586621679064579"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679064579"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Or"><span class="hs-identifier hs-type">Or</span></a></span><span> </span><span id="local-6989586621679064578"><span class="annot"><span class="annottext">a :: Formula a
+</span><a href="#local-6989586621679064578"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679064577"><span class="annot"><span class="annottext">b :: Formula a
+</span><a href="#local-6989586621679064577"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">t -&gt; Formula a -&gt; Bool
+forall t a. TruthAssignment t a =&gt; t -&gt; Formula a -&gt; Bool
+</span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679064579"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679064578"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Formula a -&gt; Bool
+forall t a. TruthAssignment t a =&gt; t -&gt; Formula a -&gt; Bool
+</span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679064579"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679064577"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-46"></span><span>  </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span id="local-6989586621679064576"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679064576"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#And"><span class="hs-identifier hs-type">And</span></a></span><span> </span><span id="local-6989586621679064575"><span class="annot"><span class="annottext">a :: Formula a
+</span><a href="#local-6989586621679064575"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679064574"><span class="annot"><span class="annottext">b :: Formula a
+</span><a href="#local-6989586621679064574"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">t -&gt; Formula a -&gt; Bool
+forall t a. TruthAssignment t a =&gt; t -&gt; Formula a -&gt; Bool
+</span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679064576"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679064575"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Formula a -&gt; Bool
+forall t a. TruthAssignment t a =&gt; t -&gt; Formula a -&gt; Bool
+</span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679064576"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679064574"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-47"></span><span>  </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span id="local-6989586621679064572"><span class="annot"><span class="annottext">t :: t
+</span><a href="#local-6989586621679064572"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Iff"><span class="hs-identifier hs-type">Iff</span></a></span><span> </span><span id="local-6989586621679064571"><span class="annot"><span class="annottext">a :: Formula a
+</span><a href="#local-6989586621679064571"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679064570"><span class="annot"><span class="annottext">b :: Formula a
+</span><a href="#local-6989586621679064570"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">t -&gt; Formula a -&gt; Bool
+forall t a. TruthAssignment t a =&gt; t -&gt; Formula a -&gt; Bool
+</span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679064572"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a -&gt; Formula a -&gt; Formula a
+forall a. Formula a -&gt; Formula a -&gt; Formula a
+</span><a href="AutoProof.Internal.Formula.Types.html#And"><span class="hs-identifier hs-var">And</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a -&gt; Formula a -&gt; Formula a
+forall a. Formula a -&gt; Formula a -&gt; Formula a
+</span><a href="AutoProof.Internal.Formula.Types.html#Imp"><span class="hs-identifier hs-var">Imp</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679064571"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679064570"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Formula a -&gt; Formula a -&gt; Formula a
+forall a. Formula a -&gt; Formula a -&gt; Formula a
+</span><a href="AutoProof.Internal.Formula.Types.html#Imp"><span class="hs-identifier hs-var">Imp</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679064570"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">Formula a
+</span><a href="#local-6989586621679064571"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span></span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-comment">-- | Semantic entailment relation. This is an infix alias of 'evalFormula'.</span><span>
+</span><span id="line-50"></span><span class="hs-comment">--</span><span>
+</span><span id="line-51"></span><span class="hs-comment">-- ==== __Examples__</span><span>
+</span><span id="line-52"></span><span class="hs-comment">--</span><span>
+</span><span id="line-53"></span><span class="hs-comment">-- &gt;&gt;&gt; t = Map.fromList $ [(&quot;a&quot;, True), (&quot;b&quot;, False)]</span><span>
+</span><span id="line-54"></span><span class="hs-comment">-- &gt;&gt;&gt; t |= And (Var &quot;a&quot;) (Not (Var &quot;b&quot;))</span><span>
+</span><span id="line-55"></span><span class="hs-comment">-- True</span><span>
+</span><span id="line-56"></span><span id="local-6989586621679064568"><span id="local-6989586621679064569"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#%7C%3D"><span class="hs-operator hs-type">(|=)</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#TruthAssignment"><span class="hs-identifier hs-type">TruthAssignment</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679064569"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679064568"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679064569"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Formula.Types.html#Formula"><span class="hs-identifier hs-type">Formula</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679064568"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span></span></span><span>
+</span><span id="line-57"></span><span id="%7C%3D"><span class="annot"><span class="annottext">|= :: t -&gt; Formula a -&gt; Bool
+</span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#%7C%3D"><span class="hs-operator hs-var hs-var">(|=)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">t -&gt; Formula a -&gt; Bool
+forall t a. TruthAssignment t a =&gt; t -&gt; Formula a -&gt; Bool
+</span><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#evalFormula"><span class="hs-identifier hs-var">evalFormula</span></a></span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="hs-keyword">infix</span><span> </span><span class="hs-number">5</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#%7C%3D"><span class="hs-operator hs-type">|=</span></a></span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="hs-comment">-- | Truth assignments where a missing key in the map is interpreted as 'False'.</span><span>
+</span><span id="line-62"></span><span class="hs-comment">--</span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- ==== __Examples__</span><span>
+</span><span id="line-64"></span><span class="hs-comment">--</span><span>
+</span><span id="line-65"></span><span class="hs-comment">-- &gt;&gt;&gt; t = Map.fromList $ [(&quot;a&quot;, True), (&quot;b&quot;, False)]</span><span>
+</span><span id="line-66"></span><span class="hs-comment">-- &gt;&gt;&gt; t |= And (Var &quot;a&quot;) (Not (Var &quot;b&quot;))</span><span>
+</span><span id="line-67"></span><span class="hs-comment">-- True</span><span>
+</span><span id="line-68"></span><span class="hs-comment">--</span><span>
+</span><span id="line-69"></span><span class="hs-comment">-- &gt;&gt;&gt; t = Map.fromList $ [(&quot;a&quot;, True)]</span><span>
+</span><span id="line-70"></span><span class="hs-comment">-- &gt;&gt;&gt; t |= Imp (Var &quot;a&quot;) (Var &quot;b&quot;)</span><span>
+</span><span id="line-71"></span><span class="hs-comment">-- False</span><span>
+</span><span id="line-72"></span><span id="local-6989586621679064567"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679064564"><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679064567"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#TruthAssignment"><span class="hs-identifier hs-type">TruthAssignment</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Map</span></span><span> </span><span class="annot"><a href="#local-6989586621679064567"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679064567"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-73"></span><span>  </span><span id="local-6989586621679064562"><span class="annot"><span class="annottext">evalVar :: Map a Bool -&gt; a -&gt; Bool
+</span><a href="#local-6989586621679064562"><span class="hs-identifier hs-var hs-var hs-var hs-var">evalVar</span></a></span></span><span> </span><span id="local-6989586621679064561"><span class="annot"><span class="annottext">t :: Map a Bool
+</span><a href="#local-6989586621679064561"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span id="local-6989586621679064560"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679064560"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; a -&gt; Map a Bool -&gt; Bool
+forall k a. Ord k =&gt; a -&gt; k -&gt; Map k a -&gt; a
+</span><span class="hs-identifier hs-var">Map.findWithDefault</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679064560"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Map a Bool
+</span><a href="#local-6989586621679064561"><span class="hs-identifier hs-var">t</span></a></span></span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="hs-comment">-- | Assigns all propositional variables the truth value 'False'. Can be used to</span><span>
+</span><span id="line-76"></span><span class="hs-comment">-- evaluate closed formulas.</span><span>
+</span><span id="line-77"></span><span class="hs-comment">--</span><span>
+</span><span id="line-78"></span><span class="hs-comment">-- ==== __Examples__</span><span>
+</span><span id="line-79"></span><span class="hs-comment">--</span><span>
+</span><span id="line-80"></span><span class="hs-comment">-- &gt;&gt;&gt; () |= (Var &quot;a&quot;)</span><span>
+</span><span id="line-81"></span><span class="hs-comment">-- False</span><span>
+</span><span id="line-82"></span><span class="hs-comment">--</span><span>
+</span><span id="line-83"></span><span class="hs-comment">-- &gt;&gt;&gt; () |= (Or (Lit True) (Lit False))</span><span>
+</span><span id="line-84"></span><span class="hs-comment">-- True</span><span>
+</span><span id="line-85"></span><span id="local-6989586621679064558"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679064555"><span class="annot"><a href="AutoProof.Internal.Classical.SAT.TruthAssignment.html#TruthAssignment"><span class="hs-identifier hs-type">TruthAssignment</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679064558"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-86"></span><span>  </span><span id="local-6989586621679064554"><span class="annot"><span class="annottext">evalVar :: () -&gt; a -&gt; Bool
+</span><a href="#local-6989586621679064554"><span class="hs-identifier hs-var hs-var hs-var hs-var">evalVar</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; a -&gt; Bool
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span></span><span>
+</span><span id="line-87"></span></pre></body></html>

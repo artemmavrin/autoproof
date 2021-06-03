@@ -82,6 +82,356 @@ instance GHC.Classes.Ord AutoProof.Internal.AST.ASTMetadata
 instance GHC.Classes.Eq AutoProof.Internal.AST.ASTMetadata
 
 
+-- | Simple difference list implementation. Difference lists are an
+--   abstraction that enables constant-time concatenation of lists using
+--   function composition. This is a generalization of the <a>ShowS</a>
+--   type.
+--   
+--   See <a>https://wiki.haskell.org/Difference_list</a>.
+module AutoProof.Internal.Utils.DList
+
+-- | Difference list. See <a>https://wiki.haskell.org/Difference_list</a>.
+--   
+--   Difference lists are concatenated by function composition.
+--   
+--   <pre>
+--   &gt;&gt;&gt; d1 = fromList [1, 2, 3]
+--   
+--   &gt;&gt;&gt; d2 = fromList [4, 5, 6]
+--   
+--   &gt;&gt;&gt; d3 = fromList [7, 8, 9]
+--   
+--   &gt;&gt;&gt; toList (d1 . d2 . d3)
+--   [1,2,3,4,5,6,7,8,9]
+--   </pre>
+type DList a = [a] -> [a]
+
+-- | Convert a list into a difference list.
+fromList :: [a] -> DList a
+
+-- | Convert a difference list into a list.
+toList :: DList a -> [a]
+
+-- | Convert a difference list into a set.
+toSet :: Ord a => DList a -> Set a
+
+-- | Prepend an element to a difference list.
+--   
+--   <pre>
+--   &gt;&gt;&gt; toList (cons 0 (fromList [1, 2, 3]))
+--   [0,1,2,3]
+--   </pre>
+cons :: a -> DList a -> DList a
+
+-- | Empty difference list.
+--   
+--   <pre>
+--   &gt;&gt;&gt; (toList empty) :: [()]
+--   []
+--   </pre>
+empty :: DList a
+
+
+-- | Defines a lightweight parser type.
+module AutoProof.Internal.Utils.Parser.Types
+
+-- | The <a>Parser</a> type is a simple state monad with state type
+--   <a>String</a> and inner monad <a>Maybe</a>.
+newtype Parser a
+Parser :: (String -> Maybe (String, a)) -> Parser a
+[runParser] :: Parser a -> String -> Maybe (String, a)
+
+-- | Run a parser on a string, discarding any unparsed suffix
+parse :: Parser a -> String -> Maybe a
+instance GHC.Base.Functor AutoProof.Internal.Utils.Parser.Types.Parser
+instance GHC.Base.Applicative AutoProof.Internal.Utils.Parser.Types.Parser
+instance GHC.Base.Monad AutoProof.Internal.Utils.Parser.Types.Parser
+instance GHC.Base.Alternative AutoProof.Internal.Utils.Parser.Types.Parser
+
+
+-- | Defines character- and string-related parsers.
+module AutoProof.Internal.Utils.Parser.Char
+
+-- | Parse a single character if it satisfies a predicate
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (charIf isDigit) "123"
+--   Just ("23",'1')
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (charIf isDigit) "abc"
+--   Nothing
+--   </pre>
+charIf :: (Char -> Bool) -> Parser Char
+
+-- | Parse a specific character.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (char 'a') "abc"
+--   Just ("bc",'a')
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (char 'a') "def"
+--   Nothing
+--   </pre>
+char :: Char -> Parser Char
+
+-- | Parse any character.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser anyChar "abc"
+--   Just ("bc",'a')
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser anyChar ""
+--   Nothing
+--   </pre>
+anyChar :: Parser Char
+
+-- | Parse zero or more spaces.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser spaces "   123"
+--   Just ("123","   ")
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser spaces "123"
+--   Just ("123","")
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser spaces ""
+--   Just ("","")
+--   </pre>
+spaces :: Parser String
+
+-- | Parse a specific string.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (string "foo") "foobar"
+--   Just ("bar","foo")
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (string "foo") "fobar"
+--   Nothing
+--   </pre>
+string :: String -> Parser String
+
+-- | Parse one out of a list of characters.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (oneOf ['a', 'b']) "bar"
+--   Just ("ar",'b')
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (oneOf ['a', 'b']) "foo"
+--   Nothing
+--   </pre>
+oneOf :: [Char] -> Parser Char
+
+
+-- | Defines parser combinators.
+module AutoProof.Internal.Utils.Parser.Combinator
+
+-- | <tt>(<a>between</a> open close p)</tt> runs <tt>open</tt>, then
+--   <tt>p</tt>, then <tt>close</tt>, returning the value parsed by
+--   <tt>p</tt>.
+between :: Parser b -> Parser c -> Parser a -> Parser a
+
+-- | <tt>(<a>sepBy</a> p sep)</tt> runs zero or more occurrences of
+--   <tt>p</tt>, separated by <tt>sep</tt>, returning the list of values
+--   parsed by <tt>p</tt>.
+sepBy :: Parser a -> Parser b -> Parser [a]
+
+-- | <tt>(<a>sepBy1</a> p sep)</tt> runs one or more occurrences of
+--   <tt>p</tt>, separated by <tt>sep</tt>, returning the list of values
+--   parsed by <tt>p</tt>.
+sepBy1 :: Parser a -> Parser b -> Parser [a]
+
+-- | <tt>(<a>chainl1</a> p op)</tt> runs one or more occurrences of
+--   <tt>p</tt>, separated by <tt>op</tt>, returning the value obtained by
+--   a left-associative application of the functions parsed by <tt>op</tt>
+--   to the values parsed by <tt>p</tt>.
+chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
+
+-- | <tt>(<a>chainr1</a> p op)</tt> runs one or more occurrences of
+--   <tt>p</tt>, separated by <tt>op</tt>, returning the value obtained by
+--   a right-associative application of the functions parsed by <tt>op</tt>
+--   to the values parsed by <tt>p</tt>.
+chainr1 :: Parser a -> Parser (a -> a -> a) -> Parser a
+
+-- | <tt>(<a>notFollowedBy</a> p)</tt> succeeds if and only if <tt>p</tt>
+--   fails.
+notFollowedBy :: Parser a -> Parser ()
+
+-- | <tt>(<a>eof</a>)</tt> (end-of-file) only succeeds at the end of input.
+eof :: Parser ()
+
+
+-- | Provides a lightweight, general-purpose parser type and some related
+--   combinators.
+--   
+--   The API is deliberately nearly a subset of the <tt>parsec</tt> API.
+--   One big difference is the behavior of the <a>Alternative</a> instace;
+--   our instance always backtracks, so there is no need for a <tt>try</tt>
+--   function.
+module AutoProof.Internal.Utils.Parser
+
+-- | The <a>Parser</a> type is a simple state monad with state type
+--   <a>String</a> and inner monad <a>Maybe</a>.
+data Parser a
+
+-- | Run a parser on a string, discarding any unparsed suffix
+parse :: Parser a -> String -> Maybe a
+
+-- | Parse a single character if it satisfies a predicate
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (charIf isDigit) "123"
+--   Just ("23",'1')
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (charIf isDigit) "abc"
+--   Nothing
+--   </pre>
+charIf :: (Char -> Bool) -> Parser Char
+
+-- | Parse a specific character.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (char 'a') "abc"
+--   Just ("bc",'a')
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (char 'a') "def"
+--   Nothing
+--   </pre>
+char :: Char -> Parser Char
+
+-- | Parse any character.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser anyChar "abc"
+--   Just ("bc",'a')
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser anyChar ""
+--   Nothing
+--   </pre>
+anyChar :: Parser Char
+
+-- | Parse one out of a list of characters.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (oneOf ['a', 'b']) "bar"
+--   Just ("ar",'b')
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (oneOf ['a', 'b']) "foo"
+--   Nothing
+--   </pre>
+oneOf :: [Char] -> Parser Char
+
+-- | Parse a specific string.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (string "foo") "foobar"
+--   Just ("bar","foo")
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser (string "foo") "fobar"
+--   Nothing
+--   </pre>
+string :: String -> Parser String
+
+-- | Parse zero or more spaces.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser spaces "   123"
+--   Just ("123","   ")
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser spaces "123"
+--   Just ("123","")
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; runParser spaces ""
+--   Just ("","")
+--   </pre>
+spaces :: Parser String
+
+-- | <tt>(<a>between</a> open close p)</tt> runs <tt>open</tt>, then
+--   <tt>p</tt>, then <tt>close</tt>, returning the value parsed by
+--   <tt>p</tt>.
+between :: Parser b -> Parser c -> Parser a -> Parser a
+
+-- | <tt>(<a>sepBy</a> p sep)</tt> runs zero or more occurrences of
+--   <tt>p</tt>, separated by <tt>sep</tt>, returning the list of values
+--   parsed by <tt>p</tt>.
+sepBy :: Parser a -> Parser b -> Parser [a]
+
+-- | <tt>(<a>sepBy1</a> p sep)</tt> runs one or more occurrences of
+--   <tt>p</tt>, separated by <tt>sep</tt>, returning the list of values
+--   parsed by <tt>p</tt>.
+sepBy1 :: Parser a -> Parser b -> Parser [a]
+
+-- | <tt>(<a>chainl1</a> p op)</tt> runs one or more occurrences of
+--   <tt>p</tt>, separated by <tt>op</tt>, returning the value obtained by
+--   a left-associative application of the functions parsed by <tt>op</tt>
+--   to the values parsed by <tt>p</tt>.
+chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
+
+-- | <tt>(<a>chainr1</a> p op)</tt> runs one or more occurrences of
+--   <tt>p</tt>, separated by <tt>op</tt>, returning the value obtained by
+--   a right-associative application of the functions parsed by <tt>op</tt>
+--   to the values parsed by <tt>p</tt>.
+chainr1 :: Parser a -> Parser (a -> a -> a) -> Parser a
+
+-- | <tt>(<a>notFollowedBy</a> p)</tt> succeeds if and only if <tt>p</tt>
+--   fails.
+notFollowedBy :: Parser a -> Parser ()
+
+-- | <tt>(<a>eof</a>)</tt> (end-of-file) only succeeds at the end of input.
+eof :: Parser ()
+
+
 -- | Defines the <a>PrettyPrintable</a> class.
 module AutoProof.Internal.Utils.PrettyPrintable
 
@@ -101,10 +451,92 @@ prettySeq :: (Foldable t, PrettyPrintable a) => t a -> String
 -- | Difference-list representation of a pretty-printed collection of
 --   pretty-printable values.
 prettysSeq :: (Foldable t, PrettyPrintable a) => t a -> ShowS
-instance AutoProof.Internal.Utils.PrettyPrintable.PrettyPrintable GHC.Types.Char
 instance AutoProof.Internal.Utils.PrettyPrintable.PrettyPrintable GHC.Base.String
-instance AutoProof.Internal.Utils.PrettyPrintable.PrettyPrintable GHC.Types.Int
-instance AutoProof.Internal.Utils.PrettyPrintable.PrettyPrintable GHC.Integer.Type.Integer
+
+
+-- | Defines string constants ("symbols") used for pretty-printing.
+module AutoProof.Internal.Utils.PrettyPrintable.Symbols
+
+-- | Falsity symbol.
+falseS :: String
+
+-- | Truth symbol.
+trueS :: String
+
+-- | Negation symbol.
+notS :: String
+
+-- | Implication symbol.
+impS :: String
+
+-- | Disjunction symbol.
+orS :: String
+
+-- | Conjunction symbol.
+andS :: String
+
+-- | Equivalence symbol.
+iffS :: String
+
+-- | Judgement turnstile symbol.
+turnstileS :: String
+
+-- | Axiom symbol.
+axiomS :: String
+
+-- | Falsity elimination symbol.
+falseElimS :: String
+
+-- | Truth introduction symbol.
+trueIntrS :: String
+
+-- | Negation elimination symbol.
+notElimS :: String
+
+-- | Negation introduction symbol.
+notIntrS :: String
+
+-- | Implication elimination symbol.
+impElimS :: String
+
+-- | Implication introduction symbol.
+impIntrS :: String
+
+-- | Disjunction elimination symbol.
+orElimS :: String
+
+-- | Disjunction introduction (left) symbol.
+orIntrLS :: String
+
+-- | Disjunction introduction (right) symbol.
+orIntrRS :: String
+
+-- | Conjunction elimination (left) symbol.
+andElimLS :: String
+
+-- | Conjunction elimination (right) symbol.
+andElimRS :: String
+
+-- | Conjunction introduction symbol.
+andIntrS :: String
+
+-- | Equivalence elimination (left) symbol.
+iffElimLS :: String
+
+-- | Equivalence elimination (right) symbol.
+iffElimRS :: String
+
+-- | Equivalence introduction symbol.
+iffIntrS :: String
+
+-- | Vertical bar symbol used in pretty-printing proofs.
+vertS :: String
+
+-- | Corner symbol used in pretty-printing proofs.
+cornerS :: String
+
+-- | Branch symbol used in pretty-printing proofs.
+branchS :: String
 
 
 -- | Defines the <a>Formula</a> type, its constructors, and its instances.
@@ -169,7 +601,7 @@ pattern Iff :: Formula a -> Formula a -> Formula a
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; prettyFormula $ Imp (Var 'a') (Or (Var 'b') (Lit False))
+--   &gt;&gt;&gt; prettyFormula $ Imp (Var "a") (Or (Var "b") (Lit False))
 --   "a → (b ∨ ⊥)"
 --   </pre>
 prettyFormula :: PrettyPrintable a => Formula a -> String
@@ -284,7 +716,7 @@ pattern Iff :: Formula a -> Formula a -> Formula a
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; prettyFormula $ Imp (Var 'a') (Or (Var 'b') (Lit False))
+--   &gt;&gt;&gt; prettyFormula $ Imp (Var "a") (Or (Var "b") (Lit False))
 --   "a → (b ∨ ⊥)"
 --   </pre>
 prettyFormula :: PrettyPrintable a => Formula a -> String
@@ -325,6 +757,309 @@ substitute :: Eq a => Formula a -> a -> Formula a -> Formula a
 --   Nothing
 --   </pre>
 getAnyVariable :: Formula a -> Maybe a
+
+
+-- | Defines the TruthAssignment class.
+module AutoProof.Internal.Classical.SAT.TruthAssignment
+
+-- | Class representing truth assignments for evalutating propositional
+--   logic formulas.
+class TruthAssignment t a
+
+-- | Evaluate the truth value of a variable under a given truth assignment.
+evalVar :: TruthAssignment t a => t -> a -> Bool
+
+-- | Evaluate the truth value of a formula under a given truth assignment.
+evalFormula :: TruthAssignment t a => t -> Formula a -> Bool
+
+-- | Semantic entailment relation. This is an infix alias of
+--   <a>evalFormula</a>.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = Map.fromList $ [("a", True), ("b", False)]
+--   
+--   &gt;&gt;&gt; t |= And (Var "a") (Not (Var "b"))
+--   True
+--   </pre>
+(|=) :: TruthAssignment t a => t -> Formula a -> Bool
+infix 5 |=
+instance GHC.Classes.Ord a => AutoProof.Internal.Classical.SAT.TruthAssignment.TruthAssignment (Data.Map.Internal.Map a GHC.Types.Bool) a
+instance AutoProof.Internal.Classical.SAT.TruthAssignment.TruthAssignment () a
+
+
+-- | A simple baseline SAT algorithm.
+module AutoProof.Internal.Classical.SAT.Algorithms.Simple
+
+-- | A simple baseline satisfiability algorithm.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; simpleSAT $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; simpleSAT $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+simpleSAT :: Eq a => Formula a -> Bool
+
+-- | A simple baseline satisfiability algorithm, returning a satisfying
+--   truth assignment if there is one.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
+--   
+--   &gt;&gt;&gt; Just t = simpleSATAssignment a
+--   
+--   &gt;&gt;&gt; t
+--   fromList [("a",False),("b",True),("c",True)]
+--   
+--   &gt;&gt;&gt; t |= a
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; simpleSATAssignment $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+--   Nothing
+--   </pre>
+simpleSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
+
+
+-- | Satisfiability algorithms.
+module AutoProof.Internal.Classical.SAT.Algorithms
+
+-- | A simple baseline satisfiability algorithm.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; simpleSAT $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; simpleSAT $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+simpleSAT :: Eq a => Formula a -> Bool
+
+-- | A simple baseline satisfiability algorithm, returning a satisfying
+--   truth assignment if there is one.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
+--   
+--   &gt;&gt;&gt; Just t = simpleSATAssignment a
+--   
+--   &gt;&gt;&gt; t
+--   fromList [("a",False),("b",True),("c",True)]
+--   
+--   &gt;&gt;&gt; t |= a
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; simpleSATAssignment $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+--   Nothing
+--   </pre>
+simpleSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
+
+
+-- | Satisfiability algorithms.
+module AutoProof.Internal.Classical.SAT
+
+-- | Class representing truth assignments for evalutating propositional
+--   logic formulas.
+class TruthAssignment t a
+
+-- | Evaluate the truth value of a variable under a given truth assignment.
+evalVar :: TruthAssignment t a => t -> a -> Bool
+
+-- | Evaluate the truth value of a formula under a given truth assignment.
+evalFormula :: TruthAssignment t a => t -> Formula a -> Bool
+
+-- | Semantic entailment relation. This is an infix alias of
+--   <a>evalFormula</a>.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = Map.fromList $ [("a", True), ("b", False)]
+--   
+--   &gt;&gt;&gt; t |= And (Var "a") (Not (Var "b"))
+--   True
+--   </pre>
+(|=) :: TruthAssignment t a => t -> Formula a -> Bool
+infix 5 |=
+
+-- | A simple baseline satisfiability algorithm.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; simpleSAT $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; simpleSAT $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+simpleSAT :: Eq a => Formula a -> Bool
+
+-- | A simple baseline satisfiability algorithm, returning a satisfying
+--   truth assignment if there is one.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
+--   
+--   &gt;&gt;&gt; Just t = simpleSATAssignment a
+--   
+--   &gt;&gt;&gt; t
+--   fromList [("a",False),("b",True),("c",True)]
+--   
+--   &gt;&gt;&gt; t |= a
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; simpleSATAssignment $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+--   Nothing
+--   </pre>
+simpleSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
+
+
+-- | Functions and types related to conjunctive normal forms.
+module AutoProof.Internal.Classical.CNF
+
+-- | Conjunctive normal form: represents a conjunction of clauses.
+type CNF a = Set (Clause a)
+
+-- | Represents a disjunction of literals.
+type Clause a = Set (Literal a)
+
+-- | Represents either a propositional variable or its negation, depending
+--   on whether the boolean first component is <a>True</a> or <a>False</a>,
+--   respectively.
+type Literal a = (Bool, a)
+
+-- | Convert a <a>Formula</a> into conjunctive normal form.
+--   
+--   Adapted from Figure 2.6 in
+--   
+--   <ul>
+--   <li>Samuel Mimram (2020) <i>PROGRAM = PROOF</i>.</li>
+--   </ul>
+fromFormula :: Ord a => Formula a -> CNF a
+
+-- | Convert a conjunctive normal form representation of a formula into a
+--   formula.
+toFormula :: CNF a -> Formula a
+
+-- | Convert a formula into a canonical conjunctive normal form.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; canonicalCNF $ Or (Not (Imp (Var "a") (Var "b"))) (Var "c")
+--   And (Or (Var "c") (Var "a")) (Or (Var "c") (Not (Var "b")))
+--   </pre>
+canonicalCNF :: Ord a => Formula a -> Formula a
+
+
+-- | Functions and types related to conjunctive normal forms.
+--   
+--   This module is intended to be imported with a qualified name, as in
+--   
+--   <pre>
+--   import qualified AutoProof.Classical.CNF as CNF
+--   </pre>
+--   
+--   This gives the conversion functions in this module descriptive names
+--   like <tt>CNF.<a>fromFormula</a></tt> and
+--   <tt>CNF.<a>toFormula</a></tt>.
+module AutoProof.Classical.CNF
+
+-- | Conjunctive normal form: represents a conjunction of clauses.
+type CNF a = Set (Clause a)
+
+-- | Represents a disjunction of literals.
+type Clause a = Set (Literal a)
+
+-- | Represents either a propositional variable or its negation, depending
+--   on whether the boolean first component is <a>True</a> or <a>False</a>,
+--   respectively.
+type Literal a = (Bool, a)
+
+-- | Convert a <a>Formula</a> into conjunctive normal form.
+--   
+--   Adapted from Figure 2.6 in
+--   
+--   <ul>
+--   <li>Samuel Mimram (2020) <i>PROGRAM = PROOF</i>.</li>
+--   </ul>
+fromFormula :: Ord a => Formula a -> CNF a
+
+-- | Convert a conjunctive normal form representation of a formula into a
+--   formula.
+toFormula :: CNF a -> Formula a
+
+-- | Convert a formula into a canonical conjunctive normal form.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; canonicalCNF $ Or (Not (Imp (Var "a") (Var "b"))) (Var "c")
+--   And (Or (Var "c") (Var "a")) (Or (Var "c") (Not (Var "b")))
+--   </pre>
+canonicalCNF :: Ord a => Formula a -> Formula a
+
+
+-- | Miscellaneous set-related functions.
+module AutoProof.Internal.Utils.SetUtils
+
+-- | Convert a foldable collection into a set.
+toSet :: (Ord a, Foldable t) => t a -> Set a
 
 
 -- | Defines the <a>Judgement</a> type and related functions.
@@ -369,7 +1104,7 @@ infix 5 |-
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; prettyJudgement $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
+--   &gt;&gt;&gt; prettyJudgement $ [Var "a", Imp (Var "a") (Var "b")] |- Var "b"
 --   "a, a → b ⊢ b"
 --   </pre>
 prettyJudgement :: PrettyPrintable a => Judgement a -> String
@@ -518,6 +1253,17 @@ instance GHC.Classes.Ord a => GHC.Classes.Ord (AutoProof.Internal.Proof.Types.Pr
 instance GHC.Show.Show a => GHC.Show.Show (AutoProof.Internal.Proof.Types.Proof a)
 instance (GHC.Classes.Ord a, GHC.Read.Read a) => GHC.Read.Read (AutoProof.Internal.Proof.Types.Proof a)
 instance AutoProof.Internal.Utils.PrettyPrintable.PrettyPrintable a => AutoProof.Internal.Utils.PrettyPrintable.PrettyPrintable (AutoProof.Internal.Proof.Types.Proof a)
+
+
+-- | Functions related to cuts in proofs.
+module AutoProof.Internal.Intuitionistic.Proof.Cut
+
+-- | Find the cut nearest the root of a proof, if any. This functions
+--   assumes the proof is valid.
+findCut :: Proof a -> Maybe (Proof a)
+
+-- | Check if a proof has a cut.
+hasCut :: Proof a -> Bool
 
 
 -- | Structural rules to transform proofs.
@@ -789,171 +1535,473 @@ unsafeParseFormula :: String -> Formula String
 unsafeParseJudgement :: String -> Judgement String
 
 
--- | Defines the TruthAssignment class.
-module AutoProof.Classical.SAT.TruthAssignment
+-- | Intuitionistic proofs in the implicational fragment of propositional
+--   logic.
+module AutoProof.Internal.Intuitionistic.Proof.Search.Implication
 
--- | Class representing truth assignments for evalutating propositional
---   logic formulas.
-class TruthAssignment t a
-
--- | Evaluate the truth value of a variable under a given truth assignment.
-evalVar :: TruthAssignment t a => t -> a -> Bool
-
--- | Evaluate the truth value of a formula under a given truth assignment.
-evalFormula :: TruthAssignment t a => t -> Formula a -> Bool
-
--- | Infix alias of <a>evalFormula</a>.
+-- | <tt>(<a>proveImp</a> (g <a>|-</a> a))</tt> finds an intuitionistic
+--   proof of a judgement &lt;math&gt; in the implicational fragment of
+--   propositional logic, if such a proof exists.
 --   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; t = Map.fromList $ [("a", True), ("b", False)]
---   
---   &gt;&gt;&gt; t |= And (Var "a") (Not (Var "b"))
---   True
---   </pre>
-(|=) :: TruthAssignment t a => t -> Formula a -> Bool
-instance GHC.Classes.Ord a => AutoProof.Classical.SAT.TruthAssignment.TruthAssignment (Data.Map.Internal.Map a GHC.Types.Bool) a
-instance AutoProof.Classical.SAT.TruthAssignment.TruthAssignment () a
-
-
--- | Naive baseline SAT algorithm.
-module AutoProof.Classical.SAT.Baseline
-
--- | Naive satisfiability algorithm.
---   
---   This algorithm is based on the observation that if &lt;math&gt; is a
---   propositional formula and &lt;math&gt; is a propositional variable,
---   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
---   satisfiable or &lt;math&gt; is satisfiable.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; naiveSAT $ Var "a"
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; naiveSAT $ And (Var "a") (Not (Var "a"))
---   False
---   </pre>
-naiveSAT :: Eq a => Formula a -> Bool
-
--- | Naive satisfiability algorithm, returning a satisfying truth
---   assignment.
---   
---   This algorithm is based on the observation that if &lt;math&gt; is a
---   propositional formula and &lt;math&gt; is a propositional variable,
---   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
---   satisfiable or &lt;math&gt; is satisfiable.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; naiveSATAssignment $ And (Not (Var "a")) (Or (Var "b") (Var "c"))
---   Just (fromList [("a",False),("b",True),("c",True)])
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; naiveSATAssignment $ And (Var "a") (Not (Var "a"))
---   Nothing
---   </pre>
-naiveSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
-
-
--- | Satisfiability algorithms.
-module AutoProof.Classical.SAT
-
--- | Class representing truth assignments for evalutating propositional
---   logic formulas.
-class TruthAssignment t a
-
--- | Evaluate the truth value of a variable under a given truth assignment.
-evalVar :: TruthAssignment t a => t -> a -> Bool
-
--- | Evaluate the truth value of a formula under a given truth assignment.
-evalFormula :: TruthAssignment t a => t -> Formula a -> Bool
-
--- | Infix alias of <a>evalFormula</a>.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; t = Map.fromList $ [("a", True), ("b", False)]
---   
---   &gt;&gt;&gt; t |= And (Var "a") (Not (Var "b"))
---   True
---   </pre>
-(|=) :: TruthAssignment t a => t -> Formula a -> Bool
-
--- | Naive satisfiability algorithm.
---   
---   This algorithm is based on the observation that if &lt;math&gt; is a
---   propositional formula and &lt;math&gt; is a propositional variable,
---   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
---   satisfiable or &lt;math&gt; is satisfiable.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; naiveSAT $ Var "a"
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; naiveSAT $ And (Var "a") (Not (Var "a"))
---   False
---   </pre>
-naiveSAT :: Eq a => Formula a -> Bool
-
--- | Naive satisfiability algorithm, returning a satisfying truth
---   assignment.
---   
---   This algorithm is based on the observation that if &lt;math&gt; is a
---   propositional formula and &lt;math&gt; is a propositional variable,
---   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
---   satisfiable or &lt;math&gt; is satisfiable.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; naiveSATAssignment $ And (Not (Var "a")) (Or (Var "b") (Var "c"))
---   Just (fromList [("a",False),("b",True),("c",True)])
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; naiveSATAssignment $ And (Var "a") (Not (Var "a"))
---   Nothing
---   </pre>
-naiveSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
-
-
--- | Functions and types related to conjunctive normal forms.
-module AutoProof.Classical.CNF
-
--- | Conjunctive normal form: a conjunction of literals.
-type CNF a = Set (Clause a)
-
--- | A disjunction of literals.
-type Clause a = Set (Literal a)
-
--- | Either a propositional variable or its negation, depending on whether
---   the first component is <a>True</a> or <a>False</a>, respectively.
-type Literal a = (Bool, a)
-
--- | Convert a <a>Formula</a> into conjunctive normal form.
---   
---   Adapted from Figure 2.6 in
+--   The algorithm is adapted from section 2.4 of
 --   
 --   <ul>
 --   <li>Samuel Mimram (2020) <i>PROGRAM = PROOF</i>.</li>
 --   </ul>
-fromFormula :: Ord a => Formula a -> CNF a
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; proveImp $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
+--   Just (ImpElim ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'b') (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Imp (Var 'a') (Var 'b'))) (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'a')))
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; proveImp $ [Imp (Var 'a') (Var 'b'), Imp (Var 'b') (Var 'a')] |- Var 'a'
+--   Nothing
+--   </pre>
+proveImp :: Ord a => Judgement a -> Maybe (Proof a)
 
--- | Convert a conjunctive normal form representation of a formula into a
---   formula.
-toFormula :: CNF a -> Formula a
+
+-- | Check provability of general propositional formulas using an algorithm
+--   derived from
+--   
+--   <ul>
+--   <li>Richard Statman (1979) "Intuitionistic propositional logic is
+--   polynomial-space complete." Theoretical Computer Science, Volume 9,
+--   Issue 1, pp. 67–72. <a>DOI</a>.</li>
+--   </ul>
+module AutoProof.Internal.Intuitionistic.Proof.Search.Statman
+
+-- | Find an intuitionistic proof of a judgement, if one exists, using
+--   Statman's algorithm.
+--   
+--   <ul>
+--   <li>Richard Statman (1979) "Intuitionistic propositional logic is
+--   polynomial-space complete." Theoretical Computer Science, Volume 9,
+--   Issue 1, pp. 67–72. <a>DOI</a>.</li>
+--   </ul>
+--   
+--   The judgement to be proved is converted to an implicational judgement
+--   as described in <a>toImp</a> and proved (if possible) using
+--   <a>proveImp</a>. The resulting proof is then converted into a proof of
+--   the original judgement.
+proveStatman :: Ord a => Judgement a -> Maybe (Proof a)
+
+-- | Convert a general propositional judgement into an implicational
+--   judgement which is intuitionistically provable if and only if the
+--   original judgement is intuitionistically provable.
+--   
+--   This construction is due to
+--   
+--   <ul>
+--   <li>Richard Statman (1979) "Intuitionistic propositional logic is
+--   polynomial-space complete." Theoretical Computer Science, Volume 9,
+--   Issue 1, pp. 67–72. <a>DOI</a>.</li>
+--   </ul>
+--   
+--   <h4><b>Details</b></h4>
+--   
+--   This algorithm turns a judgement &lt;math&gt; in full propositional
+--   logic into a judgement &lt;math&gt; in just the implicational fragment
+--   of propositional logic such that &lt;math&gt; is provable if and only
+--   if the judgement &lt;math&gt; is provable. The latter judgement's
+--   provability can then be checked using <a>proveImp</a>.
+--   
+--   The transformation from &lt;math&gt; to &lt;math&gt; involves two
+--   steps:
+--   
+--   <ol>
+--   <li>For each propositional formula &lt;math&gt;, introduce a new
+--   propositional variable &lt;math&gt;. Take &lt;math&gt;.</li>
+--   <li>Construct the set &lt;math&gt; as follows.<ol><li>For each formula
+--   &lt;math&gt;, add &lt;math&gt; to &lt;math&gt;.</li><li>(Truth) Add
+--   &lt;math&gt; to &lt;math&gt;.</li><li>For each subformula &lt;math&gt;
+--   of either &lt;math&gt; or a formula in &lt;math&gt;, do the
+--   following.<ol><li>(Falsity elimination and truth introduction) Add the
+--   following formulas to &lt;math&gt;. &lt;math&gt;</li><li>(Negation
+--   introduction and elimination) If &lt;math&gt;, then add the following
+--   formulas to &lt;math&gt;. &lt;math&gt;</li><li>(Implication
+--   introduction and elimination) If &lt;math&gt;, then add the following
+--   formulas to &lt;math&gt;. &lt;math&gt;</li><li>(Disjunction
+--   introduction and elimination) If &lt;math&gt;, then for each
+--   additional subformula &lt;math&gt; of &lt;math&gt;, add the following
+--   formulas to &lt;math&gt;. &lt;math&gt;</li><li>(Conjunction
+--   introduction and elimination) If &lt;math&gt;, then add the following
+--   formulas to &lt;math&gt;. &lt;math&gt;</li><li>(Equivalence
+--   introduction and elimination) If &lt;math&gt;, then add the following
+--   formulas to &lt;math&gt;. &lt;math&gt;</li></ol></li></ol></li>
+--   </ol>
+toImp :: Ord a => Judgement a -> Judgement (Formula a)
+
+
+-- | A general-purpose proof search algorithm.
+module AutoProof.Internal.Intuitionistic.Proof.Search.General
+
+-- | Find an intuitionistic proof of a judgement, if a proof exists.
+prove :: Ord a => Judgement a -> Maybe (Proof a)
+
+-- | Find an intuitionistic proof of a formula, if a proof exists.
+proveTautology :: Ord a => Formula a -> Maybe (Proof a)
+
+
+-- | Proof search algorithms.
+module AutoProof.Internal.Intuitionistic.Proof.Search
+
+-- | Find an intuitionistic proof of a judgement, if a proof exists.
+prove :: Ord a => Judgement a -> Maybe (Proof a)
+
+-- | Find an intuitionistic proof of a formula, if a proof exists.
+proveTautology :: Ord a => Formula a -> Maybe (Proof a)
+
+-- | Find an intuitionistic proof of a judgement, if one exists, using
+--   Statman's algorithm.
+--   
+--   <ul>
+--   <li>Richard Statman (1979) "Intuitionistic propositional logic is
+--   polynomial-space complete." Theoretical Computer Science, Volume 9,
+--   Issue 1, pp. 67–72. <a>DOI</a>.</li>
+--   </ul>
+--   
+--   The judgement to be proved is converted to an implicational judgement
+--   as described in <a>toImp</a> and proved (if possible) using
+--   <a>proveImp</a>. The resulting proof is then converted into a proof of
+--   the original judgement.
+proveStatman :: Ord a => Judgement a -> Maybe (Proof a)
+
+-- | <tt>(<a>proveImp</a> (g <a>|-</a> a))</tt> finds an intuitionistic
+--   proof of a judgement &lt;math&gt; in the implicational fragment of
+--   propositional logic, if such a proof exists.
+--   
+--   The algorithm is adapted from section 2.4 of
+--   
+--   <ul>
+--   <li>Samuel Mimram (2020) <i>PROGRAM = PROOF</i>.</li>
+--   </ul>
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; proveImp $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
+--   Just (ImpElim ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'b') (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Imp (Var 'a') (Var 'b'))) (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'a')))
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; proveImp $ [Imp (Var 'a') (Var 'b'), Imp (Var 'b') (Var 'a')] |- Var 'a'
+--   Nothing
+--   </pre>
+proveImp :: Ord a => Judgement a -> Maybe (Proof a)
+
+
+-- | Provability checking in intuitionistic propositional logic.
+module AutoProof.Internal.Intuitionistic.Proof.Provability
+
+-- | Determine whether a judgement is intuitionistically valid.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isProvable $ [Var "a", Var "b"] |- And (Var "a") (Var "b")
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isProvable $ [] |- Or (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+isProvable :: Ord a => Judgement a -> Bool
+
+-- | Determine whether a formula is an intuitionistic tautology.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isTautology $ Imp (And (Var 'a') (Var 'b')) (Var 'a')
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
+--   False
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isTautology $ Not (Not (Or (Var 'a') (Not (Var 'a'))))
+--   True
+--   </pre>
+isTautology :: Ord a => Formula a -> Bool
+
+
+-- | Check proof correctness in intuitionistic logic.
+module AutoProof.Internal.Intuitionistic.Proof.Correctness
+
+-- | Check whether a proof is a correct proof of a given judgement
+correct :: Ord a => Judgement a -> Proof a -> Bool
+
+-- | Check whether a proof is valid.
+valid :: Ord a => Proof a -> Bool
+
+-- | Return an invalid inference node (on the <a>Left</a>), if there is
+--   one. Otherwise, return <tt><a>Right</a> ()</tt>.
+debug :: Ord a => Proof a -> Either (Proof a) ()
+
+
+-- | Intuitionistic proofs in propositional logic.
+module AutoProof.Internal.Intuitionistic.Proof
+
+-- | Find an intuitionistic proof of a judgement, if a proof exists.
+prove :: Ord a => Judgement a -> Maybe (Proof a)
+
+-- | Find an intuitionistic proof of a formula, if a proof exists.
+proveTautology :: Ord a => Formula a -> Maybe (Proof a)
+
+-- | <tt>(<a>proveImp</a> (g <a>|-</a> a))</tt> finds an intuitionistic
+--   proof of a judgement &lt;math&gt; in the implicational fragment of
+--   propositional logic, if such a proof exists.
+--   
+--   The algorithm is adapted from section 2.4 of
+--   
+--   <ul>
+--   <li>Samuel Mimram (2020) <i>PROGRAM = PROOF</i>.</li>
+--   </ul>
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; proveImp $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
+--   Just (ImpElim ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'b') (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Imp (Var 'a') (Var 'b'))) (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'a')))
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; proveImp $ [Imp (Var 'a') (Var 'b'), Imp (Var 'b') (Var 'a')] |- Var 'a'
+--   Nothing
+--   </pre>
+proveImp :: Ord a => Judgement a -> Maybe (Proof a)
+
+-- | Find an intuitionistic proof of a judgement, if one exists, using
+--   Statman's algorithm.
+--   
+--   <ul>
+--   <li>Richard Statman (1979) "Intuitionistic propositional logic is
+--   polynomial-space complete." Theoretical Computer Science, Volume 9,
+--   Issue 1, pp. 67–72. <a>DOI</a>.</li>
+--   </ul>
+--   
+--   The judgement to be proved is converted to an implicational judgement
+--   as described in <a>toImp</a> and proved (if possible) using
+--   <a>proveImp</a>. The resulting proof is then converted into a proof of
+--   the original judgement.
+proveStatman :: Ord a => Judgement a -> Maybe (Proof a)
+
+-- | Determine whether a judgement is intuitionistically valid.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isProvable $ [Var "a", Var "b"] |- And (Var "a") (Var "b")
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isProvable $ [] |- Or (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+isProvable :: Ord a => Judgement a -> Bool
+
+-- | Determine whether a formula is an intuitionistic tautology.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isTautology $ Imp (And (Var 'a') (Var 'b')) (Var 'a')
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
+--   False
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isTautology $ Not (Not (Or (Var 'a') (Not (Var 'a'))))
+--   True
+--   </pre>
+isTautology :: Ord a => Formula a -> Bool
+
+-- | Find the cut nearest the root of a proof, if any. This functions
+--   assumes the proof is valid.
+findCut :: Proof a -> Maybe (Proof a)
+
+-- | Check if a proof has a cut.
+hasCut :: Proof a -> Bool
+
+-- | Check whether a proof is a correct proof of a given judgement
+correct :: Ord a => Judgement a -> Proof a -> Bool
+
+-- | Check whether a proof is valid.
+valid :: Ord a => Proof a -> Bool
+
+-- | Return an invalid inference node (on the <a>Left</a>), if there is
+--   one. Otherwise, return <tt><a>Right</a> ()</tt>.
+debug :: Ord a => Proof a -> Either (Proof a) ()
+
+
+-- | Glivenko translation.
+module AutoProof.Internal.Classical.Proof.Glivenko
+
+-- | Translate one judgement into another such that the first is
+--   classically provable if and only if the second is intuitionistically
+--   provable. Specifically, the Glivenko translation of a judgement
+--   &lt;math&gt; is the judgement &lt;math&gt;.
+glivenkoTranslate :: Ord a => Judgement a -> Judgement a
+
+-- | Determine whether a judgement is classically valid using Glivenko's
+--   translation.
+isProvableGlivenko :: Ord a => Judgement a -> Bool
+
+
+-- | Provability checking in classical propositional logic.
+module AutoProof.Internal.Classical.Proof.Provability
+
+-- | Determine whether a judgement is classically valid.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isProvable $ [Not (Not (Var 'a'))] |- Var 'a'
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isProvable $ [Var 'a'] |- Var 'b'
+--   False
+--   </pre>
+isProvable :: Ord a => Judgement a -> Bool
+
+-- | Determine whether a formula is a classically tautology.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
+--   True
+--   
+--   &gt;&gt;&gt; isTautology $ Var 'a'
+--   False
+--   </pre>
+isTautology :: Ord a => Formula a -> Bool
+
+
+-- | Classical proofs in propositional logic.
+module AutoProof.Internal.Classical.Proof
+
+-- | Determine whether a judgement is classically valid.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isProvable $ [Not (Not (Var 'a'))] |- Var 'a'
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isProvable $ [Var 'a'] |- Var 'b'
+--   False
+--   </pre>
+isProvable :: Ord a => Judgement a -> Bool
+
+-- | Determine whether a formula is a classically tautology.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
+--   True
+--   
+--   &gt;&gt;&gt; isTautology $ Var 'a'
+--   False
+--   </pre>
+isTautology :: Ord a => Formula a -> Bool
+
+
+-- | Classical propositional logic library.
+module AutoProof.Classical
+
+-- | Formulas of propositional logic are built inductively from atomic
+--   propositions
+--   
+--   <ul>
+--   <li>truth &lt;math&gt;,</li>
+--   <li>falsity &lt;math&gt;, and</li>
+--   <li>propositional variables &lt;math&gt;</li>
+--   </ul>
+--   
+--   using the unary connective
+--   
+--   <ul>
+--   <li>negation &lt;math&gt;</li>
+--   </ul>
+--   
+--   and the binary connectives
+--   
+--   <ul>
+--   <li>implication &lt;math&gt;,</li>
+--   <li>disjunction &lt;math&gt;,</li>
+--   <li>conjunction &lt;math&gt;, and</li>
+--   <li>equivalence &lt;math&gt;.</li>
+--   </ul>
+data Formula a
+
+-- | Propositional literal/constant. <tt>(<a>Lit</a> <a>True</a>)</tt> is
+--   &lt;math&gt; (i.e., truth, tautology, or top), and <tt>(<a>Lit</a>
+--   <a>False</a>)</tt> is &lt;math&gt; (i.e., falsity, contradiction, or
+--   bottom).
+pattern Lit :: Bool -> Formula a
+
+-- | Propositional variable. <tt>(<a>Var</a> x)</tt> represents a
+--   propositional variable &lt;math&gt;.
+pattern Var :: a -> Formula a
+
+-- | Negation. <tt>(<a>Not</a> p)</tt> represents the formula &lt;math&gt;.
+pattern Not :: Formula a -> Formula a
+
+-- | Implication. <tt>(<a>Imp</a> p q)</tt> represents the formula
+--   &lt;math&gt;.
+pattern Imp :: Formula a -> Formula a -> Formula a
+
+-- | Disjunction. <tt>(<a>Or</a> p q)</tt> represents the formula
+--   &lt;math&gt;.
+pattern Or :: Formula a -> Formula a -> Formula a
+
+-- | Conjunction. <tt>(<a>And</a> p q)</tt> represents the formula
+--   &lt;math&gt;.
+pattern And :: Formula a -> Formula a -> Formula a
+
+-- | Equivalence. <tt>(<a>Iff</a> p q)</tt> represents the formula
+--   &lt;math&gt;.
+pattern Iff :: Formula a -> Formula a -> Formula a
+
+-- | Get the set of subformulas of a propositional formula.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; subformulas $ Or (Var 'x') (And (Var 'y') (Var 'z'))
+--   fromList [Var 'x',Var 'y',Var 'z',And (Var 'y') (Var 'z'),Or (Var 'x') (And (Var 'y') (Var 'z'))]
+--   </pre>
+subformulas :: Ord a => Formula a -> Set (Formula a)
+
+-- | <tt>(<a>substitute</a> a x p)</tt> represents &lt;math&gt;, the
+--   substitution of each occurence of the variable &lt;math&gt; in the
+--   formula &lt;math&gt; by the formula &lt;math&gt;.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; substitute (Imp (Var 'e') (Var 'e')) 'e' (And (Var 'a') (Var 'a'))
+--   Imp (And (Var 'a') (Var 'a')) (And (Var 'a') (Var 'a'))
+--   </pre>
+substitute :: Eq a => Formula a -> a -> Formula a -> Formula a
 
 -- | Convert a formula into a canonical conjunctive normal form.
 --   
@@ -965,8 +2013,434 @@ toFormula :: CNF a -> Formula a
 --   </pre>
 canonicalCNF :: Ord a => Formula a -> Formula a
 
+-- | Obtain a propositional variable from a formula, if there is one.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; getAnyVariable (Or (Var "a") (Var "b"))
+--   Just "a"
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; getAnyVariable (Lit False :: Formula String)
+--   Nothing
+--   </pre>
+getAnyVariable :: Formula a -> Maybe a
+
+-- | A set of propositional formulas, used as antecedents of a judgement.
+type Context a = Set (Formula a)
+
+-- | <tt>(Judgement c a)</tt> represents the judgement or sequent
+--   &lt;math&gt;.
+--   
+--   <pre>
+--   &gt;&gt;&gt; Judgement Set.empty (Imp (And (Var 'a') (Var 'b')) (Var 'a'))
+--   [] |- Imp (And (Var 'a') (Var 'b')) (Var 'a')
+--   </pre>
+data Judgement a
+Judgement :: Context a -> Formula a -> Judgement a
+
+-- | The antecedents (or hypotheses).
+[antecedents] :: Judgement a -> Context a
+
+-- | The succedent (or consequent, or conclusion).
+[succedent] :: Judgement a -> Formula a
+
+-- | Infix judgement constructor. <tt>(c <a>|-</a> a)</tt> represents the
+--   judgement &lt;math&gt;.
+--   
+--   <pre>
+--   &gt;&gt;&gt; [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
+--   [Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'b'
+--   </pre>
+--   
+--   <i>Note:</i> If <tt>c</tt> is already a <a>Set</a>, then it is
+--   recommended to use <tt>(Judgement c a)</tt> in favor of <tt>(c
+--   <a>|-</a> a)</tt>, since the latter will create a new set and fill it
+--   with the values in <tt>c</tt>.
+(|-) :: (Ord a, Foldable f) => f (Formula a) -> Formula a -> Judgement a
+infix 5 |-
+
+-- | Weaken a judgement by inserting a formula into its hypotheses.
+--   
+--   <pre>
+--   &gt;&gt;&gt; weakenJudgement ([Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b') (Var 'c')
+--   [Var 'a',Var 'c',Imp (Var 'a') (Var 'b')] |- Var 'b'
+--   </pre>
+weakenJudgement :: Ord a => Judgement a -> Formula a -> Judgement a
+
+-- | A proof tree for propositional logic.
+data Proof a
+
+-- | An axiom <tt>(<a>Axiom</a> (g <a>|-</a> a))</tt> represents the
+--   inference of the judgement &lt;math&gt;, where &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern Axiom :: Judgement a -> Proof a
+
+-- | Falsity elimination (principle of explosion). <tt>(<a>FalseElim</a> (g
+--   <a>|-</a> a) p)</tt> represents the inference of the judgement
+--   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern FalseElim :: Judgement a -> Proof a -> Proof a
+
+-- | Truth introduction. <tt>(<a>TrueIntr</a> (g <a>|-</a> <a>Lit</a>
+--   <a>True</a>))</tt> represents the vacuous inference of the judgement
+--   &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern TrueIntr :: Judgement a -> Proof a
+
+-- | Negation elimination. <tt>(<a>NotElim</a> (g <a>|-</a> <a>Lit</a>
+--   <a>False</a>) p q)</tt> represents the inference of the judgement
+--   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt; and a proof
+--   &lt;math&gt; of &lt;math&gt;, where &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern NotElim :: Judgement a -> Proof a -> Proof a -> Proof a
+
+-- | Negation introduction. <tt>(<a>NotIntr</a> (g <a>|-</a> (<a>Not</a>
+--   a)) p)</tt> represents the inference of the judgement &lt;math&gt;
+--   given a proof &lt;math&gt; of &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern NotIntr :: Judgement a -> Proof a -> Proof a
+
+-- | Implication elimination (<i>modus ponens</i>). <tt>(<a>ImpElim</a> (g
+--   <a>|-</a> b) p q)</tt> represents the inference of the judgement
+--   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt; and a proof
+--   &lt;math&gt; of &lt;math&gt;, where &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern ImpElim :: Judgement a -> Proof a -> Proof a -> Proof a
+
+-- | Implication introduction. <tt>(<a>ImpIntr</a> (g <a>|-</a> (<a>Imp</a>
+--   a b) p)</tt> represents the inference of the judgement &lt;math&gt;
+--   given a proof &lt;math&gt; of &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern ImpIntr :: Judgement a -> Proof a -> Proof a
+
+-- | Disjunction elimination. <tt>(<a>OrElim</a> (g <a>|-</a> c) p q
+--   r)</tt> represents the inference of the judgement &lt;math&gt; given
+--   proofs &lt;math&gt; of &lt;math&gt;, &lt;math&gt; of &lt;math&gt;, and
+--   &lt;math&gt; of &lt;math&gt;, where &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern OrElim :: Judgement a -> Proof a -> Proof a -> Proof a -> Proof a
+
+-- | Left disjunction introduction. <tt>(<a>OrIntrL</a> (g <a>|-</a>
+--   (<a>Or</a> a b)) p)</tt> represents the inference of the judgement
+--   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern OrIntrL :: Judgement a -> Proof a -> Proof a
+
+-- | Right disjunction introduction. <tt>(<a>OrIntrR</a> (g <a>|-</a>
+--   (<a>Or</a> a b)) p)</tt> represents the inference of the judgement
+--   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern OrIntrR :: Judgement a -> Proof a -> Proof a
+
+-- | Left conjunction elimination. <tt>(<a>AndElimL</a> (g <a>|-</a> a)
+--   p)</tt> represents the inference of the judgement &lt;math&gt; given a
+--   proof &lt;math&gt; of &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern AndElimL :: Judgement a -> Proof a -> Proof a
+
+-- | Right conjunction elimination. <tt>(<a>AndElimR</a> (g <a>|-</a> b)
+--   p)</tt> represents the inference of the judgement &lt;math&gt; given a
+--   proof &lt;math&gt; of &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern AndElimR :: Judgement a -> Proof a -> Proof a
+
+-- | Conjunction introduction. <tt>(<a>AndIntr</a> (g <a>|-</a> (<a>And</a>
+--   a b)) p)</tt> represents the inference of the judgement &lt;math&gt;
+--   given a proof &lt;math&gt; of &lt;math&gt; and a proof &lt;math&gt; of
+--   &lt;math&gt;, where &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern AndIntr :: Judgement a -> Proof a -> Proof a -> Proof a
+
+-- | Left equivalence elimination. <tt>(<a>IffElimL</a> (g <a>|-</a>
+--   (<a>Imp</a> a b)) p)</tt> represents the inference of the judgement
+--   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern IffElimL :: Judgement a -> Proof a -> Proof a
+
+-- | Right equivalence elimination. <tt>(<a>IffElimR</a> (g <a>|-</a>
+--   (<a>Imp</a> b a)) p)</tt> represents the inference of the judgement
+--   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern IffElimR :: Judgement a -> Proof a -> Proof a
+
+-- | Equivalence introduction. <tt>(<a>IffIntr</a> (g <a>|-</a> (<a>Iff</a>
+--   a b)) p)</tt> represents the inference of the judgement &lt;math&gt;
+--   given a proof &lt;math&gt; of &lt;math&gt; and a proof &lt;math&gt; of
+--   &lt;math&gt;, where &lt;math&gt;:
+--   
+--   &lt;math&gt;
+pattern IffIntr :: Judgement a -> Proof a -> Proof a -> Proof a
+
+-- | Determine whether a judgement is classically valid.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isProvable $ [Not (Not (Var 'a'))] |- Var 'a'
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isProvable $ [Var 'a'] |- Var 'b'
+--   False
+--   </pre>
+isProvable :: Ord a => Judgement a -> Bool
+
+-- | Determine whether a formula is a classically tautology.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
+--   True
+--   
+--   &gt;&gt;&gt; isTautology $ Var 'a'
+--   False
+--   </pre>
+isTautology :: Ord a => Formula a -> Bool
+
+-- | Class representing truth assignments for evalutating propositional
+--   logic formulas.
+class TruthAssignment t a
+
+-- | Evaluate the truth value of a variable under a given truth assignment.
+evalVar :: TruthAssignment t a => t -> a -> Bool
+
+-- | Evaluate the truth value of a formula under a given truth assignment.
+evalFormula :: TruthAssignment t a => t -> Formula a -> Bool
+
+-- | Semantic entailment relation. This is an infix alias of
+--   <a>evalFormula</a>.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; t = Map.fromList $ [("a", True), ("b", False)]
+--   
+--   &gt;&gt;&gt; t |= And (Var "a") (Not (Var "b"))
+--   True
+--   </pre>
+(|=) :: TruthAssignment t a => t -> Formula a -> Bool
+infix 5 |=
+
+-- | A simple baseline satisfiability algorithm.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; simpleSAT $ Var "a"
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; simpleSAT $ And (Var "a") (Not (Var "a"))
+--   False
+--   </pre>
+simpleSAT :: Eq a => Formula a -> Bool
+
+-- | A simple baseline satisfiability algorithm, returning a satisfying
+--   truth assignment if there is one.
+--   
+--   This algorithm is based on the observation that if &lt;math&gt; is a
+--   propositional formula and &lt;math&gt; is a propositional variable,
+--   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
+--   satisfiable or &lt;math&gt; is satisfiable.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; a = And (Not (Var "a")) (Or (Var "b") (Var "c")) -- satisfiable
+--   
+--   &gt;&gt;&gt; Just t = simpleSATAssignment a
+--   
+--   &gt;&gt;&gt; t
+--   fromList [("a",False),("b",True),("c",True)]
+--   
+--   &gt;&gt;&gt; t |= a
+--   True
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; simpleSATAssignment $ And (Var "a") (Not (Var "a")) -- unsatisfiable
+--   Nothing
+--   </pre>
+simpleSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
+
+-- | Abstract syntax tree class.
+class AST t where {
+    
+    -- | The type of the values annotating AST nodes.
+    type family Root t;
+}
+
+-- | The value at the AST's root node.
+root :: AST t => t -> Root t
+
+-- | The AST's child ASTs.
+children :: AST t => t -> [t]
+
+-- | Number of edges on the longest path from the root of the AST to a
+--   leaf.
+height :: AST t => t -> Int
+
+-- | Number of nodes in the AST.
+size :: AST t => t -> Int
+
+-- | <tt>(<a>subtrees</a> t)</tt> is the set of all subtrees of an AST
+--   <tt>t</tt> (including <tt>t</tt> itself).
+subtrees :: (AST t, Ord t) => t -> Set t
+
+-- | <tt>(<a>properSubtrees</a> t)</tt> is the the set of all <i>proper</i>
+--   subtrees of an AST <tt>t</tt> (i.e., not including <tt>t</tt> itself).
+properSubtrees :: (AST t, Ord t) => t -> Set t
+
+-- | <tt>(<a>parseFormula</a> s)</tt> parses a string <tt>s</tt> as a
+--   propositional formula, returning a <tt><a>Just</a> a</tt> on success,
+--   where <tt>a</tt> is the parsed formula.
+--   
+--   For a version of <a>parseFormula</a> that does not return a wrapped
+--   formula but also throws an error when it cannot parse, see
+--   <a>unsafeParseFormula</a>.
+--   
+--   <h4><b>Conventions</b></h4>
+--   
+--   <ul>
+--   <li>Supported connective symbols:<ul><li>Negation: <tt>"~"</tt>,
+--   <tt>"¬"</tt>.</li><li>Implication: <tt>"-&gt;"</tt>, <tt>"=&gt;"</tt>,
+--   <tt>"→"</tt>, <tt>"⇾"</tt>, <tt>"⇒"</tt>
+--   <tt>"⊃"</tt>.</li><li>Disjunction: <tt>"|"</tt>, <tt>"\/"</tt>,
+--   <tt>"∨"</tt>, <tt>"+"</tt></li><li>Conjunction: <tt>"&amp;"</tt>,
+--   <tt>"/\"</tt>, <tt>"∧"</tt>, <tt>"^"</tt>,
+--   <tt>"*"</tt></li><li>Equivalence: <tt>"&lt;-&gt;"</tt>, <tt>"↔"</tt>,
+--   <tt>"⇿"</tt>, <tt>"⇔"</tt></li></ul></li>
+--   </ul>
+--   
+--   <ul>
+--   <li>Implication is right-associative and has lower precedence than the
+--   other connectives.</li>
+--   <li>Equivalence is left-associative and has higher precedence than
+--   implication but lower precedence than conjunction and
+--   disjunction.</li>
+--   <li>Disjunction is left-associative and has higher precedence than
+--   equivalence but lower precedence than conjunction.</li>
+--   <li>Conjunction is left-associative and has highest precedence out of
+--   the binary connectives.</li>
+--   <li>Negation binds most tightly, and must immediately precede its
+--   argument (i.e., there should not be a space between a negation symbol
+--   and the proposition that follows).</li>
+--   <li>Valid variable names begin with a letter (uppercase or lowercase)
+--   or an underscore, and may be followed by a letter, underscore, digit,
+--   or single quote (a "prime" symbol). The exceptions are the strings
+--   <tt>"false"</tt> and <tt>"true"</tt>, which are parsed as the
+--   propositional literals &lt;math&gt; and &lt;math&gt;,
+--   respectively.</li>
+--   </ul>
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; parseFormula "a -&gt; b -&gt; c"
+--   Just (Imp (Var "a") (Imp (Var "b") (Var "c")))
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; parseFormula "~a | b -&gt; c"
+--   Just (Imp (Or (Not (Var "a")) (Var "b")) (Var "c"))
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; parseFormula "(a -&gt; b) &amp; ~c"
+--   Just (And (Imp (Var "a") (Var "b")) (Not (Var "c")))
+--   </pre>
+parseFormula :: String -> Maybe (Formula String)
+
+-- | <tt>(parseJudgement s)</tt> parses a string <tt>s</tt> as a
+--   propositional judgement.
+--   
+--   A valid judgement is made up of an antecedent, a turnstile symbol, and
+--   a consequent (in that order). The antecedents are a (potentially
+--   empty) comma-separated list of formulas, the turnstile symbol is
+--   either <tt>"|-"</tt> or <tt>"⊢"</tt>, and the consequent is another
+--   formula.
+--   
+--   See <a>parseFormula</a> for the specification of valid formulas.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; parseJudgement "a, a -&gt; b |- b"
+--   Just ([Var "a",Imp (Var "a") (Var "b")] |- Var "b")
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; parseJudgement "a |- a | b"
+--   Just ([Var "a"] |- Or (Var "a") (Var "b"))
+--   </pre>
+parseJudgement :: String -> Maybe (Judgement String)
+
+-- | Pretty-print a value.
+pretty :: PrettyPrintable a => a -> String
+
+-- | Get a pretty-printed representation of a propositional formula.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; prettyFormula $ Imp (Var "a") (Or (Var "b") (Lit False))
+--   "a → (b ∨ ⊥)"
+--   </pre>
+prettyFormula :: PrettyPrintable a => Formula a -> String
+
+-- | Get a pretty-printed representation of a judgement.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; prettyJudgement $ [Var "a", Imp (Var "a") (Var "b")] |- Var "b"
+--   "a, a → b ⊢ b"
+--   </pre>
+prettyJudgement :: PrettyPrintable a => Judgement a -> String
+
+-- | Get a pretty-printed representation of a proof.
+prettyProof :: PrettyPrintable a => Proof a -> String
+
 
 -- | Propositional logic library.
+--   
+--   This top-level module only includes type definitions and functions for
+--   the syntactic entities of propositional logic. If you want semantics,
+--   then you must first choose either classical or intuitionistic logic,
+--   and then use the corresponding module
+--   
+--   <ol>
+--   <li><a>AutoProof.Classical</a>, for classical logic, or</li>
+--   <li><a>AutoProof.Intuitionistic</a>, for intuitionistic logic.</li>
+--   </ol>
+--   
+--   Both of the above module expose every symbol in this module, and more.
 module AutoProof
 
 -- | Formulas of propositional logic are built inductively from atomic
@@ -1032,6 +2506,33 @@ pattern Iff :: Formula a -> Formula a -> Formula a
 --   fromList [Var 'x',Var 'y',Var 'z',And (Var 'y') (Var 'z'),Or (Var 'x') (And (Var 'y') (Var 'z'))]
 --   </pre>
 subformulas :: Ord a => Formula a -> Set (Formula a)
+
+-- | <tt>(<a>substitute</a> a x p)</tt> represents &lt;math&gt;, the
+--   substitution of each occurence of the variable &lt;math&gt; in the
+--   formula &lt;math&gt; by the formula &lt;math&gt;.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; substitute (Imp (Var 'e') (Var 'e')) 'e' (And (Var 'a') (Var 'a'))
+--   Imp (And (Var 'a') (Var 'a')) (And (Var 'a') (Var 'a'))
+--   </pre>
+substitute :: Eq a => Formula a -> a -> Formula a -> Formula a
+
+-- | Obtain a propositional variable from a formula, if there is one.
+--   
+--   <h4><b>Examples</b></h4>
+--   
+--   <pre>
+--   &gt;&gt;&gt; getAnyVariable (Or (Var "a") (Var "b"))
+--   Just "a"
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; getAnyVariable (Lit False :: Formula String)
+--   Nothing
+--   </pre>
+getAnyVariable :: Formula a -> Maybe a
 
 -- | A set of propositional formulas, used as antecedents of a judgement.
 type Context a = Set (Formula a)
@@ -1314,7 +2815,7 @@ pretty :: PrettyPrintable a => a -> String
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; prettyFormula $ Imp (Var 'a') (Or (Var 'b') (Lit False))
+--   &gt;&gt;&gt; prettyFormula $ Imp (Var "a") (Or (Var "b") (Lit False))
 --   "a → (b ∨ ⊥)"
 --   </pre>
 prettyFormula :: PrettyPrintable a => Formula a -> String
@@ -1324,335 +2825,13 @@ prettyFormula :: PrettyPrintable a => Formula a -> String
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; prettyJudgement $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
+--   &gt;&gt;&gt; prettyJudgement $ [Var "a", Imp (Var "a") (Var "b")] |- Var "b"
 --   "a, a → b ⊢ b"
 --   </pre>
 prettyJudgement :: PrettyPrintable a => Judgement a -> String
 
 -- | Get a pretty-printed representation of a proof.
 prettyProof :: PrettyPrintable a => Proof a -> String
-
-
--- | Check proof correctness in intuitionistic logic.
-module AutoProof.Intuitionistic.Proof.Correctness
-
--- | Check whether a proof is a correct proof of a given judgement
-correct :: Ord a => Judgement a -> Proof a -> Bool
-
--- | Check whether a proof is valid.
-valid :: Ord a => Proof a -> Bool
-
--- | Return an invalid inference node (on the <a>Left</a>), if there is
---   one. Otherwise, return <tt><a>Right</a> ()</tt>.
-debug :: Ord a => Proof a -> Either (Proof a) ()
-
-
--- | Functions related to cuts in proofs.
-module AutoProof.Intuitionistic.Proof.Cut
-
--- | Find the cut nearest the root of a proof, if any. This functions
---   assumes the proof is valid.
-findCut :: Proof a -> Maybe (Proof a)
-
--- | Check if a proof has a cut.
-hasCut :: Proof a -> Bool
-
-
--- | Intuitionistic proofs in the implicational fragment of propositional
---   logic.
-module AutoProof.Intuitionistic.Proof.Search.Implication
-
--- | <tt>(<a>proveImp</a> (g <a>|-</a> a))</tt> finds an intuitionistic
---   proof of a judgement &lt;math&gt; in the implicational fragment of
---   propositional logic, if such a proof exists.
---   
---   The algorithm is adapted from section 2.4 of
---   
---   <ul>
---   <li>Samuel Mimram (2020) <i>PROGRAM = PROOF</i>.</li>
---   </ul>
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; proveImp $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
---   Just (ImpElim ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'b') (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Imp (Var 'a') (Var 'b'))) (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'a')))
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; proveImp $ [Imp (Var 'a') (Var 'b'), Imp (Var 'b') (Var 'a')] |- Var 'a'
---   Nothing
---   </pre>
-proveImp :: Ord a => Judgement a -> Maybe (Proof a)
-
-
--- | Check provability of general propositional formulas using an algorithm
---   derived from
---   
---   <ul>
---   <li>Richard Statman (1979) "Intuitionistic propositional logic is
---   polynomial-space complete." Theoretical Computer Science, Volume 9,
---   Issue 1, pp. 67–72. <a>DOI</a>.</li>
---   </ul>
-module AutoProof.Intuitionistic.Proof.Search.Statman
-
--- | Find an intuitionistic proof of a judgement, if one exists, using
---   Statman's algorithm.
---   
---   <ul>
---   <li>Richard Statman (1979) "Intuitionistic propositional logic is
---   polynomial-space complete." Theoretical Computer Science, Volume 9,
---   Issue 1, pp. 67–72. <a>DOI</a>.</li>
---   </ul>
---   
---   The judgement to be proved is converted to an implicational judgement
---   as described in <a>toImp</a> and proved (if possible) using
---   <a>proveImp</a>. The resulting proof is then converted into a proof of
---   the original judgement.
-proveStatman :: Ord a => Judgement a -> Maybe (Proof a)
-
--- | Convert a general propositional judgement into an implicational
---   judgement which is intuitionistically provable if and only if the
---   original judgement is intuitionistically provable.
---   
---   This construction is due to
---   
---   <ul>
---   <li>Richard Statman (1979) "Intuitionistic propositional logic is
---   polynomial-space complete." Theoretical Computer Science, Volume 9,
---   Issue 1, pp. 67–72. <a>DOI</a>.</li>
---   </ul>
---   
---   <h4><b>Details</b></h4>
---   
---   This algorithm turns a judgement &lt;math&gt; in full propositional
---   logic into a judgement &lt;math&gt; in just the implicational fragment
---   of propositional logic such that &lt;math&gt; is provable if and only
---   if the judgement &lt;math&gt; is provable. The latter judgement's
---   provability can then be checked using <a>proveImp</a>.
---   
---   The transformation from &lt;math&gt; to &lt;math&gt; involves two
---   steps:
---   
---   <ol>
---   <li>For each propositional formula &lt;math&gt;, introduce a new
---   propositional variable &lt;math&gt;. Take &lt;math&gt;.</li>
---   <li>Construct the set &lt;math&gt; as follows.<ol><li>For each formula
---   &lt;math&gt;, add &lt;math&gt; to &lt;math&gt;.</li><li>(Truth) Add
---   &lt;math&gt; to &lt;math&gt;.</li><li>For each subformula &lt;math&gt;
---   of either &lt;math&gt; or a formula in &lt;math&gt;, do the
---   following.<ol><li>(Falsity elimination and truth introduction) Add the
---   following formulas to &lt;math&gt;. &lt;math&gt;</li><li>(Negation
---   introduction and elimination) If &lt;math&gt;, then add the following
---   formulas to &lt;math&gt;. &lt;math&gt;</li><li>(Implication
---   introduction and elimination) If &lt;math&gt;, then add the following
---   formulas to &lt;math&gt;. &lt;math&gt;</li><li>(Disjunction
---   introduction and elimination) If &lt;math&gt;, then for each
---   additional subformula &lt;math&gt; of &lt;math&gt;, add the following
---   formulas to &lt;math&gt;. &lt;math&gt;</li><li>(Conjunction
---   introduction and elimination) If &lt;math&gt;, then add the following
---   formulas to &lt;math&gt;. &lt;math&gt;</li><li>(Equivalence
---   introduction and elimination) If &lt;math&gt;, then add the following
---   formulas to &lt;math&gt;. &lt;math&gt;</li></ol></li></ol></li>
---   </ol>
-toImp :: Ord a => Judgement a -> Judgement (Formula a)
-
-
--- | A general-purpose proof search algorithm.
-module AutoProof.Intuitionistic.Proof.Search.General
-
--- | Find an intuitionistic proof of a judgement, if a proof exists.
-prove :: Ord a => Judgement a -> Maybe (Proof a)
-
--- | Find an intuitionistic proof of a formula, if a proof exists.
-proveTautology :: Ord a => Formula a -> Maybe (Proof a)
-
-
--- | Proof search algorithms.
-module AutoProof.Intuitionistic.Proof.Search
-
--- | Find an intuitionistic proof of a judgement, if a proof exists.
-prove :: Ord a => Judgement a -> Maybe (Proof a)
-
--- | Find an intuitionistic proof of a formula, if a proof exists.
-proveTautology :: Ord a => Formula a -> Maybe (Proof a)
-
--- | Find an intuitionistic proof of a judgement, if one exists, using
---   Statman's algorithm.
---   
---   <ul>
---   <li>Richard Statman (1979) "Intuitionistic propositional logic is
---   polynomial-space complete." Theoretical Computer Science, Volume 9,
---   Issue 1, pp. 67–72. <a>DOI</a>.</li>
---   </ul>
---   
---   The judgement to be proved is converted to an implicational judgement
---   as described in <a>toImp</a> and proved (if possible) using
---   <a>proveImp</a>. The resulting proof is then converted into a proof of
---   the original judgement.
-proveStatman :: Ord a => Judgement a -> Maybe (Proof a)
-
--- | <tt>(<a>proveImp</a> (g <a>|-</a> a))</tt> finds an intuitionistic
---   proof of a judgement &lt;math&gt; in the implicational fragment of
---   propositional logic, if such a proof exists.
---   
---   The algorithm is adapted from section 2.4 of
---   
---   <ul>
---   <li>Samuel Mimram (2020) <i>PROGRAM = PROOF</i>.</li>
---   </ul>
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; proveImp $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
---   Just (ImpElim ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'b') (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Imp (Var 'a') (Var 'b'))) (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'a')))
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; proveImp $ [Imp (Var 'a') (Var 'b'), Imp (Var 'b') (Var 'a')] |- Var 'a'
---   Nothing
---   </pre>
-proveImp :: Ord a => Judgement a -> Maybe (Proof a)
-
-
--- | Provability checking in intuitionistic propositional logic.
-module AutoProof.Intuitionistic.Proof.Provability
-
--- | Determine whether a judgement is intuitionistically valid.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; isProvable $ [Var "a", Var "b"] |- And (Var "a") (Var "b")
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; isProvable $ [] |- Or (Var "a") (Not (Var "a"))
---   False
---   </pre>
-isProvable :: Ord a => Judgement a -> Bool
-
--- | Determine whether a formula is an intuitionistic tautology.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; isTautology $ Imp (And (Var 'a') (Var 'b')) (Var 'a')
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
---   False
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; isTautology $ Not (Not (Or (Var 'a') (Not (Var 'a'))))
---   True
---   </pre>
-isTautology :: Ord a => Formula a -> Bool
-
-
--- | Intuitionistic proofs in propositional logic.
-module AutoProof.Intuitionistic.Proof
-
--- | Find an intuitionistic proof of a judgement, if a proof exists.
-prove :: Ord a => Judgement a -> Maybe (Proof a)
-
--- | Find an intuitionistic proof of a formula, if a proof exists.
-proveTautology :: Ord a => Formula a -> Maybe (Proof a)
-
--- | <tt>(<a>proveImp</a> (g <a>|-</a> a))</tt> finds an intuitionistic
---   proof of a judgement &lt;math&gt; in the implicational fragment of
---   propositional logic, if such a proof exists.
---   
---   The algorithm is adapted from section 2.4 of
---   
---   <ul>
---   <li>Samuel Mimram (2020) <i>PROGRAM = PROOF</i>.</li>
---   </ul>
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; proveImp $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
---   Just (ImpElim ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'b') (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Imp (Var 'a') (Var 'b'))) (Axiom ([Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'a')))
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; proveImp $ [Imp (Var 'a') (Var 'b'), Imp (Var 'b') (Var 'a')] |- Var 'a'
---   Nothing
---   </pre>
-proveImp :: Ord a => Judgement a -> Maybe (Proof a)
-
--- | Find an intuitionistic proof of a judgement, if one exists, using
---   Statman's algorithm.
---   
---   <ul>
---   <li>Richard Statman (1979) "Intuitionistic propositional logic is
---   polynomial-space complete." Theoretical Computer Science, Volume 9,
---   Issue 1, pp. 67–72. <a>DOI</a>.</li>
---   </ul>
---   
---   The judgement to be proved is converted to an implicational judgement
---   as described in <a>toImp</a> and proved (if possible) using
---   <a>proveImp</a>. The resulting proof is then converted into a proof of
---   the original judgement.
-proveStatman :: Ord a => Judgement a -> Maybe (Proof a)
-
--- | Determine whether a judgement is intuitionistically valid.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; isProvable $ [Var "a", Var "b"] |- And (Var "a") (Var "b")
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; isProvable $ [] |- Or (Var "a") (Not (Var "a"))
---   False
---   </pre>
-isProvable :: Ord a => Judgement a -> Bool
-
--- | Determine whether a formula is an intuitionistic tautology.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; isTautology $ Imp (And (Var 'a') (Var 'b')) (Var 'a')
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
---   False
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; isTautology $ Not (Not (Or (Var 'a') (Not (Var 'a'))))
---   True
---   </pre>
-isTautology :: Ord a => Formula a -> Bool
-
--- | Find the cut nearest the root of a proof, if any. This functions
---   assumes the proof is valid.
-findCut :: Proof a -> Maybe (Proof a)
-
--- | Check if a proof has a cut.
-hasCut :: Proof a -> Bool
-
--- | Check whether a proof is a correct proof of a given judgement
-correct :: Ord a => Judgement a -> Proof a -> Bool
-
--- | Check whether a proof is valid.
-valid :: Ord a => Proof a -> Bool
-
--- | Return an invalid inference node (on the <a>Left</a>), if there is
---   one. Otherwise, return <tt><a>Right</a> ()</tt>.
-debug :: Ord a => Proof a -> Either (Proof a) ()
 
 
 -- | Intuitionistic propositional logic library.
@@ -2126,7 +3305,7 @@ pretty :: PrettyPrintable a => a -> String
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; prettyFormula $ Imp (Var 'a') (Or (Var 'b') (Lit False))
+--   &gt;&gt;&gt; prettyFormula $ Imp (Var "a") (Or (Var "b") (Lit False))
 --   "a → (b ∨ ⊥)"
 --   </pre>
 prettyFormula :: PrettyPrintable a => Formula a -> String
@@ -2136,580 +3315,7 @@ prettyFormula :: PrettyPrintable a => Formula a -> String
 --   <h4><b>Examples</b></h4>
 --   
 --   <pre>
---   &gt;&gt;&gt; prettyJudgement $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
---   "a, a → b ⊢ b"
---   </pre>
-prettyJudgement :: PrettyPrintable a => Judgement a -> String
-
--- | Get a pretty-printed representation of a proof.
-prettyProof :: PrettyPrintable a => Proof a -> String
-
-
--- | Glivenko translation.
-module AutoProof.Classical.Proof.Glivenko
-
--- | Translate one judgement into another such that the first is
---   classically provable if and only if the second is intuitionistically
---   provable. Specifically, the Glivenko translation of a judgement
---   &lt;math&gt; is the judgement &lt;math&gt;.
-glivenkoTranslate :: Ord a => Judgement a -> Judgement a
-
--- | Determine whether a judgement is classically valid using Glivenko's
---   translation.
-isProvableGlivenko :: Ord a => Judgement a -> Bool
-
-
--- | Provability checking in classical propositional logic.
-module AutoProof.Classical.Proof.Provability
-
--- | Determine whether a judgement is classically valid.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; isProvable $ [Not (Not (Var 'a'))] |- Var 'a'
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; isProvable $ [Var 'a'] |- Var 'b'
---   False
---   </pre>
-isProvable :: Ord a => Judgement a -> Bool
-
--- | Determine whether a formula is a classically tautology.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
---   True
---   
---   &gt;&gt;&gt; isTautology $ Var 'a'
---   False
---   </pre>
-isTautology :: Ord a => Formula a -> Bool
-
-
--- | Classical proofs in propositional logic.
-module AutoProof.Classical.Proof
-
--- | Determine whether a judgement is classically valid.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; isProvable $ [Not (Not (Var 'a'))] |- Var 'a'
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; isProvable $ [Var 'a'] |- Var 'b'
---   False
---   </pre>
-isProvable :: Ord a => Judgement a -> Bool
-
--- | Determine whether a formula is a classically tautology.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
---   True
---   
---   &gt;&gt;&gt; isTautology $ Var 'a'
---   False
---   </pre>
-isTautology :: Ord a => Formula a -> Bool
-
-
--- | Classical propositional logic library.
-module AutoProof.Classical
-
--- | Formulas of propositional logic are built inductively from atomic
---   propositions
---   
---   <ul>
---   <li>truth &lt;math&gt;,</li>
---   <li>falsity &lt;math&gt;, and</li>
---   <li>propositional variables &lt;math&gt;</li>
---   </ul>
---   
---   using the unary connective
---   
---   <ul>
---   <li>negation &lt;math&gt;</li>
---   </ul>
---   
---   and the binary connectives
---   
---   <ul>
---   <li>implication &lt;math&gt;,</li>
---   <li>disjunction &lt;math&gt;,</li>
---   <li>conjunction &lt;math&gt;, and</li>
---   <li>equivalence &lt;math&gt;.</li>
---   </ul>
-data Formula a
-
--- | Propositional literal/constant. <tt>(<a>Lit</a> <a>True</a>)</tt> is
---   &lt;math&gt; (i.e., truth, tautology, or top), and <tt>(<a>Lit</a>
---   <a>False</a>)</tt> is &lt;math&gt; (i.e., falsity, contradiction, or
---   bottom).
-pattern Lit :: Bool -> Formula a
-
--- | Propositional variable. <tt>(<a>Var</a> x)</tt> represents a
---   propositional variable &lt;math&gt;.
-pattern Var :: a -> Formula a
-
--- | Negation. <tt>(<a>Not</a> p)</tt> represents the formula &lt;math&gt;.
-pattern Not :: Formula a -> Formula a
-
--- | Implication. <tt>(<a>Imp</a> p q)</tt> represents the formula
---   &lt;math&gt;.
-pattern Imp :: Formula a -> Formula a -> Formula a
-
--- | Disjunction. <tt>(<a>Or</a> p q)</tt> represents the formula
---   &lt;math&gt;.
-pattern Or :: Formula a -> Formula a -> Formula a
-
--- | Conjunction. <tt>(<a>And</a> p q)</tt> represents the formula
---   &lt;math&gt;.
-pattern And :: Formula a -> Formula a -> Formula a
-
--- | Equivalence. <tt>(<a>Iff</a> p q)</tt> represents the formula
---   &lt;math&gt;.
-pattern Iff :: Formula a -> Formula a -> Formula a
-
--- | Get the set of subformulas of a propositional formula.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; subformulas $ Or (Var 'x') (And (Var 'y') (Var 'z'))
---   fromList [Var 'x',Var 'y',Var 'z',And (Var 'y') (Var 'z'),Or (Var 'x') (And (Var 'y') (Var 'z'))]
---   </pre>
-subformulas :: Ord a => Formula a -> Set (Formula a)
-
--- | <tt>(<a>substitute</a> a x p)</tt> represents &lt;math&gt;, the
---   substitution of each occurence of the variable &lt;math&gt; in the
---   formula &lt;math&gt; by the formula &lt;math&gt;.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; substitute (Imp (Var 'e') (Var 'e')) 'e' (And (Var 'a') (Var 'a'))
---   Imp (And (Var 'a') (Var 'a')) (And (Var 'a') (Var 'a'))
---   </pre>
-substitute :: Eq a => Formula a -> a -> Formula a -> Formula a
-
--- | Convert a formula into a canonical conjunctive normal form.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; canonicalCNF $ Or (Not (Imp (Var "a") (Var "b"))) (Var "c")
---   And (Or (Var "c") (Var "a")) (Or (Var "c") (Not (Var "b")))
---   </pre>
-canonicalCNF :: Ord a => Formula a -> Formula a
-
--- | Obtain a propositional variable from a formula, if there is one.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; getAnyVariable (Or (Var "a") (Var "b"))
---   Just "a"
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; getAnyVariable (Lit False :: Formula String)
---   Nothing
---   </pre>
-getAnyVariable :: Formula a -> Maybe a
-
--- | A set of propositional formulas, used as antecedents of a judgement.
-type Context a = Set (Formula a)
-
--- | <tt>(Judgement c a)</tt> represents the judgement or sequent
---   &lt;math&gt;.
---   
---   <pre>
---   &gt;&gt;&gt; Judgement Set.empty (Imp (And (Var 'a') (Var 'b')) (Var 'a'))
---   [] |- Imp (And (Var 'a') (Var 'b')) (Var 'a')
---   </pre>
-data Judgement a
-Judgement :: Context a -> Formula a -> Judgement a
-
--- | The antecedents (or hypotheses).
-[antecedents] :: Judgement a -> Context a
-
--- | The succedent (or consequent, or conclusion).
-[succedent] :: Judgement a -> Formula a
-
--- | Infix judgement constructor. <tt>(c <a>|-</a> a)</tt> represents the
---   judgement &lt;math&gt;.
---   
---   <pre>
---   &gt;&gt;&gt; [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
---   [Var 'a',Imp (Var 'a') (Var 'b')] |- Var 'b'
---   </pre>
---   
---   <i>Note:</i> If <tt>c</tt> is already a <a>Set</a>, then it is
---   recommended to use <tt>(Judgement c a)</tt> in favor of <tt>(c
---   <a>|-</a> a)</tt>, since the latter will create a new set and fill it
---   with the values in <tt>c</tt>.
-(|-) :: (Ord a, Foldable f) => f (Formula a) -> Formula a -> Judgement a
-infix 5 |-
-
--- | Weaken a judgement by inserting a formula into its hypotheses.
---   
---   <pre>
---   &gt;&gt;&gt; weakenJudgement ([Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b') (Var 'c')
---   [Var 'a',Var 'c',Imp (Var 'a') (Var 'b')] |- Var 'b'
---   </pre>
-weakenJudgement :: Ord a => Judgement a -> Formula a -> Judgement a
-
--- | A proof tree for propositional logic.
-data Proof a
-
--- | An axiom <tt>(<a>Axiom</a> (g <a>|-</a> a))</tt> represents the
---   inference of the judgement &lt;math&gt;, where &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern Axiom :: Judgement a -> Proof a
-
--- | Falsity elimination (principle of explosion). <tt>(<a>FalseElim</a> (g
---   <a>|-</a> a) p)</tt> represents the inference of the judgement
---   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern FalseElim :: Judgement a -> Proof a -> Proof a
-
--- | Truth introduction. <tt>(<a>TrueIntr</a> (g <a>|-</a> <a>Lit</a>
---   <a>True</a>))</tt> represents the vacuous inference of the judgement
---   &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern TrueIntr :: Judgement a -> Proof a
-
--- | Negation elimination. <tt>(<a>NotElim</a> (g <a>|-</a> <a>Lit</a>
---   <a>False</a>) p q)</tt> represents the inference of the judgement
---   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt; and a proof
---   &lt;math&gt; of &lt;math&gt;, where &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern NotElim :: Judgement a -> Proof a -> Proof a -> Proof a
-
--- | Negation introduction. <tt>(<a>NotIntr</a> (g <a>|-</a> (<a>Not</a>
---   a)) p)</tt> represents the inference of the judgement &lt;math&gt;
---   given a proof &lt;math&gt; of &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern NotIntr :: Judgement a -> Proof a -> Proof a
-
--- | Implication elimination (<i>modus ponens</i>). <tt>(<a>ImpElim</a> (g
---   <a>|-</a> b) p q)</tt> represents the inference of the judgement
---   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt; and a proof
---   &lt;math&gt; of &lt;math&gt;, where &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern ImpElim :: Judgement a -> Proof a -> Proof a -> Proof a
-
--- | Implication introduction. <tt>(<a>ImpIntr</a> (g <a>|-</a> (<a>Imp</a>
---   a b) p)</tt> represents the inference of the judgement &lt;math&gt;
---   given a proof &lt;math&gt; of &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern ImpIntr :: Judgement a -> Proof a -> Proof a
-
--- | Disjunction elimination. <tt>(<a>OrElim</a> (g <a>|-</a> c) p q
---   r)</tt> represents the inference of the judgement &lt;math&gt; given
---   proofs &lt;math&gt; of &lt;math&gt;, &lt;math&gt; of &lt;math&gt;, and
---   &lt;math&gt; of &lt;math&gt;, where &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern OrElim :: Judgement a -> Proof a -> Proof a -> Proof a -> Proof a
-
--- | Left disjunction introduction. <tt>(<a>OrIntrL</a> (g <a>|-</a>
---   (<a>Or</a> a b)) p)</tt> represents the inference of the judgement
---   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern OrIntrL :: Judgement a -> Proof a -> Proof a
-
--- | Right disjunction introduction. <tt>(<a>OrIntrR</a> (g <a>|-</a>
---   (<a>Or</a> a b)) p)</tt> represents the inference of the judgement
---   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern OrIntrR :: Judgement a -> Proof a -> Proof a
-
--- | Left conjunction elimination. <tt>(<a>AndElimL</a> (g <a>|-</a> a)
---   p)</tt> represents the inference of the judgement &lt;math&gt; given a
---   proof &lt;math&gt; of &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern AndElimL :: Judgement a -> Proof a -> Proof a
-
--- | Right conjunction elimination. <tt>(<a>AndElimR</a> (g <a>|-</a> b)
---   p)</tt> represents the inference of the judgement &lt;math&gt; given a
---   proof &lt;math&gt; of &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern AndElimR :: Judgement a -> Proof a -> Proof a
-
--- | Conjunction introduction. <tt>(<a>AndIntr</a> (g <a>|-</a> (<a>And</a>
---   a b)) p)</tt> represents the inference of the judgement &lt;math&gt;
---   given a proof &lt;math&gt; of &lt;math&gt; and a proof &lt;math&gt; of
---   &lt;math&gt;, where &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern AndIntr :: Judgement a -> Proof a -> Proof a -> Proof a
-
--- | Left equivalence elimination. <tt>(<a>IffElimL</a> (g <a>|-</a>
---   (<a>Imp</a> a b)) p)</tt> represents the inference of the judgement
---   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern IffElimL :: Judgement a -> Proof a -> Proof a
-
--- | Right equivalence elimination. <tt>(<a>IffElimR</a> (g <a>|-</a>
---   (<a>Imp</a> b a)) p)</tt> represents the inference of the judgement
---   &lt;math&gt; given a proof &lt;math&gt; of &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern IffElimR :: Judgement a -> Proof a -> Proof a
-
--- | Equivalence introduction. <tt>(<a>IffIntr</a> (g <a>|-</a> (<a>Iff</a>
---   a b)) p)</tt> represents the inference of the judgement &lt;math&gt;
---   given a proof &lt;math&gt; of &lt;math&gt; and a proof &lt;math&gt; of
---   &lt;math&gt;, where &lt;math&gt;:
---   
---   &lt;math&gt;
-pattern IffIntr :: Judgement a -> Proof a -> Proof a -> Proof a
-
--- | Determine whether a judgement is classically valid.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; isProvable $ [Not (Not (Var 'a'))] |- Var 'a'
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; isProvable $ [Var 'a'] |- Var 'b'
---   False
---   </pre>
-isProvable :: Ord a => Judgement a -> Bool
-
--- | Determine whether a formula is a classically tautology.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; isTautology $ Or (Var 'a') (Not (Var 'a'))
---   True
---   
---   &gt;&gt;&gt; isTautology $ Var 'a'
---   False
---   </pre>
-isTautology :: Ord a => Formula a -> Bool
-
--- | Class representing truth assignments for evalutating propositional
---   logic formulas.
-class TruthAssignment t a
-
--- | Evaluate the truth value of a variable under a given truth assignment.
-evalVar :: TruthAssignment t a => t -> a -> Bool
-
--- | Evaluate the truth value of a formula under a given truth assignment.
-evalFormula :: TruthAssignment t a => t -> Formula a -> Bool
-
--- | Infix alias of <a>evalFormula</a>.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; t = Map.fromList $ [("a", True), ("b", False)]
---   
---   &gt;&gt;&gt; t |= And (Var "a") (Not (Var "b"))
---   True
---   </pre>
-(|=) :: TruthAssignment t a => t -> Formula a -> Bool
-
--- | Naive satisfiability algorithm.
---   
---   This algorithm is based on the observation that if &lt;math&gt; is a
---   propositional formula and &lt;math&gt; is a propositional variable,
---   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
---   satisfiable or &lt;math&gt; is satisfiable.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; naiveSAT $ Var "a"
---   True
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; naiveSAT $ And (Var "a") (Not (Var "a"))
---   False
---   </pre>
-naiveSAT :: Eq a => Formula a -> Bool
-
--- | Naive satisfiability algorithm, returning a satisfying truth
---   assignment.
---   
---   This algorithm is based on the observation that if &lt;math&gt; is a
---   propositional formula and &lt;math&gt; is a propositional variable,
---   then &lt;math&gt; is satisfiable if and only if either &lt;math&gt; is
---   satisfiable or &lt;math&gt; is satisfiable.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; naiveSATAssignment $ And (Not (Var "a")) (Or (Var "b") (Var "c"))
---   Just (fromList [("a",False),("b",True),("c",True)])
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; naiveSATAssignment $ And (Var "a") (Not (Var "a"))
---   Nothing
---   </pre>
-naiveSATAssignment :: Ord a => Formula a -> Maybe (Map a Bool)
-
--- | Abstract syntax tree class.
-class AST t where {
-    
-    -- | The type of the values annotating AST nodes.
-    type family Root t;
-}
-
--- | The value at the AST's root node.
-root :: AST t => t -> Root t
-
--- | The AST's child ASTs.
-children :: AST t => t -> [t]
-
--- | Number of edges on the longest path from the root of the AST to a
---   leaf.
-height :: AST t => t -> Int
-
--- | Number of nodes in the AST.
-size :: AST t => t -> Int
-
--- | <tt>(<a>subtrees</a> t)</tt> is the set of all subtrees of an AST
---   <tt>t</tt> (including <tt>t</tt> itself).
-subtrees :: (AST t, Ord t) => t -> Set t
-
--- | <tt>(<a>properSubtrees</a> t)</tt> is the the set of all <i>proper</i>
---   subtrees of an AST <tt>t</tt> (i.e., not including <tt>t</tt> itself).
-properSubtrees :: (AST t, Ord t) => t -> Set t
-
--- | <tt>(<a>parseFormula</a> s)</tt> parses a string <tt>s</tt> as a
---   propositional formula, returning a <tt><a>Just</a> a</tt> on success,
---   where <tt>a</tt> is the parsed formula.
---   
---   For a version of <a>parseFormula</a> that does not return a wrapped
---   formula but also throws an error when it cannot parse, see
---   <a>unsafeParseFormula</a>.
---   
---   <h4><b>Conventions</b></h4>
---   
---   <ul>
---   <li>Supported connective symbols:<ul><li>Negation: <tt>"~"</tt>,
---   <tt>"¬"</tt>.</li><li>Implication: <tt>"-&gt;"</tt>, <tt>"=&gt;"</tt>,
---   <tt>"→"</tt>, <tt>"⇾"</tt>, <tt>"⇒"</tt>
---   <tt>"⊃"</tt>.</li><li>Disjunction: <tt>"|"</tt>, <tt>"\/"</tt>,
---   <tt>"∨"</tt>, <tt>"+"</tt></li><li>Conjunction: <tt>"&amp;"</tt>,
---   <tt>"/\"</tt>, <tt>"∧"</tt>, <tt>"^"</tt>,
---   <tt>"*"</tt></li><li>Equivalence: <tt>"&lt;-&gt;"</tt>, <tt>"↔"</tt>,
---   <tt>"⇿"</tt>, <tt>"⇔"</tt></li></ul></li>
---   </ul>
---   
---   <ul>
---   <li>Implication is right-associative and has lower precedence than the
---   other connectives.</li>
---   <li>Equivalence is left-associative and has higher precedence than
---   implication but lower precedence than conjunction and
---   disjunction.</li>
---   <li>Disjunction is left-associative and has higher precedence than
---   equivalence but lower precedence than conjunction.</li>
---   <li>Conjunction is left-associative and has highest precedence out of
---   the binary connectives.</li>
---   <li>Negation binds most tightly, and must immediately precede its
---   argument (i.e., there should not be a space between a negation symbol
---   and the proposition that follows).</li>
---   <li>Valid variable names begin with a letter (uppercase or lowercase)
---   or an underscore, and may be followed by a letter, underscore, digit,
---   or single quote (a "prime" symbol). The exceptions are the strings
---   <tt>"false"</tt> and <tt>"true"</tt>, which are parsed as the
---   propositional literals &lt;math&gt; and &lt;math&gt;,
---   respectively.</li>
---   </ul>
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; parseFormula "a -&gt; b -&gt; c"
---   Just (Imp (Var "a") (Imp (Var "b") (Var "c")))
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; parseFormula "~a | b -&gt; c"
---   Just (Imp (Or (Not (Var "a")) (Var "b")) (Var "c"))
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; parseFormula "(a -&gt; b) &amp; ~c"
---   Just (And (Imp (Var "a") (Var "b")) (Not (Var "c")))
---   </pre>
-parseFormula :: String -> Maybe (Formula String)
-
--- | <tt>(parseJudgement s)</tt> parses a string <tt>s</tt> as a
---   propositional judgement.
---   
---   A valid judgement is made up of an antecedent, a turnstile symbol, and
---   a consequent (in that order). The antecedents are a (potentially
---   empty) comma-separated list of formulas, the turnstile symbol is
---   either <tt>"|-"</tt> or <tt>"⊢"</tt>, and the consequent is another
---   formula.
---   
---   See <a>parseFormula</a> for the specification of valid formulas.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; parseJudgement "a, a -&gt; b |- b"
---   Just ([Var "a",Imp (Var "a") (Var "b")] |- Var "b")
---   </pre>
---   
---   <pre>
---   &gt;&gt;&gt; parseJudgement "a |- a | b"
---   Just ([Var "a"] |- Or (Var "a") (Var "b"))
---   </pre>
-parseJudgement :: String -> Maybe (Judgement String)
-
--- | Pretty-print a value.
-pretty :: PrettyPrintable a => a -> String
-
--- | Get a pretty-printed representation of a propositional formula.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; prettyFormula $ Imp (Var 'a') (Or (Var 'b') (Lit False))
---   "a → (b ∨ ⊥)"
---   </pre>
-prettyFormula :: PrettyPrintable a => Formula a -> String
-
--- | Get a pretty-printed representation of a judgement.
---   
---   <h4><b>Examples</b></h4>
---   
---   <pre>
---   &gt;&gt;&gt; prettyJudgement $ [Var 'a', Imp (Var 'a') (Var 'b')] |- Var 'b'
+--   &gt;&gt;&gt; prettyJudgement $ [Var "a", Imp (Var "a") (Var "b")] |- Var "b"
 --   "a, a → b ⊢ b"
 --   </pre>
 prettyJudgement :: PrettyPrintable a => Judgement a -> String
