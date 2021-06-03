@@ -338,3 +338,23 @@ tests:
     when:
       - condition: false
         other-modules: Paths_autoproof
+  sat-dpll-test:
+    main: Main.hs
+    source-dirs: test/classical/sat-dpll
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -Werror
+      - -Wall
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Wredundant-constraints
+    dependencies:
+      - autoproof
+      - hspec >= 0.8.2
+      - QuickCheck >= 2.14.2
+    when:
+      - condition: false
+        other-modules: Paths_autoproof

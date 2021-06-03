@@ -22,6 +22,7 @@ module AutoProof.Internal.Classical.CNF
     substitute,
     unitLiteral,
     pureLiteral,
+    getAnyLiteral,
   )
 where
 
@@ -193,3 +194,12 @@ pureLiteral a = case List.find isPure variables of
       Just Nothing -> findVariables ls vs
       -- This is the first time we see x
       Nothing -> findVariables ls ((x, Just b) : vs)
+
+-- | Obtain a literal from a CNF formula, if there is one.
+getAnyLiteral :: CNF a -> Maybe (Literal a)
+getAnyLiteral = f . Set.toList
+  where
+    f [] = Nothing
+    f (c : cs) = case Map.toList c of
+      [] -> f cs
+      l : _ -> Just l

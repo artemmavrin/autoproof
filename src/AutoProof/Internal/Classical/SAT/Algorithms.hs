@@ -9,12 +9,20 @@
 -- Satisfiability algorithms.
 module AutoProof.Internal.Classical.SAT.Algorithms
   ( -- * Simple baseline algorithm
-    simpleSAT,
-    simpleSATAssignment,
+    satSimple,
+    satAssignmentSimple,
+
+    -- * DPLL
+    satDPLL,
+    satAssignmentDPLL,
   )
 where
 
+import AutoProof.Internal.Classical.SAT.Algorithms.DPLL
+  ( satAssignmentDPLL,
+    satDPLL,
+  )
 import AutoProof.Internal.Classical.SAT.Algorithms.Simple
-  ( simpleSAT,
-    simpleSATAssignment,
+  ( satAssignmentSimple,
+    satSimple,
   )

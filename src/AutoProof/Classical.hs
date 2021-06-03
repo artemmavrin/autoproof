@@ -57,9 +57,13 @@ module AutoProof.Classical
     TruthAssignment (evalVar, evalFormula),
     (|=),
 
-    -- ** Satisfiability algorithms
-    simpleSAT,
-    simpleSATAssignment,
+    -- ** Check satisfiability
+    satSimple,
+    satDPLL,
+
+    -- ** Satisfying assignment search
+    satAssignmentSimple,
+    satAssignmentDPLL,
 
     -- * Abstract syntax trees
     AST (Root, root, children, height, size),
@@ -90,8 +94,10 @@ import AutoProof.Internal.Classical.Proof
   )
 import AutoProof.Internal.Classical.SAT
   ( TruthAssignment (evalFormula, evalVar),
-    simpleSAT,
-    simpleSATAssignment,
+    satAssignmentDPLL,
+    satAssignmentSimple,
+    satDPLL,
+    satSimple,
     (|=),
   )
 import AutoProof.Internal.Formula
