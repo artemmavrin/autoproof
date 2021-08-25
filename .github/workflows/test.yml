@@ -31,4 +31,4 @@ jobs:
           excludes: Paths_autoproof
       - name: Send coverage report
         if: ${{ matrix.os == 'ubuntu-latest' }}
-        uses: codecov/codecov-action@v2.0.2
+        uses: codecov/codecov-action@v2.0.3
