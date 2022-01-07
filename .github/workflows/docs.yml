@@ -25,7 +25,7 @@ jobs:
           echo "<meta http-equiv=\"refresh\" content=\"0; url=./autoproof-$(stack ls dependencies | grep autoproof | awk '{print $2}')/\" />" >> docs/index.html
 
       - name: Deploy docs
-        uses: JamesIves/github-pages-deploy-action@4.1.8
+        uses: JamesIves/github-pages-deploy-action@4.2.0
         with:
           branch: gh-pages
           folder: docs
