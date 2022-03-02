@@ -11,7 +11,7 @@ jobs:
         os: [ubuntu-latest, macOS-latest, windows-latest]
     name: OS ${{ matrix.os }}, GHC ${{ matrix.ghc }}, Cabal ${{ matrix.cabal }}, Stack ${{ matrix.stack }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Haskell
         uses: haskell/actions/setup@v1
         with:
